@@ -1,0 +1,156 @@
+
+<supbar></supbar>
+
+<div class="menu"> 
+
+	<sidebar modulo="administracion"></sidebar> 
+	
+<div class="pagina">
+
+<label class="titulo"> REGISTRO DE USUARIOS </label>
+	
+<!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
+<div class="toolbar">
+
+  <button class="boton" (click)="consultar()"> Consultar </button>
+
+  <button class="boton" (click)="insertar()"> Insertar </button>
+
+  <button class="boton" (click)="modificar()"> Modificar </button>
+
+  <button class="boton" (click)="eliminar()"> Eliminar </button>
+
+  <button class="boton"> Importar </button>
+
+  <button class="boton" (click)="exportar()"> Exportar </button>
+    
+  <button class="boton" (click)="volver()"> Volver </button>
+
+</div>
+
+		
+
+<!-- FORMULARIO DE REGISTRO -->
+<div *ngIf="pestanaActiva === 'registro'" class="form-contenedor">
+
+  	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Identificación </label>
+
+		<div class="form-fila">
+			
+			<div class="form-campo"> 
+  				<label class="label">Id Cliente</label> 
+  				<input type="number" [(ngModel)]="usuario.idCliente" name="idCliente" disabled>
+  			</div>
+			
+  			<div class="form-campo"> 
+  				<label class="label">Id Usuario</label> 
+  				<input type="number" [(ngModel)]="usuario.idUsuario" name="idUsuario" disabled>
+  			</div>
+  			
+  		</div>
+  		
+  	</div>
+  	
+  	<div class="form-grupo"> 
+  			
+  	<label class="titulo"> Datos Usuario </label>
+
+		<div class="form-fila">
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Usuario <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="50" [(ngModel)]="usuario.usuario" name="usuario"> 
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !usuario.usuario"> Valor Obligatorio </div>
+  			</div>
+
+  			<div class="form-campo"> 
+  				<label class="label">Contraseña <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="255" [(ngModel)]="usuario.contrasena" name="contrasena"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !usuario.contrasena"> Valor Obligatorio </div>
+  			</div>
+  			
+  		</div>
+
+		<div class="form-fila">	
+  			  			
+  			<div class="form-campo">
+  				<label class="label">Id Perfil <span class="obligatorio">*</span> </label> 
+  				<select [(ngModel)]="usuario.idPerfil" name="idPerfil"> 
+  					<option [ngValue]="0" hidden>Seleccione...</option>
+					<option *ngFor="let u of usuariosLista" [ngValue]="u.usu_id"> {{ u.usu_id }} </option>
+				</select>
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !usuario.idPerfil"> Valor Obligatorio </div>
+			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Nombre <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="100" [(ngModel)]="usuario.nombre" name="nombre"> 
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !usuario.nombre"> Valor Obligatorio </div>
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Email <span class="obligatorio">*</span> </label> 
+  				<input type="email" maxlength="100" [(ngModel)]="usuario.email" name="email"> 
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !usuario.email"> Valor Obligatorio </div>
+  			</div>
+
+  		</div>
+  		
+  	</div>
+  
+  	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Movimiento </label>
+
+		<div class="form-fila">
+
+  			<div class="form-campo"> 
+  				<label class="label">Usuario Movimiento</label> 
+  				<input type="text" maxlength="50" [(ngModel)]="usuario.usuarioMovimiento" name="usuarioMovimiento" disabled> 
+  			</div>
+ 			
+  			<div class="form-campo"> 
+  				<label class="label">Fecha Movimiento</label> 
+  				<input type="datetime-local" maxlength="100" [(ngModel)]="usuario.fechaMovimiento" name="fechaMovimiento" disabled> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Activo</label> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="usuario.activo" name="activo" disabled> 
+  			</div>
+  			
+ 		</div>
+ 	
+ 	</div>
+ 
+	<div class="toolbar"> 
+	
+		<button class="boton" (click)="guardar()"> Guardar </button> 
+		
+		<!-- Botón Cancelar tiene misma lógica que insertar -->
+		<button class="boton" (click)="insertar()"> Cancelar </button>
+		
+	</div>
+
+</div>
+
+<!-- TABLA DE RESULTADOS-->
+<div *ngIf="pestanaActiva === 'tabla'" class="tabla-contenedor">
+
+  	<label class="titulo"> TABLA DE USUARIOS </label>
+    
+  	<tabla 
+  	
+  		[columnas]="columnas" 
+  		[titulosColumnas]="titulosColumnas"
+  		[datos]="datos" 
+		(filaSeleccionada)="usuarioSeleccionado = $event"> 
+  		
+  	</tabla>
+  	  
+</div>
+
+<!-- Cierres de div class menu y pagina -->
+</div> </div>

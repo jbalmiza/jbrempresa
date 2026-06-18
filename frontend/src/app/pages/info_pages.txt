@@ -1,0 +1,12 @@
+Las pages representan pantallas completas de la aplicación.
+
+Normalmente corresponden a rutas del sistema.
+
+Ejemplos:
+- login page
+- dashboard
+- users page
+- invoices page
+
+Ejemplo:
+dashboard-page.component.ts

@@ -1,0 +1,8 @@
+La carpeta service del backend Spring Boot contiene las clases encargadas de gestionar la lógica de negocio 
+de la aplicación. 
+
+Su función es procesar datos, aplicar validaciones, ejecutar reglas internas y coordinar 
+la comunicación entre los controllers y los repositories antes de acceder a la base de datos PostgreSQL. 
+
+Esto permite separar la lógica del sistema de las peticiones HTTP y mantener una arquitectura más 
+organizada, reutilizable y fácil de mantener.

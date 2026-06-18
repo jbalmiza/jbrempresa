@@ -1,0 +1,123 @@
+
+<div class="tabla-scroll">
+
+<table>
+
+    <thead>
+
+        <!-- CABECERAS -->
+        <tr>
+
+            <th *ngFor="let columna of columnas">
+
+                {{ titulosColumnas[columna] || columna }}
+
+            </th>
+
+        </tr>
+
+        <!-- FILTROS -->
+        <tr>
+
+            <th *ngFor="let columna of columnas">
+
+                <input
+                    type="text"
+                    [(ngModel)]="filtros[columna]"
+                    (input)="filtrar()"
+                    placeholder="Buscar">
+
+            </th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        <!-- FILAS -->
+        <tr
+            *ngFor="let fila of datosPagina"
+            (click)="seleccionarFila(fila)"
+            [class.fila-seleccionada]="filaActiva === fila">
+
+            <!-- CELDAS -->
+            <td *ngFor="let columna of columnas">
+
+                {{ fila[columna] }}
+
+            </td>
+
+        </tr>
+
+    </tbody>
+
+</table>
+
+<!-- PAGINADOR -->
+<div class="paginador">
+
+    <button
+        (click)="primeraPagina()"
+        [disabled]="paginaActual === 1">
+
+        Primera
+
+    </button>
+
+    <button
+        (click)="paginaAnterior()"
+        [disabled]="paginaActual === 1">
+
+        Anterior
+
+    </button>
+
+    <span>
+
+        Página {{ paginaActual }} de {{ totalPaginas }}
+
+    </span>
+
+    <button
+        (click)="paginaSiguiente()"
+        [disabled]="paginaActual === totalPaginas">
+
+        Siguiente
+
+    </button>
+
+    <button
+        (click)="ultimaPagina()"
+        [disabled]="paginaActual === totalPaginas">
+
+        Última
+
+    </button>
+
+    <span>
+
+        Registros por página
+
+    </span>
+
+    <select
+        [(ngModel)]="registrosPorPagina"
+        (change)="cambiarRegistrosPorPagina()">
+
+        <option [value]="10">10</option>
+
+        <option [value]="50">50</option>
+
+        <option [value]="100">100</option>
+
+    </select>
+
+<!-- Cierre de tabla y paginador -->
+</div></div>
+
+
+
+
+
+

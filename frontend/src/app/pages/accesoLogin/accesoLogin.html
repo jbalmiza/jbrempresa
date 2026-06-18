@@ -1,0 +1,53 @@
+<!-- Lo que muestra la pantalla (Framework Angular / Lenguaje HTML) -->
+
+<div class="login-container">
+
+	<img class="logo-greensaas" src="assets/logos/logo-greensaas.png" alt="GreenSaaS">
+
+	<!-- Apartado formulario para el inicio de sesión -->
+	<form (ngSubmit)="entrar()">
+	
+	<div class="titulo"> Iniciar sesión </div>
+
+		<input 
+		
+			type="text" 
+			name="usuario" 
+			placeholder="Usuario" 
+			autocomplete="username" 
+			[(ngModel)]="usuario">
+
+		<input 
+		
+			type="password" 
+			name="password" 
+			placeholder="Contraseña" 
+			autocomplete="current-password" 
+			[(ngModel)]="password">
+
+		<!-- El botón entrar llama al método entrar -->
+		<button type="submit"> Entrar </button>
+
+	</form>
+
+	<!-- Apartado para el cambio de contraseña-->	
+	<div class="opciones-login">
+
+    	<a (click)="abrirCambioPassword()"> ¿Ha olvidado la contraseña? </a>
+
+	</div>
+	
+	<!-- Apartado datos de la empresa y de la aplicación-->
+	<div class="info-login">
+	
+		<img class="logo-jbrempresa" src="assets/logos/logo-jbrempresa.png" alt="jbrempresa">
+    
+    	<p>GreenSaaS v1.0.0</p>
+
+   		<p>© 2026 JBREMPRESA</p>
+
+    	<p>Todos los derechos reservados.</p>
+
+	</div>
+
+</div>

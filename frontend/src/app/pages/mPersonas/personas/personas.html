@@ -1,0 +1,203 @@
+
+<supbar></supbar>
+
+<div class="menu"> 
+
+	<sidebar modulo="personas"></sidebar> 
+	
+<div class="pagina">
+
+<label class="titulo"> REGISTRO DE PERSONAS </label>
+
+<!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
+<div class="toolbar">
+
+  <button class="boton" (click)="consultar()"> Consultar </button>
+
+  <button class="boton" (click)="insertar()"> Insertar </button>
+
+  <button class="boton" (click)="modificar()"> Modificar </button>
+
+  <button class="boton" (click)="eliminar()"> Eliminar </button>
+
+  <button class="boton"> Importar </button>
+
+  <button class="boton" (click)="exportar()"> Exportar </button>
+    
+  <button class="boton" (click)="volver()"> Volver </button>
+
+</div>
+
+<!-- FORMULARIO DE REGISTRO -->
+<div *ngIf="pestanaActiva === 'registro'" class="form-contenedor">
+
+  	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Identificación </label>
+
+		<div class="form-fila">
+		
+		  	<div class="form-campo"> 
+  				<label class="label">Id Cliente</label> 
+  				<input type="number" maxlength="10" [(ngModel)]="persona.idCliente" name="idCliente" disabled> 
+  			</div>
+		
+  			<div class="form-campo"> 
+  				<label class="label">Id Persona</label> 
+  				<input type="number" maxlength="10" [(ngModel)]="persona.idPersona" name="idPersona" disabled> 
+  			</div>
+  			
+  		</div>
+  		
+  	</div>
+  			
+  	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Persona </label>
+
+		<div class="form-fila">  	
+  	
+  			<div class="form-campo">
+  				<label class="label"> Tipo Documento <span class="obligatorio">*</span> </label> 
+  				<select [(ngModel)]="persona.tipoDocumento" name="tipoDocumento"> 
+  					<option value="" selected hidden>Seleccione...</option>
+					<option value="D.N.I.">D.N.I.</option>
+					<option value="C.I.F.">C.I.F.</option>
+					<option value="Pasaporte">Pasaporte</option>
+					<option value="Tarjeta Residencia">Tarjeta Residencia</option>
+					<option value="Otro">Otro</option>
+				</select>
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !persona.tipoDocumento"> Valor Obligatorio </div>
+			</div>
+
+  			<div class="form-campo"> 
+  				<label class="label"> Documento <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="50" [(ngModel)]="persona.documento" name="documento"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !persona.documento"> Valor Obligatorio </div>
+  			</div>
+  			
+  		</div>
+  			
+  		<div class="form-fila">  
+
+  			<div class="form-campo"> 
+  				<label class="label"> Nombre <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="50" [(ngModel)]="persona.nombre" name="nombre"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !persona.nombre"> Valor Obligatorio </div>
+  			</div>
+
+  			<div class="form-campo"> 
+  				<label class="label"> Apellido 1 <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="50" [(ngModel)]="persona.apellido1" name="apellido1"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !persona.apellido1"> Valor Obligatorio </div>
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Apellido 2</label> 
+  				<input type="text" maxlength="50" [(ngModel)]="persona.apellido2" name="apellido2"> 
+  			</div>
+  		
+  		</div>	
+  		
+  		<div class="form-fila">  
+  			  			
+  			<div class="form-campo"> 
+  				<label class="label">Fecha Nacimiento</label> 
+  				<input type="date" maxlength="10" [(ngModel)]="persona.fechaNacimiento" name="fechaNacimiento"> 
+  			</div>
+  			
+  		</div>
+
+  	</div>
+  			
+	<div class="form-grupo">
+	
+	<label class="titulo"> Datos Domicilio </label>
+	
+ 		<div class="form-fila"> 
+ 		
+  			<div class="form-campo">
+  				<label class="label"> Selector Domicilio <span class="obligatorio">*</span> </label> 
+  				<selectorBusqueda [datos]="domiciliosLista" (valorSeleccionado)="persona.idDomicilio = $event"> </selectorBusqueda>
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !persona.idDomicilio"> Valor Obligatorio </div>
+			</div>
+  			
+  		</div>
+
+  	</div>
+
+	<div class="form-grupo">
+	
+	<label class="titulo"> Datos Contacto </label>
+	
+		<div class="form-fila">
+	
+  			<div class="form-campo"> 
+  				<label class="label"> Teléfono <span class="obligatorio">*</span> </label> 
+  				<input type="number" maxlength="30" [(ngModel)]="persona.telefono" name="telefono"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !persona.telefono"> Valor Obligatorio </div>
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Email</label> 
+  				<input type="email" maxlength="50" [(ngModel)]="persona.email" name="email"> 
+  			</div>
+  			
+  		</div>
+  		
+  	</div>
+
+  	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Movimiento </label>
+
+		<div class="form-fila">
+
+  			<div class="form-campo"> 
+  				<label class="label">Usuario Movimiento</label> 
+  				<input type="text" maxlength="50" [(ngModel)]="persona.usuarioMovimiento" name="usuarioMovimiento" disabled> 
+  			</div>
+ 			
+  			<div class="form-campo"> 
+  				<label class="label">Fecha Movimiento</label> 
+  				<input type="datetime-local" maxlength="10" [(ngModel)]="persona.fechaMovimiento" name="fechaMovimiento" disabled> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Activo</label> 
+  				<input type="checkbox" maxlength="10" [(ngModel)]="persona.activo" name="activo" disabled> 
+  			</div>
+  			
+ 		</div>
+ 	
+ 	</div>
+ 
+	<div class="toolbar"> 
+	
+		<button class="boton" (click)="guardar()"> Guardar </button> 
+		
+		<!-- Botón Cancelar tiene misma lógica que insertar -->
+		<button class="boton" (click)="insertar()"> Cancelar </button>
+		
+	</div>
+
+</div>
+
+<!-- TABLA DE RESULTADOS-->
+<div *ngIf="pestanaActiva === 'tabla'" class="tabla-contenedor">
+
+  	<label class="titulo"> TABLA DE PERSONAS </label>
+  
+  	<tabla 
+  	
+  		[columnas]="columnas" 
+  		[titulosColumnas]="titulosColumnas"
+  		[datos]="datos" 
+		(filaSeleccionada)="personaSeleccionada = $event"> 
+  		
+  	</tabla>
+
+</div>
+
+<!-- Cierres de div class menu y pagina -->
+</div> </div>

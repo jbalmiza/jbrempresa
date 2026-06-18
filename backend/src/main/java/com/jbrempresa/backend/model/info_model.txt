@@ -1,0 +1,6 @@
+La carpeta model contiene las clases que representan estructuras de datos utilizadas por la aplicación. 
+
+Su objetivo es definir objetos que almacenan información del negocio y que pueden ser usados por 
+controllers, services, DTOs o el frontend. En muchos proyectos las entities también actúan como modelos, 
+aunque en arquitecturas más separadas la carpeta model se utiliza para clases auxiliares, respuestas personalizadas, 
+peticiones o estructuras temporales que no representan directamente tablas de base de datos.

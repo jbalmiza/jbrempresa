@@ -1,0 +1,9 @@
+<!-- Cuadro donde el usuario escribe el texto a buscar -->
+<input type="text" [(ngModel)]="textoBusqueda" (input)="cambiarTexto()">
+
+<!-- Lista de resultados filtrados -->
+<ul> 
+
+	<li *ngFor="let dato of datosFiltrados" (click)="seleccionar(dato)"> {{ dato.domDir }} </li>
+
+</ul>

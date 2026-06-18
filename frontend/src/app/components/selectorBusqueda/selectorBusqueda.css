@@ -1,0 +1,51 @@
+/* Cuadro de búsqueda */
+input {
+
+    width: 100%;
+
+    margin: 5px;
+    
+    padding: 5px;
+
+    border: 1px solid #000000;
+
+    box-sizing: border-box;
+
+}
+
+/* Lista de resultados */
+ul {
+	
+	width: 100%;
+
+    list-style: none;
+
+    margin: 5px;
+
+    padding: 0px;
+
+  	border: 1px solid #000000;
+
+    max-height: 150px;
+
+    overflow-y: auto;
+
+    background-color: white;
+
+}
+
+/* Cada opción */
+li {
+
+    padding: 5px;
+
+    cursor: pointer;
+
+}
+
+/* Resaltado al pasar el ratón */
+li:hover {
+
+    background-color: #f0f0f0;
+
+}

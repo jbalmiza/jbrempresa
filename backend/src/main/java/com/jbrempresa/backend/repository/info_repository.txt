@@ -1,0 +1,41 @@
+# INFO-REPOSITORY
+
+## 1. ¿Qué hace un Repository? Accede a la base de datos.
+
+## 2. ¿Por qué extends JpaRepository? Hereda métodos ya implementados: save(), findAll(), findById(), deleteById()
+
+## 3. ¿Qué significa Usuario, Long? Usuario → entidad. Long → tipo del ID.
+
+## 4. ¿Qué relación hay entre @Query y el método? La consulta se ejecuta cuando se llama al método.
+
+## 5. ¿Qué indica el tipo delante del método? Indica qué devuelve el método.
+
+## 6. ¿Es obligatorio usar @Query? No. Spring puede generar la consulta automáticamente.
+
+## 7. ¿Qué significa findByCliId(...) ? Buscar por el campo `cliId`.
+
+## 8. ¿Puedo sustituir findBy por @Query? Sí. El resultado es el mismo.
+
+## 9. ¿Cuándo usar List? Cuando puede haber varios resultados. Si no hay ninguno devuelve: []
+
+## 10. ¿Cuándo usar Optional? Cuando esperas un único resultado. Si no existe devuelve: Optional.empty()
+
+## 11. ¿Optional devuelve null? No. Devuelve: Optional.empty()
+
+## 12. ¿Por qué List no necesita Optional? Porque una lista vacía ya indica "sin resultados".
+
+## 13. Regla rápida 
+
+* Varios registros → List<> 
+* Un único registro → Optional<> 
+* Consulta simple → findBy... 
+* Consulta compleja → @Query(...)
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,216 @@
+
+.tabla-scroll {
+
+  overflow: auto;
+
+}
+
+table {
+	
+  min-width: 1200px;
+
+  border-collapse: collapse;
+
+  margin-top: 20px;
+
+  background-color: white;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 14px;
+
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+
+  border-radius: 6px;
+
+  overflow: hidden;
+  
+  min-width: 1600px;
+
+}
+
+/* CABECERA */
+
+thead {
+
+  background-color: #f8fafc;
+
+}
+
+th {
+	
+  border: 1px solid #dcdcdc;
+ 
+  padding: 12px;
+ 
+  text-align: left;
+  
+  font-weight: 600;
+ 
+  color: #334155;
+
+  white-space: nowrap; /* Evita el salto de línea */
+  
+}
+
+/* CELDAS */
+
+td {
+
+  border: 1px solid #e5e7eb;
+
+  padding: 10px 12px;
+
+  text-align: left;
+
+  color: #475569;
+
+}
+
+/* FILA DE FILTROS */
+
+thead input {
+
+  background-color: white;
+
+  font-size: 13px;
+
+}
+
+/* CONTROLES */
+
+input,
+select {
+
+  width: 100%;
+
+  padding: 8px;
+
+  border: 1px solid #cbd5e1;
+
+  border-radius: 4px;
+
+  box-sizing: border-box;
+
+  background-color: white;
+
+}
+
+/* FOCO */
+
+input:focus,
+select:focus {
+
+  outline: none;
+
+  border-color: #3b82f6;
+
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+
+}
+
+/* FILAS PARES */
+
+tbody tr:nth-child(even) {
+
+  background-color: #fafafa;
+
+}
+
+/* HOVER */
+
+tbody tr:hover {
+
+  background-color: #dbeafe;
+
+  cursor: pointer;
+
+  transition: background-color 0.15s ease;
+
+}
+
+/* FILA SELECCIONADA */
+
+.fila-seleccionada {
+
+  background-color: #93c5fd !important;
+
+  font-weight: 500;
+
+}
+
+/* PAGINADOR */
+
+.paginador {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  flex-wrap: wrap;
+
+  margin-top: 10px;
+
+  padding: 10px 0;
+
+  border-top: 1px solid #e5e7eb;
+
+}
+
+/* BOTONES */
+
+.paginador button {
+
+  padding: 6px 12px;
+
+  border: 1px solid #cbd5e1;
+
+  border-radius: 4px;
+
+  background-color: white;
+
+  cursor: pointer;
+
+  transition: all 0.15s ease;
+
+}
+
+.paginador button:hover:not(:disabled) {
+
+  background-color: #3b82f6;
+
+  color: white;
+
+  border-color: #3b82f6;
+
+}
+
+.paginador button:disabled {
+
+  opacity: 0.5;
+
+  cursor: not-allowed;
+
+}
+
+/* TEXTO PAGINA */
+
+.paginador span {
+
+  font-weight: 500;
+
+  color: #334155;
+
+}
+
+/* SELECT DEL PAGINADOR */
+
+.paginador select {
+
+  width: 80px;
+
+  min-width: 80px;
+
+}

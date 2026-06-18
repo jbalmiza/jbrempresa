@@ -1,0 +1,13 @@
+La carpeta environments contiene configuraciones según el entorno.
+
+Sirve para cambiar URLs o configuraciones entre:
+- desarrollo
+- testing
+- producción
+
+Ejemplo:
+API local:
+http://localhost:8080
+
+API producción:
+https://api.miempresa.com

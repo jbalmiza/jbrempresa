@@ -1,0 +1,171 @@
+
+<supbar></supbar>
+
+<div class="menu"> 
+
+	<sidebar modulo="administracion"></sidebar> 
+	
+<div class="pagina">
+
+<label class="titulo"> REGISTRO DE PERFILES </label>
+	
+<!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
+<div class="toolbar">
+
+  <button class="boton" (click)="consultar()"> Consultar </button>
+
+  <button class="boton" (click)="insertar()"> Insertar </button>
+
+  <button class="boton" (click)="modificar()"> Modificar </button>
+
+  <button class="boton" (click)="eliminar()"> Eliminar </button>
+
+  <button class="boton"> Importar </button>
+
+  <button class="boton" (click)="exportar()"> Exportar </button>
+    
+  <button class="boton" (click)="volver()"> Volver </button>
+
+</div>
+
+		
+
+<!-- FORMULARIO DE REGISTRO -->
+<div *ngIf="pestanaActiva === 'registro'" class="form-contenedor">
+
+  	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Identificación </label>
+
+		<div class="form-fila">
+			
+			<div class="form-campo"> 
+  				<label class="label">Id Cliente</label> 
+  				<input type="number" [(ngModel)]="perfil.idCliente" name="idCliente" disabled>
+  			</div>
+			
+  			<div class="form-campo"> 
+  				<label class="label">Id Perfil</label> 
+  				<input type="number" [(ngModel)]="perfil.idPerfil" name="idPerfil" disabled>
+  			</div>
+  			
+  		</div>
+  		
+  	</div>
+  	
+  	<div class="form-grupo"> 
+  			
+  	<label class="titulo"> Datos Perfil </label>
+
+		<div class="form-fila">
+  			
+  			<div class="form-campo"> 
+  				<label class="label"> Nombre <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="50" [(ngModel)]="perfil.nombre" name="nombre"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !perfil.nombre"> Valor Obligatorio </div>
+  			</div>
+  			
+  			<div class="form-campo">
+  				<label class="label"> Tipo Perfil <span class="obligatorio">*</span> </label> 
+  				<select [(ngModel)]="perfil.tipoPerfil" name="tipoPerfil"> 
+  					<option value="" selected hidden>Seleccione...</option>
+					<option value="Página">Página</option>
+					<option value="Módulo">Módulo</option>
+					<option value="Administrador">Administrador</option>
+				</select>
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !perfil.tipoPerfil"> Valor Obligatorio </div>
+			</div>
+  			
+  		</div>
+  		
+  	</div>
+  		
+  	<div class="form-grupo"> 
+  			
+  	<label class="titulo"> Datos Permisos </label>
+
+		<div class="form-fila">	
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Módulo Administración</label> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.mAdministracion" name="mAdministracion"> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Módulo Territorio</label> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.mTerritorio" name="mTerritorio"> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Módulo Personas</label> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.mPersonas" name="mPersonas"> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Módulo Productos</label> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.mProductos" name="mProductos"> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Módulo Ventas</label> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.mVentas" name="mVentas"> 
+  			</div>
+
+  		</div>
+  		
+  	</div>
+  
+  	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Movimiento </label>
+
+		<div class="form-fila">
+
+  			<div class="form-campo"> 
+  				<label class="label">Usuario Movimiento</label> 
+  				<input type="text" maxlength="50" [(ngModel)]="perfil.usuarioMovimiento" name="usuarioMovimiento" disabled> 
+  			</div>
+ 			
+  			<div class="form-campo"> 
+  				<label class="label">Fecha Movimiento</label> 
+  				<input type="datetime-local" maxlength="100" [(ngModel)]="perfil.fechaMovimiento" name="fechaMovimiento" disabled> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Activo</label> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.activo" name="activo" disabled> 
+  			</div>
+  			
+ 		</div>
+ 	
+ 	</div>
+ 
+	<div class="toolbar"> 
+	
+		<button class="boton" (click)="guardar()"> Guardar </button> 
+		
+		<!-- Botón Cancelar tiene misma lógica que insertar -->
+		<button class="boton" (click)="insertar()"> Cancelar </button>
+		
+	</div>
+
+</div>
+
+<!-- TABLA DE RESULTADOS-->
+<div *ngIf="pestanaActiva === 'tabla'" class="tabla-contenedor">
+
+  	<label class="titulo"> TABLA DE PERFILES </label>
+    
+  	<tabla 
+  	
+  		[columnas]="columnas" 
+  		[titulosColumnas]="titulosColumnas"
+  		[datos]="datos" 
+		(filaSeleccionada)="perfilSeleccionado = $event"> 
+  		
+  	</tabla>
+  	  
+</div>
+
+<!-- Cierres de div class menu y pagina -->
+</div> </div>

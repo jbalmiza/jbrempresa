@@ -1,0 +1,404 @@
+
+
+<button class="hamburguesa" (click)="toggleSidebar()"> ☰ </button>
+
+<div class="sidebar" [class.sidebar-abierto]="menuMovilAbierto">
+
+  <!-- ----------------------- ADMINISTRACION ---------------------------------->
+  
+	<div *ngIf="modulo === 'administracion'">
+
+ 		<h2> Administración </h2>
+
+  		<ul>
+
+    		<li class="menu-title" (click)="toggleMenu('menu1')"> Seguridad </li>
+
+    			<ul *ngIf="menuAbierto === 'menu1'" class="submenu">
+    		
+    				<li (click)="abrirPagina('usuarios')"> Usuarios </li>
+
+      				<li (click)="abrirPagina('perfiles')"> Perfiles </li>
+      				
+      				<li (click)="abrirPagina('clientes')"> Clientes </li>
+
+      				<li>Auditoría</li>
+
+    			</ul>
+
+    		<li class="menu-title" (click)="toggleMenu('menu2')"> Estructura Organizativa</li>
+
+    			<ul *ngIf="menuAbierto === 'menu2'" class="submenu">
+
+      				<li>Clientes</li>
+
+      				<li>Entidades</li>
+
+     				<li>Organizaciones</li>
+     				
+     				<li>Departamentos</li>
+     				
+     				<li>Áreas</li>
+
+    			</ul>
+
+			<li class="menu-title" (click)="toggleMenu('menu3')"> Parámetrización </li>
+
+    			<ul *ngIf="menuAbierto === 'menu3'" class="submenu">
+
+      				<li>Parámetros</li>
+
+      				<li>Selectores</li>
+
+      				<li>Submenu</li>
+
+    			</ul>
+    			
+    		<li class="menu-title" (click)="toggleMenu('menu4')"> Utilidades </li>
+
+    			<ul *ngIf="menuAbierto === 'menu4'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+      				<li>Submenu 3</li>
+
+    			</ul>
+
+		</ul>
+
+	</div>
+	
+  <!-- ----------------------- TERITORIO ---------------------------------->
+	
+	<div *ngIf="modulo === 'territorio'">
+	
+		<h2> Territorio </h2>
+
+		<ul>
+
+    		<li class="menu-title" (click)="toggleMenu('menu1')"> Estructura Territorial</li>
+
+    			<ul *ngIf="menuAbierto === 'menu1'" class="submenu">
+
+      				<li (click)="abrirPagina('domicilios')"> Domicilios </li>
+      				      				
+      				<li>Plantas</li>   
+      				
+      				<li>Escaleras</li>   
+      				
+      				<li>Portales</li>   
+      				
+      				<li>Bloques</li>  
+      				
+      				<li>Vías</li>  
+      				
+      				<li>Tipos de Vía</li>  
+      				
+      				<li>Códigos Postales</li>   
+      				
+      				<li>Municipios</li>
+      				
+      				<li>Provincias</li>
+      				
+      				<li>Comunidades</li>
+      				
+      				<li>Paises</li>
+
+    			</ul>
+
+    		<li class="menu-title" (click)="toggleMenu('menu2')"> Gestión del Territorio</li>
+
+    			<ul *ngIf="menuAbierto === 'menu2'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+     				<li>Submenu 3</li>
+
+    			</ul>
+
+			<li class="menu-title" (click)="toggleMenu('menu3')"> Procesos Masivos </li>
+
+    			<ul *ngIf="menuAbierto === 'menu3'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+      				<li>Submenu 3</li>
+
+    			</ul>
+    			
+			<li class="menu-title" (click)="toggleMenu('menu4')"> Utilidades </li>
+
+    			<ul *ngIf="menuAbierto === 'menu4'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+      				<li>Submenu 3</li>
+
+    			</ul>
+
+  		</ul>
+
+	</div>
+	
+  <!-- ------------------------- PERSONAS ---------------------------->
+
+	<div *ngIf="modulo === 'personas'">
+	
+		<h2> Personas </h2>
+
+  		<ul>
+
+    		<li class="menu-title" (click)="toggleMenu('menu1')"> Personas </li>
+
+    			<ul *ngIf="menuAbierto === 'menu1'" class="submenu">
+
+    				<li (click)="abrirPagina('personas')"> Personas </li>
+
+      				<li>Representantes</li>
+
+      				<li>Domicilios de Notificación</li>
+      				
+      				<li>Domiciliaciones Bancarias</li>
+
+    			</ul>
+
+    		<li class="menu-title" (click)="toggleMenu('menu2')"> Gestión de Personas</li>
+
+    			<ul *ngIf="menuAbierto === 'menu2'" class="submenu">
+
+      				<li>Gestión de Personas</li>
+
+      				<li>Gestión de Notificaciones</li>
+
+     				<li>Submenu</li>
+
+    			</ul>
+
+			<li class="menu-title" (click)="toggleMenu('menu3')"> Procesos Masivos </li>
+
+    			<ul *ngIf="menuAbierto === 'menu3'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+      				<li>Submenu 3</li>
+
+    			</ul>
+    			
+			<li class="menu-title" (click)="toggleMenu('menu4')"> Utilidades </li>
+
+    			<ul *ngIf="menuAbierto === 'menu4'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+      				<li>Submenu 3</li>
+
+    			</ul>
+
+  		</ul>
+
+	</div>	
+	
+  <!-- ------------------------- PRODUCTOS ---------------------------->
+
+	<div *ngIf="modulo === 'productos'">
+	
+		<h2> Productos </h2>
+
+  		<ul>
+
+    		<li class="menu-title" (click)="toggleMenu('menu1')"> Productos </li>
+
+    			<ul *ngIf="menuAbierto === 'menu1'" class="submenu">
+
+    				<li (click)="abrirPagina('productos')"> Productos </li>
+
+      				<li>Tipos de Producto</li>
+
+      				<li>Submenu</li>
+
+    			</ul>
+
+    		<li class="menu-title" (click)="toggleMenu('menu2')"> Gestión de Productos</li>
+
+    			<ul *ngIf="menuAbierto === 'menu2'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+     				<li>Submenu 3</li>
+
+    			</ul>
+
+			<li class="menu-title" (click)="toggleMenu('menu3')"> Procesos Masivos </li>
+
+    			<ul *ngIf="menuAbierto === 'menu3'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+      				<li>Submenu 3</li>
+
+    			</ul>
+    			
+			<li class="menu-title" (click)="toggleMenu('menu4')"> Utilidades </li>
+
+    			<ul *ngIf="menuAbierto === 'menu4'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+      				<li>Submenu 3</li>
+
+				</ul>
+		</ul>
+		
+	</div>	
+	
+  <!-- ------------------------- VENTAS ---------------------------->
+
+	<div *ngIf="modulo === 'ventas'">
+	
+		<h2> Ventas </h2>
+
+  		<ul>
+
+    		<li class="menu-title" (click)="toggleMenu('menu1')"> Ventas </li>
+
+    			<ul *ngIf="menuAbierto === 'menu1'" class="submenu">
+
+    				<li (click)="abrirPagina('ventas')"> Ventas </li>
+
+      				<li> Facturas </li>
+
+      				<li> Albaranes </li>
+      				
+      				<li> Pedidos </li>
+      				
+      				<li> Presupuestos </li>
+      				
+      				<li> Clientes </li>
+
+    			</ul>
+
+    		<li class="menu-title" (click)="toggleMenu('menu2')"> Gestión de Ventas </li>
+
+    			<ul *ngIf="menuAbierto === 'menu2'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+     				<li>Submenu 3</li>
+
+    			</ul>
+
+			<li class="menu-title" (click)="toggleMenu('menu3')"> Procesos Masivos </li>
+
+    			<ul *ngIf="menuAbierto === 'menu3'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+      				<li>Submenu 3</li>
+
+    			</ul>
+    			
+			<li class="menu-title" (click)="toggleMenu('menu4')"> Utilidades </li>
+
+    			<ul *ngIf="menuAbierto === 'menu4'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+      				<li>Submenu 3</li>
+
+    			</ul>
+
+  		</ul>
+
+	</div>	
+	
+  <!-- ------------------------- COMPRAS ---------------------------->
+
+	<div *ngIf="modulo === 'compras'">
+	
+		<h2> COMPRAS </h2>
+
+  		<ul>
+
+    		<li class="menu-title" (click)="toggleMenu('menu1')"> Compras </li>
+
+    			<ul *ngIf="menuAbierto === 'menu1'" class="submenu">
+
+    				<li (click)="abrirPagina('personas')"> Compras </li>
+
+      				<li> Facturas </li>
+
+      				<li> Albaranes </li>
+      				
+      				<li> Pedidos </li>
+      				
+      				<li> Presupuestos </li>
+      				
+      				<li> Proveedores </li>
+
+    			</ul>
+
+    		<li class="menu-title" (click)="toggleMenu('menu2')"> Gestión de Compras </li>
+
+    			<ul *ngIf="menuAbierto === 'menu2'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+     				<li>Submenu 3</li>
+
+    			</ul>
+
+			<li class="menu-title" (click)="toggleMenu('menu3')"> Procesos Masivos </li>
+
+    			<ul *ngIf="menuAbierto === 'menu3'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+      				<li>Submenu 3</li>
+
+    			</ul>
+    			
+			<li class="menu-title" (click)="toggleMenu('menu4')"> Utilidades </li>
+
+    			<ul *ngIf="menuAbierto === 'menu4'" class="submenu">
+
+      				<li>Submenu 1</li>
+
+      				<li>Submenu 2</li>
+
+      				<li>Submenu 3</li>
+
+    			</ul>
+
+  		</ul>
+
+	</div>	
+	
+</div>

@@ -1,0 +1,111 @@
+// Define el paquete donde está ubicado este archivo Java
+package com.jbrempresa.backend.controller;
+
+//Importa la anotación @Autowired.
+//Sirve para que Spring inyecte automáticamente objetos necesarios.
+import org.springframework.beans.factory.annotation.Autowired;
+
+//Importa todas las anotaciones REST de Spring:
+//@RestController
+//@RequestMapping
+//@PostMapping
+//@RequestBody
+//@CrossOrigin
+import org.springframework.web.bind.annotation.*;
+
+//Importa la entidad Producto.
+//Esta entidad representa la tabla PRODUCTO de PostgreSQL.
+import com.jbrempresa.backend.entity.Producto;
+
+//Importa ProductoRepository.
+//El repository contiene los métodos CRUD automáticos de JPA.
+import com.jbrempresa.backend.repository.ProductoRepository;
+
+import java.util.List;
+
+//Indica que esta clase es un controlador REST.
+//Un controlador REST recibe peticiones HTTP desde Angular.
+@RestController
+
+//Define la ruta base del controlador.
+//Todas las URLs empezarán por:
+/*
+http://localhost:8080/productos
+*/
+@RequestMapping("/productos")
+
+//Permite conexiones desde Angular.
+//Angular normalmente funciona en localhost:4200.
+//Sin esto el navegador bloquearía las peticiones por seguridad CORS.
+@CrossOrigin(origins = "http://localhost:4200")
+
+//Define la clase PersonaController.
+//Esta clase gestionará las operaciones REST de Producto.
+public class ProductoController {
+
+    // @Autowired hace que Spring cree automáticamente
+    // un objeto PersonaRepository y lo inyecte aquí.
+    @Autowired
+    
+    // Variable que permitirá acceder a base de datos.
+    private ProductoRepository productoRepository;
+
+    // @PostMapping indica que este método responderá
+    // a peticiones HTTP POST.
+    //
+    // URL:
+    // POST http://localhost:8080/productos
+    @PostMapping
+    
+    // Método guardar.
+    // Recibe un Producto desde Angular y devuelve el producto guardado.
+    
+    // @RequestBody significa:
+    // convierte automáticamente el JSON recibido
+    // en un objeto Producto Java.
+    public Producto guardar(@RequestBody Producto producto) {
+
+        // save() guarda automáticamente en PostgreSQL.
+        //
+        // Si el ID no existe:
+        // INSERT
+        //
+        // Si el ID existe:
+        // UPDATE
+        return productoRepository.save(producto);
+
+    }
+    
+    // @GetMapping responde a peticiones GET.
+    //
+    // URL:
+    // GET http://localhost:8080/productos
+    @GetMapping
+
+    public List<Producto> obtenerProductos() {
+
+        // findAll() obtiene todos los registros
+        // de la tabla productos.
+        return productoRepository.findAll();
+
+    }
+    
+    @GetMapping("/siguiente-id")
+    public Long obtenerSiguienteId() {
+
+        return productoRepository.obtenerSiguienteId();
+
+    }
+    
+    // Elimina un producto.
+    //
+    // URL:
+    // DELETE http://localhost:8080/productos/1
+    @DeleteMapping("/{id}")
+    public void eliminar(@PathVariable Long id) {
+
+        productoRepository.deleteById(id);
+
+    }
+
+}

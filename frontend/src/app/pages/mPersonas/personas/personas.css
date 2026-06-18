@@ -1,0 +1,162 @@
+.menu {
+
+  	display: flex;
+  
+    margin-top: 5px;
+  	margin-bottom: 5px;
+  	margin-left: 30px;
+  	margin-right: 30px;
+  
+}
+
+.pagina {
+
+  flex: 1;
+
+  padding: 20px;
+  
+  	/* Significa que, si dentro de .pagina tienes un elemento (tabla) muy ancha, 
+	el navegador intenta ensanchar toda la página y aparece una barra horizontal en toda la ventana. 
+	Entonces, con esto le dices "tienes permiso para hacer más estrecha la página; 
+	si algo no cabe, que el problema se resuelva dentro de sus propios contenedores."
+	Ya la tabla resuelve esto mostrando barras de desplazamiento cuando no cabe*/
+  	min-width: 0;
+  
+}
+
+.toolbar {
+
+  display: flex;
+  
+  margin: 5px;
+    
+  padding: 5px;
+
+  gap: 10px;
+  
+  overflow-x: auto;   /* muestra scroll horizontal si hace falta */
+  
+  overflow-y: hidden; /* evita scroll vertical */
+  
+  white-space: nowrap; /* impide que los elementos bajen de línea */
+
+}
+
+.tabs {
+	
+  display: flex;
+
+  gap: 10px;
+  
+}
+
+.boton {
+	
+  margin: 5px;
+  
+  padding: 5px;
+
+  cursor: pointer;
+
+}
+
+.form-contenedor {
+
+  border: 1px solid #cccccc;
+
+  margin: 5px;
+  
+  padding: 5px;
+
+
+
+}
+
+.titulo {
+
+ font-weight: bold;
+ 
+}
+
+.form-grupo {
+
+  border: 1px solid #cccccc;
+  
+  margin: 5px;
+  
+  padding: 0px;
+
+}
+
+.form-fila {
+
+  display: grid;
+
+  grid-template-columns: repeat(4, 250px);
+
+  /*gap: 10px;*/
+  
+}
+
+.form-campo {
+
+  display: flex;
+
+  flex-direction: column;
+
+  /*margin: 5px;*/
+  
+  padding: 0px;
+  
+  max-width: 200px;
+
+}
+
+input,
+select,
+textarea {
+
+  margin: 5px;
+  
+  padding: 5px;
+  
+  width: 100%;
+
+}
+
+.tabla-contenedor {
+
+  border: 1px solid #cccccc;
+  
+  margin: 5px;
+
+  padding: 5px;
+
+}
+
+.label {
+
+  margin: 5px;
+  
+  padding: 0px;
+  
+}
+
+.obligatorio {
+
+    color: red;
+
+    font-weight: bold;
+
+}
+
+.mensaje-obligatorio {
+
+    color: red;
+
+    font-size: 12px;
+
+    margin: 3px;
+
+}
+

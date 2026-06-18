@@ -1,0 +1,6 @@
+La carpeta dto contiene los objetos de transferencia de datos utilizados para intercambiar información entre el frontend 
+y el backend sin exponer directamente las entities de la base de datos. 
+
+Su objetivo es controlar qué datos se envían o reciben en las APIs REST, mejorar la seguridad, 
+separar la lógica interna de la base de datos y facilitar validaciones o transformaciones 
+de información antes de llegar al frontend Angular o a PostgreSQL.

@@ -1,0 +1,31 @@
+<!-- Barra superior -->
+
+<div class="barra-superior">
+
+  <div class="barra-izquierda">
+
+    Cliente: {{ usuarioCliente }}
+
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+
+    Usuario: {{ usuarioUsuario }}
+
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+
+    Perfil: {{ usuarioPerfil }}
+
+  </div>
+
+  <div class="barra-derecha">
+
+    <button class="boton" (click)="modulos()">
+      Módulos
+    </button>
+
+    <button class="boton" (click)="salir()">
+      Salir
+    </button>
+
+  </div>
+
+</div>

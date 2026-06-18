@@ -1,0 +1,13 @@
+Los components son piezas reutilizables de interfaz visual.
+
+Un componente suele representar una parte pequeña de la pantalla.
+
+Ejemplos:
+- navbar
+- sidebar
+- button
+- table
+- card
+
+Ejemplo:
+navbar.component.ts

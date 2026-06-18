@@ -1,0 +1,146 @@
+# INFO-CONTROLLER
+
+## 1. ¿Qué es @RestController?
+
+Convierte la clase en un controlador REST que recibe peticiones HTTP y devuelve respuestas.
+
+---
+
+## 2. ¿Qué es @RequestMapping?
+
+Define la ruta base del controlador.
+
+Ejemplo:
+
+```java
+@RequestMapping("/usuarios")
+```
+
+---
+
+## 3. ¿Qué es @CrossOrigin?
+
+Permite que Angular pueda acceder al backend.
+
+Ejemplo:
+
+```java
+@CrossOrigin(origins = "http://localhost:4200")
+```
+
+---
+
+## 4. ¿Qué hace @Autowired?
+
+Spring crea e inyecta automáticamente el objeto.
+
+Ejemplo:
+
+```java
+@Autowired
+private UsuarioRepository usuarioRepository;
+```
+
+---
+
+## 5. ¿Qué hace el Controller?
+
+Recibe peticiones y coordina el acceso a Repository y Service.
+
+---
+
+## 6. ¿Qué hace el Service?
+
+Contiene la lógica de negocio.
+
+---
+
+## 7. ¿Qué hace el Repository?
+
+Accede a la base de datos.
+
+---
+
+## 8. ¿Qué significa @DeleteMapping("/{id}")?
+
+Asocia el método a una petición HTTP DELETE.
+
+Ejemplo:
+
+```text
+DELETE /usuarios/15
+```
+
+---
+
+## 9. ¿Qué significa @PathVariable?
+
+Obtiene valores incluidos en la URL.
+
+Ejemplo:
+
+```java
+@PathVariable Long id
+```
+
+---
+
+## 10. ¿Qué significa @RequestParam?
+
+Obtiene parámetros adicionales de la URL.
+
+Ejemplo:
+
+```text
+/usuarios/15?cliente=3
+```
+
+---
+
+## 11. ¿Qué hace orElseThrow()?
+
+Devuelve el objeto encontrado.
+
+Si no existe, lanza una excepción.
+
+---
+
+## 12. ¿Qué hace delete()?
+
+Elimina el objeto de la base de datos.
+
+Ejemplo:
+
+```java
+usuarioRepository.delete(usuario);
+```
+
+---
+
+## 13. Relación entre capas
+
+Frontend:
+
+```text
+HTML ←→ TypeScript
+```
+
+Backend:
+
+```text
+Controller ←→ Repository
+```
+
+Arquitectura completa:
+
+```text
+Angular
+↓
+Controller
+↓
+Service
+↓
+Repository
+↓
+Base de datos
+```
