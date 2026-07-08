@@ -64,12 +64,12 @@ public class Perfil {
     private String perAct;
 
     // Usuario de movimiento
-    @Column(name = "usu_mov")
-    private String usuMov;
+    @Column(name = "per_usu_mov")
+    private String perUsuMov;
 
     // Fecha de movimiento
-    @Column(name = "fec_mov")
-    private LocalDateTime fecMov;
+    @Column(name = "per_fec_mov")
+    private LocalDateTime perFecMov;
 
     // GETTERS Y SETTERS------------------------------------------------
 
@@ -174,23 +174,23 @@ public class Perfil {
     }
 
     // Obtiene el usuario de movimiento
-    public String getUsuMov() {
-        return usuMov;
+    public String getPerUsuMov() {
+        return perUsuMov;
     }
 
     // Modifica el usuario de movimiento
-    public void setUsuMov(String usuMov) {
-        this.usuMov = usuMov;
+    public void setPerUsuMov(String perUsuMov) {
+        this.perUsuMov = perUsuMov;
     }
 
     // Obtiene la fecha de movimiento
-    public LocalDateTime getFecMov() {
-        return fecMov;
+    public LocalDateTime getPerFecMov() {
+        return perFecMov;
     }
 
     // Modifica la fecha de movimiento
-    public void setFecMov(LocalDateTime fecMov) {
-        this.fecMov = fecMov;
+    public void setPerFecMov(LocalDateTime perFecMov) {
+        this.perFecMov = perFecMov;
     }
 
 }

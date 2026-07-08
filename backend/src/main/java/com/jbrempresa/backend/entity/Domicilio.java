@@ -73,6 +73,18 @@ public class Domicilio {
     // Puerta
     @Column(name = "dom_pue")
     private String domPue;
+    
+    // CP
+    @Column(name = "dom_cp")
+    private String domCp;
+    
+    // Municipio
+    @Column(name = "dom_mun")
+    private String domMun;
+    
+    // Provincia
+    @Column(name = "dom_pro")
+    private String domPro;
 
     // Observaciones
     @Column(name = "dom_obs")
@@ -87,12 +99,12 @@ public class Domicilio {
     private Boolean domAct;
 
     // Usuario de movimiento
-    @Column(name = "usu_mov")
-    private String usuMov;
+    @Column(name = "dom_usu_mov")
+    private String domUsuMov;
 
     // Fecha de movimiento
-    @Column(name = "fec_mov")
-    private LocalDateTime fecMov;
+    @Column(name = "dom_fec_mov")
+    private LocalDateTime domFecMov;
 
     // GETTERS Y SETTERS------------------------------------------------
 
@@ -215,6 +227,33 @@ public class Domicilio {
     public void setDomPue(String domPue) {
         this.domPue = domPue;
     }
+    
+    // CP
+    public String getDomCp() {
+        return domCp;
+    }
+
+    public void setDomCp(String domCp) {
+        this.domCp = domCp;
+    }
+
+    // Municipio
+    public String getDomMun() {
+        return domMun;
+    }
+
+    public void setDomMun(String domMun) {
+        this.domMun = domMun;
+    }
+
+    // Provincia
+    public String getDomPro() {
+        return domPro;
+    }
+
+    public void setDomPro(String domPro) {
+        this.domPro = domPro;
+    }
 
     // Obtiene las observaciones
     public String getDomObs() {
@@ -247,23 +286,23 @@ public class Domicilio {
     }
 
     // Obtiene el usuario de movimiento
-    public String getUsuMov() {
-        return usuMov;
+    public String getDOmUsuMov() {
+        return domUsuMov;
     }
 
     // Modifica el usuario de movimiento
-    public void setUsuMov(String usuMov) {
-        this.usuMov = usuMov;
+    public void setDomUsuMov(String domUsuMov) {
+        this.domUsuMov = domUsuMov;
     }
 
     // Obtiene la fecha de movimiento
-    public LocalDateTime getFecMov() {
-        return fecMov;
+    public LocalDateTime getDomFecMov() {
+        return domFecMov;
     }
 
     // Modifica la fecha de movimiento
-    public void setFecMov(LocalDateTime fecMov) {
-        this.fecMov = fecMov;
+    public void setDomMov(LocalDateTime domFecMov) {
+        this.domFecMov = domFecMov;
     }
 
 }

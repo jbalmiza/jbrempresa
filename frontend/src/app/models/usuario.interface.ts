@@ -1,19 +1,18 @@
 export interface Usuario {
 
-	idCliente: number | null;
-  	idUsuario: number | null;
+	cliId: number;
+  	usuId: number;
 
-  	usuario: string;
-  	contrasena: string;
+  	usuUsu: string;
+  	usuCon: string;
 
-  	idPerfil: number;
+  	perId: number;
 
-  	nombre: string;
-  	email: string;
+  	usuNom: string;
+  	usuEma: string;
 
-  	activo: boolean;
-
-  	usuarioMovimiento: string;
-  	fechaMovimiento: string;
+  	usuUsuMov: string;
+  	usuFecMov: string;
+	usuAct: boolean;
 
 }

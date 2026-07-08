@@ -234,7 +234,7 @@
 
     			<ul *ngIf="menuAbierto === 'menu2'" class="submenu">
 
-      				<li>Submenu 1</li>
+      				<li (click)="abrirPagina('gestionProductos')">Gestión de Productos</li>
 
       				<li>Submenu 2</li>
 
@@ -365,7 +365,7 @@
 
     			<ul *ngIf="menuAbierto === 'menu2'" class="submenu">
 
-      				<li>Submenu 1</li>
+      				<li>Gestión de Compras</li>
 
       				<li>Submenu 2</li>
 

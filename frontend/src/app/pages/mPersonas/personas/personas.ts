@@ -8,26 +8,32 @@ import { CommonModule } from '@angular/common';
 // Importa Routes para definir las rutas de navegación Angular
 import { Router } from '@angular/router';
 
-import { Sidebar } from '../../../components/sidebar/sidebar';
 
-import { Supbar } from '../../../components/supbar/supbar';
-
+//Import de interface
 import { Persona } from '../../../models/persona.interface';
 
 import { FormsModule } from '@angular/forms';
 
+
+
+// Import de servicios que comunican a base de datos.
 import { PersonaService } from '../../../services/persona.service';
-
-// Permite utilizar los servicios de domicilio, para obtener la lista de domicilios en el selector.
 import { DomicilioService } from '../../../services/domicilio.service';
+import { PdfService } from '../../../services/pdf.service';
 
-import { Tabla } from '../../../components/tabla/tabla';
 
 import { ViewChild } from '@angular/core';
 
-import { PdfService } from '../../../services/pdf.service';
 
+
+import { Domicilio } from '../../../models/domicilio.interface';
+
+//Import de compoentes genéricos que muestra la página.
+import { Sidebar } from '../../../components/sidebar/sidebar';
+import { Supbar } from '../../../components/supbar/supbar';
+import { Tabla } from '../../../components/tabla/tabla';
 import { SelectorBusqueda } from '../../../components/selectorBusqueda/selectorBusqueda';
+import { Formulario } from '../../../components/formulario/formulario';
 
 // Se define la configuración del componente Angular
 @Component({
@@ -35,11 +41,33 @@ import { SelectorBusqueda } from '../../../components/selectorBusqueda/selectorB
   standalone: true,
   imports: [CommonModule, FormsModule, Sidebar, Supbar,  Tabla, SelectorBusqueda],
   templateUrl: './personas.html',
-  styleUrl: './personas.css'
+  styleUrl: '../../../styles/estiloGeneral.css'
 })
 
 // Definición de la lógica del componente 
 export class Personas {
+	
+	//Esto se ejecuta al iniciar la clase y está iniciado para cualquier acción: insertar, modificar, etc.
+	ngOnInit() {
+
+		//Se obtiene la lista de domicilios para disponible en insertar y modificar
+		this.domicilioService.obtenerDomicilios().subscribe({
+
+		  next: (respuesta) => {
+
+		    this.domiciliosLista = respuesta;
+
+		  },
+
+		  error: (error) => {
+
+		    console.error(error);
+
+		  }
+
+		});
+		
+	}
 	
 	//Busca el componente tabla en el html y guarda en una variable tabla por la cual se podrá acceder a variables y métodos dentro de tabla
 	// por ejemplo a 'this.tabla.datosFiltrados' que devolverá los registros que se están mostrando en pantalla después de aplicar los filtros.
@@ -49,9 +77,8 @@ export class Personas {
 	tabla!: Tabla;
 
 	//Variables de la clase
-	pestanaActiva: 'registro' | 'tabla' = 'tabla';
-	
-	//Interruptor inactivo para controlar campos obligatorios
+	vistaActiva: 'registro' | 'tabla' = 'tabla';
+	modoFormulario: 'insertar' | 'modificar' = 'insertar';
 	mostrarObligatorios = false;
 	
 	// Se crea un objeto persona con datos vacíos
@@ -63,6 +90,7 @@ export class Personas {
 	    perId: 'Persona',
 	    perTipDoc: 'Tipo Documento',
 	    perDoc: 'Documento',
+		perNomCom: 'Nombre Completo',
 	    perNom: 'Nombre',
 	    perApe1: 'apellido 1',
 	    perApe2: 'Apellido 2',
@@ -70,17 +98,17 @@ export class Personas {
 	    perTel: 'Teléfono',
 	    perEma: 'Correo Electrónico',
 	    domId: 'Domicilio',
-	    perAct: 'Activo',
-	    usuMov: 'Usuario Mod.',
-	    fecMov: 'Fecha Mod.'
+	    perUsuMov: 'Usuario Mod.',
+	    perFecMov: 'Fecha Mod.',
+		perAct: 'Activo',
 	};
 	
 	// Campos mostrados en la tabla
 	columnas: string[] = [ 'cliId', 'perId', 
-		'perTipDoc', 'perDoc', 
+		'perTipDoc', 'perDoc', 'perNomCom',
 		'perNom', 'perApe1', 'perApe2', 'perFecNac', 
 		'perTel', 'perEma', 'domId', 
-		'perAct', 'usuMov', 'fecMov'
+		'perUsuMov', 'perFecMov', 'perAct'
 
 	];
 	
@@ -88,10 +116,10 @@ export class Personas {
 	datos: any[] = [];
 	
 	// Lista para el selector de domicilios
-	domiciliosLista: any[] = [];
+	domiciliosLista: Domicilio[] = [];
 	
 	// Guarda el registro seleccionado de la tabla
-	personaSeleccionada: any = null;
+	personaSeleccionada: Persona | null = null;
 	
 	// Angular inyecta el router en modo lectura
 	constructor (
@@ -106,13 +134,15 @@ export class Personas {
 	// Este método muestra la tabla de datos
 	consultar() {
 
-		this.pestanaActiva = 'tabla';
+		this.vistaActiva = 'tabla';
 
 		this.personaService.obtenerPersonas().subscribe({
 
 			next: (respuesta) => {
 
 				this.datos = respuesta;
+				
+				//console.log(respuesta);
 
 			},
 
@@ -131,7 +161,8 @@ export class Personas {
 	// Este método muestra el formulario de registro y limpia los campos del formulario	
 	insertar() {
 		
-		this.pestanaActiva = 'registro';
+		this.vistaActiva = 'registro';
+		this.modoFormulario = 'insertar';
 
 		this.limpiarFormulario();
 		
@@ -142,7 +173,7 @@ export class Personas {
 
 
 			console.log('ID recibido:', id);
-		    this.persona.idPersona = id;
+		    this.persona.perId = id;
 
 		  },
 
@@ -151,25 +182,6 @@ export class Personas {
 		    console.error(error);
 
 		  }
-		});
-		
-		// Obtiene todos los domicilios registrados. Se utilizarán para rellenar el selector del campo Id Domicilio.
-		this.domicilioService.obtenerDomicilios().subscribe({
-
-		  next: (respuesta) => {
-
-		    this.domiciliosLista = respuesta;
-			
-			console.log('LISTA DE DOMICILIOS:', this.domiciliosLista);
-
-		  },
-
-		  error: (error) => {
-
-		    console.error(error);
-
-		  }
-
 		});
 		
 	}
@@ -178,16 +190,16 @@ export class Personas {
 	modificar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.personaSeleccionada) {
@@ -198,39 +210,33 @@ export class Personas {
 	    }
 
 	    // Cambia a la pestaña registro
-	    this.pestanaActiva = 'registro';
+	    this.vistaActiva = 'registro';
+		this.modoFormulario = 'modificar';
 
 	    // Copia los datos seleccionados al formulario
 		// Convierte formtato backend per_id a formato frontend idPersona
 		this.persona = {
 
-			idCliente: this.personaSeleccionada.cliId,			
-			
-			idPersona: this.personaSeleccionada.perId,
+			cliId: this.personaSeleccionada.cliId,			
+			perId: this.personaSeleccionada.perId,
 
-		  	tipoDocumento: this.personaSeleccionada.perTipDoc,
+		  	perTipDoc: this.personaSeleccionada.perTipDoc,
+		  	perDoc: this.personaSeleccionada.perDoc,
+			perNomCom: this.personaSeleccionada.perNomCom,
 
-		  	documento: this.personaSeleccionada.perDoc,
+		 	perNom: this.personaSeleccionada.perNom,
+		  	perApe1: this.personaSeleccionada.perApe1,
+		  	perApe2: this.personaSeleccionada.perApe2,
+		 	perFecNac: this.personaSeleccionada.perFecNac,
 
-		 	nombre: this.personaSeleccionada.perNom,
+		  	perTel: this.personaSeleccionada.perTel,
+			perEma: this.personaSeleccionada.perEma,
 
-		  	apellido1: this.personaSeleccionada.perApe1,
+		  	domId: this.personaSeleccionada.domId,
 
-		  	apellido2: this.personaSeleccionada.perApe2,
-
-		 	fechaNacimiento: this.personaSeleccionada.perFecNac,
-
-		  	telefono: this.personaSeleccionada.perTel,
-
-			email: this.personaSeleccionada.perEma,
-
-		  	idDomicilio: this.personaSeleccionada.domId,
-
-		  	activo: this.personaSeleccionada.perAct,
-
-			usuarioMovimiento: this.personaSeleccionada.usuMov,
-
-		  	fechaMovimiento: this.personaSeleccionada.fecMov
+			perUsuMov: this.personaSeleccionada.perUsuMov,
+		  	perFecMov: this.personaSeleccionada.perFecMov,
+			perAct: this.personaSeleccionada.perAct
 
 		};
 
@@ -239,21 +245,20 @@ export class Personas {
 	}
 	
 	// Este método elimina
-	// Este método elimina
 	eliminar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.personaSeleccionada) {
@@ -278,7 +283,8 @@ export class Personas {
 
 	    // Elimina el usuario
 	    this.personaService.eliminar(
-	      this.personaSeleccionada.perId
+	      this.personaSeleccionada.perId!,
+		  this.personaSeleccionada.cliId
 	    ).subscribe({
 
 	      next: () => {
@@ -341,12 +347,11 @@ export class Personas {
 
 		//Alerta para determinados campos sin valor (obligatorios)
 		if (
-		  !this.persona.tipoDocumento ||
-		  !this.persona.documento ||
-		  !this.persona.nombre ||
-		  !this.persona.apellido1 ||
-		  !this.persona.idDomicilio ||
-		  !this.persona.telefono
+		  !this.persona.perTipDoc ||
+		  !this.persona.perDoc ||
+		  !this.persona.perNom ||
+		  !this.persona.perApe1 ||
+		  !this.persona.domId 
 		) {
 
 		  alert('Debe rellenar todos los campos obligatorios');
@@ -357,33 +362,26 @@ export class Personas {
 
 	  const persona = {
 
-		cliId: this.persona.idCliente,
-		
+		cliId: this.persona.cliId,
 	    perId: null,
 
-	    perTipDoc: this.persona.tipoDocumento,
+	    perTipDoc: this.persona.perTipDoc,
+	    perDoc: this.persona.perDoc,
+		perNomCom: this.persona.perNomCom,
 
-	    perDoc: this.persona.documento,
+	    perNom: this.persona.perNom,
+	    perApe1: this.persona.perApe1,
+	    perApe2: this.persona.perApe2,
+	    perFecNac: this.persona.perFecNac,
+		
+	    perTel: this.persona.perTel,
+	    perEma: this.persona.perEma,
 
-	    perNom: this.persona.nombre,
+	    domId: this.persona.domId,
 
-	    perApe1: this.persona.apellido1,
-
-	    perApe2: this.persona.apellido2,
-
-	    perFecNac: this.persona.fechaNacimiento,
-
-	    perTel: this.persona.telefono,
-
-	    perEma: this.persona.email,
-
-	    domId: this.persona.idDomicilio,
-
-	    perAct: this.persona.activo,
-
-	    usuMov: this.persona.usuarioMovimiento,
-
-	    fecMov: this.persona.fechaMovimiento,
+	    usuMov: this.persona.perUsuMov,
+	    fecMov: this.persona.perFecMov,
+		perAct: this.persona.perAct
 
 	  };
 	  
@@ -394,7 +392,9 @@ export class Personas {
 
 	    next: () => {
 
-	      alert('Persona guardada');
+	      alert('Persona guardada correctamente.');
+		  
+		  this.limpiarFormulario();
 
 	    },
 
@@ -405,6 +405,79 @@ export class Personas {
 	    }
 
 	  });
+
+	}
+	
+	// Este método actualiza el contenido del formulario en base de datos
+	actualizar() {
+		
+		// Interruptor activo para controlar campos obligatorios
+		this.mostrarObligatorios = true;
+
+		// Alerta para determinados campos sin valor (obligatorios)
+		if (
+			!this.persona.perTipDoc ||
+			!this.persona.perDoc ||
+			!this.persona.perNom ||
+			!this.persona.perApe1 ||
+			!this.persona.domId
+		) {
+
+			alert('Debe rellenar todos los campos obligatorios');
+
+			return;
+
+		}
+
+		const persona = {
+
+			cliId: this.persona.cliId,
+
+			// Mantiene el identificador de la persona que se va a modificar
+			perId: this.persona.perId,
+
+			perTipDoc: this.persona.perTipDoc,
+			perDoc: this.persona.perDoc,
+			perNomCom: this.persona.perNomCom,
+
+			perNom: this.persona.perNom,
+			perApe1: this.persona.perApe1,
+			perApe2: this.persona.perApe2,
+			perFecNac: this.persona.perFecNac,
+
+			perTel: this.persona.perTel,
+			perEma: this.persona.perEma,
+
+			domId: this.persona.domId,
+
+			perUsuMov: this.persona.perUsuMov,
+			perFecMov: this.persona.perFecMov,
+			perAct: this.persona.perAct
+
+		};
+
+		// Datos en consola de la persona que se va a actualizar
+		console.log('ACTUALIZAR DATOS PERSONA:', persona);
+
+		this.personaService.actualizar(persona).subscribe({
+
+			next: () => {
+
+				alert('Persona actualizada correctamente.');
+
+				this.limpiarFormulario();
+
+			},
+
+			error: (error: any) => {
+
+				console.error(error);
+
+				alert('Error al actualizar persona.');
+
+			}
+
+		});
 
 	}
 	
@@ -420,24 +493,25 @@ export class Personas {
 
 		return {
 
-		idCliente: Number(localStorage.getItem('clienteId')) || 0,	
-	  	idPersona: null,
+		cliId: Number(localStorage.getItem('clienteId')) || 0,	
+	  	perId: 0,
 		
-	  	tipoDocumento: '',
-	  	documento: '',
-	  	nombre: '',
-	  	apellido1: '',
-	  	apellido2: '',
-	  	fechaNacimiento: '',
+	  	perTipDoc: '',
+	  	perDoc: '',
+		perNomCom: '',
+	  	perNom: '',
+	  	perApe1: '',
+	  	perApe2: '',
+	  	perFecNac: '',
 		
-	  	telefono: '',
-	  	email: '',
+	  	perTel: '',
+	  	perEma: '',
 		
-	  	idDomicilio: 0,
+	  	domId: 0,
 		
-	  	activo: true,
-		usuarioMovimiento: localStorage.getItem('usuario') || '',
-	  	fechaMovimiento: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16)
+		perUsuMov: localStorage.getItem('usuario') || '',
+	  	perFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+		perAct: true,
 		
 		};
 	}
@@ -446,6 +520,28 @@ export class Personas {
 	private limpiarFormulario() {
 
 		this.persona = this.crearPersonaVacia();
+
+	}
+	
+	// Actualiza la dirección completa.
+	actualizarNombreCompleto() {
+
+	  const partes: string[] = [];
+
+	  // Documento.
+	  if (this.persona.perDoc) { partes.push(this.persona.perDoc + ' - '); }
+	  
+	  // Nombre.
+	  if (this.persona.perNom) { partes.push(this.persona.perNom); }
+
+	  // Apellido 1.
+	  if (this.persona.perApe1) { partes.push(this.persona.perApe1); }
+
+	  // Apellido 2.
+	  if (this.persona.perApe2) { partes.push(this.persona.perApe2); }
+
+	  // Construye el nombre completo.
+	  this.persona.perNomCom = partes.join(' ');
 
 	}
 	

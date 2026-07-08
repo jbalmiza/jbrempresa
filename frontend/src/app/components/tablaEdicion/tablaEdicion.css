@@ -1,0 +1,130 @@
+
+.tabla-scroll {
+
+  overflow: auto;
+  
+  width: 100%;
+
+}
+
+table {
+	
+    font-family: Calibri;
+
+  	font-size: 14px;
+
+  	border-collapse: collapse;
+
+  	margin: 5px;
+  
+  	padding: 5px;
+
+  	background-color: white;
+
+  	overflow: hidden;
+
+}
+
+/* CABECERA */
+
+thead {
+
+  background-color: #f8fafc;
+
+}
+
+th {
+	
+    font-family: Calibri;
+
+  	font-size: 14px;
+  	
+  	font-weight: 600;
+	
+  	border: 1px solid #dcdcdc;
+ 
+  	padding: 5px;
+  
+  	margin: 5px;
+ 
+  	text-align: left;
+  
+  	white-space: nowrap; /* Evita el salto de línea */
+  
+}
+
+/* CELDAS */
+
+td {
+
+    font-family: Calibri;
+
+  	font-size: 14px;
+	
+  	border: 1px solid #dcdcdc;
+ 
+  	padding: 5px;
+  
+  	margin: 5px;
+ 
+  	text-align: left;
+
+  	white-space: nowrap; /* Evita el salto de línea */
+
+}
+
+/* CONTROLES */
+
+.botonDerecha {
+
+    float: right;
+      
+    margin: 5px;
+	
+	padding: 5px;
+        
+}
+
+/* FOCO */
+
+input:focus,
+select:focus {
+
+  outline: none;
+
+  border-color: #3b82f6;
+
+}
+
+/* FILAS PARES */
+
+tbody tr:nth-child(even) {
+
+  background-color: #fafafa;
+
+}
+
+/* HOVER */
+
+tbody tr:hover {
+
+  background-color: #dbeafe;
+
+  cursor: pointer;
+
+  transition: background-color 0.15s ease;
+
+}
+
+/* FILA SELECCIONADA */
+
+.fila-seleccionada {
+
+  background-color: #93c5fd !important;
+
+  font-weight: 500;
+
+}
+
+
+

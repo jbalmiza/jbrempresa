@@ -30,7 +30,7 @@ import { PdfService } from '../../../services/pdf.service';
   standalone: true,
   imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla],
   templateUrl: './domicilios.html',
-  styleUrl: './domicilios.css'
+  styleUrl: '../../../styles/estiloGeneral.css'
 })
 
 // Definición de la lógica del componente 
@@ -44,9 +44,8 @@ export class Domicilios {
 	tabla!: Tabla;
 
 	//Variables de la clase
-	pestanaActiva: 'registro' | 'tabla' = 'tabla';
-	
-	//Interruptor inactivo para controlar campos obligatorios
+	vistaActiva: 'registro' | 'tabla' = 'tabla';
+	modoFormulario: 'insertar' | 'modificar' = 'insertar';
 	mostrarObligatorios = false;
 	
 	// Se crea un objeto domicilio con datos vacíos
@@ -66,19 +65,22 @@ export class Domicilios {
 	    domEsc: 'Escalera',
 	    domPla: 'Planta',
 	    domPue: 'Puerta',
+		domCp:  'C.P.',
+		domMun: 'Municipio',
+		domPro: 'Provincia',
 	    domObs: 'Observaciones',
 	    domDir: 'Dirección Postal',
-	    domAct: 'Activo',
-	    usuMov: 'Usuario Mod.',
-	    fecMov: 'Fecha Mod.'
+	    domUsuMov: 'Usuario Mod.',
+	    domFecMov: 'Fecha Mod.',
+		domAct: 'Activo',
 	};	
 	
 	// Campos mostrados en la tabla
 	columnas: string[] = [ 'cliId', 'domId', 
 		'domTipVia', 'domVia', 'domNum', 
 		'domKm', 'domEdi', 'domBlo', 'domPor', 'domEsc', 'domPla', 'domPue', 
-		'domObs', 'domDir',
-	  	'domAct', 'usuMov', 'fecMov'
+		'domCp', 'domMun', 'domPro', 'domObs', 'domDir',
+	  	'domUsuMov', 'domFecMov', 'domAct'
 
 	];
 
@@ -86,7 +88,7 @@ export class Domicilios {
 	datos: any[] = [];
 	
 	// Guarda el registro seleccionado de la tabla
-	domicilioSeleccionado: any = null;
+	domicilioSeleccionado: Domicilio | null = null;
 	
 	// Angular inyecta el router en modo lectura
 	constructor (
@@ -100,7 +102,7 @@ export class Domicilios {
 	 // Este método muestra la tabla de datos
 	 consultar() {
 
-	 	this.pestanaActiva = 'tabla';
+	 	this.vistaActiva = 'tabla';
 
 	 	this.domicilioService.obtenerDomicilios().subscribe({
 
@@ -125,7 +127,8 @@ export class Domicilios {
 	 // Este método muestra el formulario de registro y limpia los campos del formulario	
 	insertar() {
 
-		this.pestanaActiva = 'registro';
+		this.vistaActiva = 'registro';
+		this.modoFormulario = 'insertar';
 
 	  	this.limpiarFormulario();
 		
@@ -135,7 +138,7 @@ export class Domicilios {
 		  next: (id) => {
 
 			console.log('ID recibido:', id);
-		    this.domicilio.idDomicilio = id;
+		    this.domicilio.domId = id;
 			
 		  },
 
@@ -153,16 +156,16 @@ export class Domicilios {
 	modificar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.domicilioSeleccionado) {
@@ -173,45 +176,52 @@ export class Domicilios {
 	    }
 
 	    // Cambia a la pestaña registro
-	    this.pestanaActiva = 'registro';
+	    this.vistaActiva = 'registro';
+		this.modoFormulario = 'modificar';
 
 	    // Copia los datos seleccionados al formulario
 		// Convierte formtato backend usu_id a formato frontend idUsuario
 		this.domicilio = {
 
-			idCliente: this.domicilioSeleccionado.cliId,	
+			cliId: this.domicilioSeleccionado.cliId,	
 			
-		 	idDomicilio: this.domicilioSeleccionado.domId,
+		 	domId: this.domicilioSeleccionado.domId,
 
-		  	tipoVia: this.domicilioSeleccionado.domTipVia,
+		  	domTipVia: this.domicilioSeleccionado.domTipVia,
 
-		  	via: this.domicilioSeleccionado.domVia,
+		  	domVia: this.domicilioSeleccionado.domVia,
 
-			numero: this.domicilioSeleccionado.domNum,
+			domNum: this.domicilioSeleccionado.domNum,
 
-			km: this.domicilioSeleccionado.domKm,
+			domKm: this.domicilioSeleccionado.domKm,
 
-			edificio: this.domicilioSeleccionado.domEdi,
+			domEdi: this.domicilioSeleccionado.domEdi,
 
-			bloque: this.domicilioSeleccionado.domBlo,
+			domBlo: this.domicilioSeleccionado.domBlo,
 
-			portal: this.domicilioSeleccionado.domPor,
+			domPor: this.domicilioSeleccionado.domPor,
 
-			escalera: this.domicilioSeleccionado.domEsc,
+			domEsc: this.domicilioSeleccionado.domEsc,
 
-			planta: this.domicilioSeleccionado.domPla,
+			domPla: this.domicilioSeleccionado.domPla,
 
-			puerta: this.domicilioSeleccionado.domPue,
+			domPue: this.domicilioSeleccionado.domPue,
+			
+			domCp: this.domicilioSeleccionado.domCp,
+			
+			domMun: this.domicilioSeleccionado.domMun,
+			
+			domPro: this.domicilioSeleccionado.domPro,
 
-			observaciones: this.domicilioSeleccionado.domObs,
+			domObs: this.domicilioSeleccionado.domObs,
 		  
-		  	direccion: this.domicilioSeleccionado.domDir,
+		  	domDir: this.domicilioSeleccionado.domDir,
 
-		  	activo: this.domicilioSeleccionado.domAct,
+			domUsuMov: this.domicilioSeleccionado.domUsuMov,
 
-			usuarioMovimiento: this.domicilioSeleccionado.usuMov,
-
-			fechaMovimiento: this.domicilioSeleccionado.fecMov
+			domFecMov: this.domicilioSeleccionado.domFecMov,
+			
+			domAct: this.domicilioSeleccionado.domAct
 
 		};
 		
@@ -224,17 +234,17 @@ export class Domicilios {
 	eliminar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.domicilioSeleccionado) {
@@ -259,7 +269,8 @@ export class Domicilios {
 
 	    // Elimina el usuario
 	    this.domicilioService.eliminar(
-	      this.domicilioSeleccionado.domId
+	      this.domicilioSeleccionado.domId!,
+		  this.domicilioSeleccionado.cliId
 	    ).subscribe({
 
 	      next: () => {
@@ -322,9 +333,12 @@ export class Domicilios {
 
 		//Alerta para determinados campos sin valor (obligatorios)
 		if (
-		  !this.domicilio.tipoVia || 
-		  !this.domicilio.via || 
-		  !this.domicilio.numero
+		  !this.domicilio.domTipVia || 
+		  !this.domicilio.domVia || 
+		  !this.domicilio.domNum ||
+		  !this.domicilio.domCp ||
+		  !this.domicilio.domMun ||
+		  !this.domicilio.domPro
 		  
 		) {
 
@@ -336,39 +350,45 @@ export class Domicilios {
 
 	  const domicilio = {
 
-		cliId: this.domicilio.idCliente,
+		cliId: this.domicilio.cliId,
 		
 	    domId: null,
 
-	    domTipVia: this.domicilio.tipoVia,
+	    domTipVia: this.domicilio.domTipVia,
 
-	    domVia: this.domicilio.via,
+	    domVia: this.domicilio.domVia,
 
-	    domNum: this.domicilio.numero,
+	    domNum: this.domicilio.domNum,
 
-	    domKm: this.domicilio.km,
+	    domKm: this.domicilio.domKm,
 
-	    domEdi: this.domicilio.edificio,
+	    domEdi: this.domicilio.domEdi,
 		
-		domBlo: this.domicilio.bloque,
+		domBlo: this.domicilio.domBlo,
 
-	    domPor: this.domicilio.portal,
+	    domPor: this.domicilio.domPor,
 
-	    domEsc: this.domicilio.escalera,
+	    domEsc: this.domicilio.domEsc,
 
-	    domPla: this.domicilio.planta,
+	    domPla: this.domicilio.domPla,
 
-	    domPue: this.domicilio.puerta,
+	    domPue: this.domicilio.domPue,
+
+		domCp:  this.domicilio.domCp,
+
+		domMun: this.domicilio.domMun,
 		
-		domObs: this.domicilio.observaciones,
+		domPro: this.domicilio.domPro,			
 		
-		domDir: this.domicilio.direccion,
+		domObs: this.domicilio.domObs,
+		
+		domDir: this.domicilio.domDir,
 
-	    domAct: this.domicilio.activo,
+	    domUsuMov: this.domicilio.domUsuMov,
 
-	    usuMov: this.domicilio.usuarioMovimiento,
-
-	    fecMov: this.domicilio.fechaMovimiento,
+	    domFecMov: this.domicilio.domFecMov,
+		
+		domAct: this.domicilio.domAct
 
 	  };
 	  
@@ -378,7 +398,9 @@ export class Domicilios {
 
 	    next: () => {
 
-	      alert('Domicilio guardado correctamente');
+	      alert('Domicilio guardado correctamente.');
+		  
+		  this.limpiarFormulario();
 
 	    },
 
@@ -391,6 +413,97 @@ export class Domicilios {
 	    }
 
 	  });
+
+	}
+	
+	// Este método actualiza el contenido del formulario en base de datos
+	actualizar() {
+		
+		// Interruptor activo para controlar campos obligatorios
+		this.mostrarObligatorios = true;
+
+		// Alerta para determinados campos sin valor (obligatorios)
+		if (
+		  !this.domicilio.domTipVia || 
+		  !this.domicilio.domVia || 
+		  !this.domicilio.domNum ||
+		  !this.domicilio.domCp ||
+		  !this.domicilio.domMun ||
+		  !this.domicilio.domPro
+		) {
+
+		  alert('Debe rellenar todos los campos obligatorios');
+
+		  return;
+
+		}
+
+		const domicilio = {
+
+			cliId: this.domicilio.cliId,
+
+		    // Mantiene el identificador del domicilio que se va a modificar
+		    domId: this.domicilio.domId,
+
+		    domTipVia: this.domicilio.domTipVia,
+
+		    domVia: this.domicilio.domVia,
+
+		    domNum: this.domicilio.domNum,
+
+		    domKm: this.domicilio.domKm,
+
+		    domEdi: this.domicilio.domEdi,
+			
+			domBlo: this.domicilio.domBlo,
+
+		    domPor: this.domicilio.domPor,
+
+		    domEsc: this.domicilio.domEsc,
+
+		    domPla: this.domicilio.domPla,
+
+		    domPue: this.domicilio.domPue,
+
+			domCp: this.domicilio.domCp,
+
+			domMun: this.domicilio.domMun,
+			
+			domPro: this.domicilio.domPro,
+
+			domObs: this.domicilio.domObs,
+
+			domDir: this.domicilio.domDir,
+
+		    domUsuMov: this.domicilio.domUsuMov,
+
+		    domFecMov: this.domicilio.domFecMov,
+
+			domAct: this.domicilio.domAct
+
+		};
+
+		console.log('DOMICILIO A ACTUALIZAR:', domicilio);
+
+		this.domicilioService.actualizar(domicilio).subscribe({
+
+			next: () => {
+
+				alert('Domicilio actualizado correctamente.');
+
+				this.limpiarFormulario();
+
+			},
+
+			error: (error: any) => {
+
+				console.error(error);
+
+				alert('Error al actualizar domicilio.');
+
+			}
+
+		});
 
 	}
 
@@ -406,27 +519,16 @@ export class Domicilios {
 
 	  return {
 
-		idCliente: Number(localStorage.getItem('clienteId')) || 0,
-	    idDomicilio: null,
+		cliId: Number(localStorage.getItem('clienteId')) || 0,
+		domId: 0,
 		
-	    tipoVia: '',
-	    via: '',
-	    numero: '',
+	    domTipVia: '', domVia: '', domNum: '',
+	    domKm: '', domEdi: '', domBlo: '', domPor: '', domEsc: '', domPla: '', domPue: '',
+		domCp: '', domMun: '', domPro: '', domObs: '', domDir: '',
 		
-	    km: '',
-	    edificio: '',
-	    bloque: '',
-	    portal: '',
-	    escalera: '',
-	    planta: '',
-	    puerta: '',
-		
-	    observaciones: '',
-		direccion: '',
-		
-	    activo: true,
-		usuarioMovimiento: localStorage.getItem('usuario') || '',
-	    fechaMovimiento: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16)
+		domUsuMov: localStorage.getItem('usuario') || '',
+	    domFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+		domAct: true
 
 	  };
 
@@ -445,40 +547,49 @@ export class Domicilios {
 	   const partes: string[] = [];
 
 	   // Tipo de vía.
-	   if (this.domicilio.tipoVia) { partes.push(this.domicilio.tipoVia); }
+	   if (this.domicilio.domTipVia) { partes.push(this.domicilio.domTipVia); }
 
 	   // Vía.
-	   if (this.domicilio.via) { partes.push(this.domicilio.via); }
+	   if (this.domicilio.domVia) { partes.push(this.domicilio.domVia); }
 
 	   // Número.
-	   if (this.domicilio.numero) { partes.push('Nº ' + this.domicilio.numero); }
+	   if (this.domicilio.domNum) { partes.push('Nº ' + this.domicilio.domNum); }
 
 	   // Kilómetro.
-	   if (this.domicilio.km) { partes.push('Km: ' + this.domicilio.km); }
+	   if (this.domicilio.domKm) { partes.push('Km: ' + this.domicilio.domKm); }
 
 	   // Edificio.
-	   if (this.domicilio.edificio) { partes.push('Edif. ' + this.domicilio.edificio); }
+	   if (this.domicilio.domEdi) { partes.push('Edif. ' + this.domicilio.domEdi); }
 
 	   // Bloque.
-	   if (this.domicilio.bloque) { partes.push('Bloque ' + this.domicilio.bloque); }
+	   if (this.domicilio.domBlo) { partes.push('Bloque ' + this.domicilio.domBlo); }
 
 	   // Portal.
-	   if (this.domicilio.portal) { partes.push('Portal ' + this.domicilio.portal); }
+	   if (this.domicilio.domPor) { partes.push('Portal ' + this.domicilio.domPor); }
 
 	   // Escalera.
-	   if (this.domicilio.escalera) { partes.push('Esc. ' + this.domicilio.escalera); }
+	   if (this.domicilio.domEsc) { partes.push('Esc. ' + this.domicilio.domEsc); }
 
 	   // Planta.
-	   if (this.domicilio.planta) { partes.push('Planta ' + this.domicilio.planta); }
+	   if (this.domicilio.domPla) { partes.push('Planta ' + this.domicilio.domEsc); }
 
 	   // Puerta.
-	   if (this.domicilio.puerta) { partes.push('Pta. ' + this.domicilio.puerta); }
+	   if (this.domicilio.domPue) { partes.push('Pta. ' + this.domicilio.domPue); }
+	   
+	   // CP.
+	   if (this.domicilio.domCp) { partes.push(this.domicilio.domCp); }
+	   
+	   // Municipio.
+	   if (this.domicilio.domMun) { partes.push(this.domicilio.domMun); }
+	   
+	   // Provincia.
+	   if (this.domicilio.domPro) { partes.push(this.domicilio.domPro); }
 
 	   // Observaciones.
-	   if (this.domicilio.observaciones) { partes.push(this.domicilio.observaciones); }
+	   if (this.domicilio.domObs) { partes.push(this.domicilio.domObs); }
 
 	   // Construye la dirección.
-	   this.domicilio.direccion = partes.join(' - ');
+	   this.domicilio.domDir = partes.join(' - ');
 
 	 }
 	

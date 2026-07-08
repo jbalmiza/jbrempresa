@@ -56,12 +56,12 @@ public class Usuario {
     private String usuAct;
 
     // Usuario de movimiento
-    @Column(name = "usu_mov")
-    private String usuMov;
+    @Column(name = "usu_usu_mov")
+    private String usuUsuMov;
 
     // Fecha de movimiento
-    @Column(name = "fec_mov")
-    private LocalDateTime fecMov;
+    @Column(name = "usu_fec_mov")
+    private LocalDateTime usuFecMov;
 
     // GETTERS Y SETTERS------------------------------------------------
 
@@ -146,23 +146,23 @@ public class Usuario {
     }
 
     // Obtiene el usuario de movimiento
-    public String getUsuMov() {
-        return usuMov;
+    public String getUsuUsuMov() {
+        return usuUsuMov;
     }
 
     // Modifica el usuario de movimiento
-    public void setUsuMov(String usuMov) {
-        this.usuMov = usuMov;
+    public void setUsuUsuMov(String usuUsuMov) {
+        this.usuUsuMov = usuUsuMov;
     }
 
     // Obtiene la fecha de movimiento
-    public LocalDateTime getFecMov() {
-        return fecMov;
+    public LocalDateTime getUsuFecMov() {
+        return usuFecMov;
     }
 
     // Modifica la fecha de movimiento
-    public void setFecMov(LocalDateTime fecMov) {
-        this.fecMov = fecMov;
+    public void setUsuFecMov(LocalDateTime usuFecMov) {
+        this.usuFecMov = usuFecMov;
     }
 
 }

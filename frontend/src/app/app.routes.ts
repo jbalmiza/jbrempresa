@@ -12,6 +12,7 @@ import { PrincipalTerritorio } from './pages/mTerritorio/principalTerritorio/pri
 import { PrincipalPersonas } from './pages/mPersonas/principalPersonas/principalPersonas';
 import { PrincipalProductos } from './pages/mProductos/principalProductos/principalProductos';
 import { PrincipalVentas } from './pages/mVentas/principalVentas/principalVentas';
+import { PrincipalCompras } from './pages/mCompras/principalCompras/principalCompras';
 
 import { Clientes } from './pages/mAdministracion/clientes/clientes';
 import { Usuarios } from './pages/mAdministracion/usuarios/usuarios';
@@ -20,6 +21,9 @@ import { Domicilios } from './pages/mTerritorio/domicilios/domicilios';
 import { Personas } from './pages/mPersonas/personas/personas';
 import { Productos } from './pages/mProductos/productos/productos';
 import { Ventas } from './pages/mVentas/ventas/ventas';
+import { Compras } from './pages/mCompras/compras/compras';
+
+import { GestionProductos } from './pages/mProductos/gestionProductos/gestionProductos';
 
 // Definición de la lógica del componente / Define las rutas de la aplicación
 export const routes: Routes = [
@@ -40,7 +44,8 @@ export const routes: Routes = [
     path: 'accesoLogin',
 	
 	// Significa: muestra LoginPage
-    component: AccesoLogin
+    component: AccesoLogin,
+	title: 'Login'
   },
   
   {
@@ -48,7 +53,8 @@ export const routes: Routes = [
     path: 'accesoModulos',
 	
 	// Significa: muestra modules
-    component: AccesoModulos
+    component: AccesoModulos,
+	title: 'GreenSaas'
   },
   
   {
@@ -56,7 +62,8 @@ export const routes: Routes = [
     path: 'administracion',
 	
 	// Significa: muestra DashboardPage
-    component: PrincipalAdministracion
+    component: PrincipalAdministracion,
+	title: 'Administración'
   },
   
   {
@@ -64,7 +71,8 @@ export const routes: Routes = [
     path: 'territorio',
 
   // Significa: muestra DashboardPage
-    component: PrincipalTerritorio
+    component: PrincipalTerritorio,
+	title: 'Territorio'
   },
   
   {
@@ -72,7 +80,8 @@ export const routes: Routes = [
     path: 'personas',
 
   // Significa: muestra DashboardPage
-    component: PrincipalPersonas
+    component: PrincipalPersonas,
+	title: 'Personas'
   },
   
   {
@@ -80,7 +89,8 @@ export const routes: Routes = [
     path: 'productos',
 
   // Significa: muestra DashboardPage
-    component: PrincipalProductos
+    component: PrincipalProductos,
+	title: 'Productos'
   },
   
   {
@@ -88,42 +98,71 @@ export const routes: Routes = [
     path: 'ventas',
 
   // Significa: muestra DashboardPage
-    component: PrincipalVentas
+    component: PrincipalVentas,
+	title: 'Ventas'
+  },
+  
+  {
+  // Significa: localhost:4200/dashboard
+    path: 'compras',
+  
+  // Significa: muestra DashboardPage
+    component: PrincipalCompras,
+  title: 'Compras'
   },
   
   {
     path: 'administracion/clientes',
-    component: Clientes
+    component: Clientes,
+	title: 'Clientes'
   },
   
   {
     path: 'administracion/usuarios',
-    component: Usuarios
+    component: Usuarios,
+	title: 'Usuarios'
   },
   
   {
     path: 'administracion/perfiles',
-    component: Perfiles
+    component: Perfiles,
+	title: 'Perfiles'
   },
   
   {
     path: 'territorio/domicilios',
-    component: Domicilios
+    component: Domicilios,
+	title: 'Domicilios'
   },
   
   {
     path: 'personas/personas',
-    component: Personas
+    component: Personas,
+	title: 'Personas'
   },
   
   {
     path: 'productos/productos',
-    component: Productos
+    component: Productos,
+	title: 'Productos'
   },
   
   {
-    path: 'ventas/ventass',
-    component: Ventas
+    path: 'productos/gestionProductos',
+    component: GestionProductos,
+  	title: 'Gestion de Productos'
+  },
+  
+  {
+    path: 'ventas/ventas',
+    component: Ventas,
+	title: 'Ventas'
+  },
+  
+  {
+    path: 'compras/compras',
+    component: Compras,
+  	title: 'Compras'
   }
   
   

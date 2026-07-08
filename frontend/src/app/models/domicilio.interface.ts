@@ -1,26 +1,29 @@
 export interface Domicilio {
 
-	idCliente: number | null;	
-  	idDomicilio: number | null;
+	cliId: number;	
+  	domId: number;
 
-  	tipoVia: string;
-  	via: string;
-  	numero: string;
+  	domTipVia: string;
+  	domVia: string;
+  	domNum: string;
   
-  	km: string;
-  	edificio: string;
-  	bloque: string;
-  	portal: string;
-  	escalera: string;
-  	planta: string;
-  	puerta: string;
+  	domKm: string;
+  	domEdi: string;
+  	domBlo: string;
+  	domPor: string;
+  	domEsc: string;
+  	domPla: string;
+  	domPue: string;
+	
+	domCp: string;
+	domMun: string;
+	domPro: string;
 
-  	observaciones: string;
-  	direccion: string;
-
-  	activo: boolean;
+  	domObs: string;
+  	domDir: string;
   
-  	usuarioMovimiento: string;
-  	fechaMovimiento: string;
-
+  	domUsuMov: string;
+  	domFecMov: string;
+	domAct: boolean;
+	
 }

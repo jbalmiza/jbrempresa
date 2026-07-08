@@ -30,7 +30,7 @@ import { PdfService } from '../../../services/pdf.service';
   standalone: true,
   imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla],
   templateUrl: './clientes.html',
-  styleUrl: './clientes.css'
+  styleUrl: '../../../styles/estiloGeneral.css'
 })
 
 // Definición de la lógica del componente 
@@ -44,9 +44,8 @@ export class Clientes {
 	tabla!: Tabla;
 
 	//Variables de la clase
-	pestanaActiva: 'registro' | 'tabla' = 'tabla';
-	
-	//Interruptor inactivo para controlar campos obligatorios
+	vistaActiva: 'registro' | 'tabla' = 'tabla';
+	modoFormulario: 'insertar' | 'modificar' = 'insertar';
 	mostrarObligatorios = false;
 	
 	// Se crea un objeto usuario con datos vacíos
@@ -57,26 +56,21 @@ export class Clientes {
 	titulosColumnas = {
 	    cliId: 'Id Cliente',
 	    cliNom: 'Nombre',
-	    cliAct: 'Activo',
-	    usuMov: 'Usuario Mod.',
-	    fecMov: 'Fecha Mod.'
+	    cliUsuMov: 'Usuario Mod.',
+	    cliFecMov: 'Fecha Mod.',
+		cliAct: 'Activo'
 	};
 
 	// Campos mostrados en la tabla
 	columnas: string[] = [ 'cliId', 
-		'cliNom',
-		'cliAct', 'usuMov', 'fecMov'
-	  
-	];	
+		'cliNom', 
+		'cliUsuMov', 'cliFecMov', 'cliAct' ];	
 	
 	// Datos de la tabla
 	datos: any[] = [];
 	
-	// Lista para el selector de perfiles
-	clientesLista: any[] = [];
-	
 	// Guarda el registro seleccionado de la tabla
-	clienteSeleccionado: any = null;
+	clienteSeleccionado: Cliente | null = null;
 	
 	// Angular inyecta el router en modo lectura
 	constructor (
@@ -90,7 +84,7 @@ export class Clientes {
 	// Este método muestra la tabla de datos
 	consultar() {
 			
-		this.pestanaActiva = 'tabla';	 
+		this.vistaActiva = 'tabla';	 
 		
 		this.clienteService.obtenerClientes().subscribe({
 			
@@ -117,7 +111,8 @@ export class Clientes {
 	// Este método muestra el formulario de registro y limpia los campos del formulario	
 	insertar() {
 
-	  	this.pestanaActiva = 'registro';
+	  	this.vistaActiva = 'registro';
+		this.modoFormulario = 'insertar';
 		
 		this.limpiarFormulario();
 		
@@ -128,7 +123,7 @@ export class Clientes {
 
 			console.log('Id Cliente recibido:', id);
 
-		    this.cliente.idCliente = id;
+		    this.cliente.cliId = id;
 
 		  },
 
@@ -146,16 +141,16 @@ export class Clientes {
 	modificar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.clienteSeleccionado) {
@@ -166,23 +161,22 @@ export class Clientes {
 	    }
 
 	    // Cambia a la pestaña registro
-	    this.pestanaActiva = 'registro';
+	    this.vistaActiva = 'registro';
+		this.modoFormulario = 'modificar';
 
 	    // Copia los datos seleccionados al formulario
 		// Convierte formtato backend usu_id a formato frontend idUsuario
 		this.cliente = {
 
-			idCliente: this.clienteSeleccionado.cliId,			
+			cliId: this.clienteSeleccionado.cliId,			
 			
+			cliNom: this.clienteSeleccionado.cliNom,
 
-			nombre: this.clienteSeleccionado.cliNom,
+			cliUsuMov: this.clienteSeleccionado.cliUsuMov,
+
+			cliFecMov: this.clienteSeleccionado.cliFecMov,
 			
-			
-			activo: this.clienteSeleccionado.cliAct,
-
-			usuarioMovimiento: this.clienteSeleccionado.usuMov,
-
-			fechaMovimiento: this.clienteSeleccionado.fecMov
+			cliAct: this.clienteSeleccionado.cliAct,
 
 			};
 
@@ -194,17 +188,17 @@ export class Clientes {
 	eliminar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.clienteSeleccionado) {
@@ -229,7 +223,7 @@ export class Clientes {
 
 	    // Elimina el usuario
 	    this.clienteService.eliminar(
-	      this.clienteSeleccionado.cliId
+	      this.clienteSeleccionado.cliId!
 	    ).subscribe({
 
 	      next: () => {
@@ -292,7 +286,7 @@ export class Clientes {
 
 		//Alerta para determinados campos sin valor (obligatorios)
 		if (
-		  !this.cliente.nombre
+		  !this.cliente.cliNom
 		) {
 
 		  alert('Debe rellenar todos los campos obligatorios');
@@ -305,15 +299,13 @@ export class Clientes {
 
 		cliId: null,		
 		
+	    cliNom: this.cliente.cliNom,
 
-	    cliNom: this.cliente.nombre,
+	    cliUsuMov: this.cliente.cliUsuMov,
 
+	    cliFecMov: this.cliente.cliFecMov,
 		
-	    cliAct: this.cliente.activo,
-
-	    usuMov: this.cliente.usuarioMovimiento,
-
-	    fecMov: this.cliente.fechaMovimiento
+		cliAct: this.cliente.cliAct,
 
 	  };
 	  
@@ -325,8 +317,7 @@ export class Clientes {
 
 	      alert('Cliente guardado correctamente');
 		  
-		  // Cambia a la pestaña registro
-		  this.pestanaActiva = 'tabla';
+		  this.limpiarFormulario();
 
 	    },
 
@@ -339,6 +330,62 @@ export class Clientes {
 	    }
 
 	  });
+
+	}
+	
+	// Este método actualiza el contenido del formulario en base de datos
+	actualizar() {
+		
+		// Interruptor activo para controlar campos obligatorios
+		this.mostrarObligatorios = true;
+
+		// Alerta para determinados campos sin valor (obligatorios)
+		if (
+		  !this.cliente.cliNom
+		) {
+
+		  alert('Debe rellenar todos los campos obligatorios');
+
+		  return;
+
+		}
+
+		const cliente = {
+
+			// Mantiene el identificador del cliente que se va a modificar
+			cliId: this.cliente.cliId,
+
+		    cliNom: this.cliente.cliNom,
+
+		    cliUsuMov: this.cliente.cliUsuMov,
+
+		    cliFecMov: this.cliente.cliFecMov,
+
+			cliAct: this.cliente.cliAct
+
+		};
+
+		console.log('CLIENTE A ACTUALIZAR:', cliente);
+
+		this.clienteService.actualizar(cliente).subscribe({
+
+			next: () => {
+
+				alert('Cliente actualizado correctamente.');
+
+				this.limpiarFormulario();
+
+			},
+
+			error: (error: any) => {
+
+				console.error(error);
+
+				alert('Error al actualizar cliente.');
+
+			}
+
+		});
 
 	}
 
@@ -354,13 +401,13 @@ export class Clientes {
 
 		return {
 
-	  	idCliente: null,
+	  	cliId: 0,
 		
-	  	nombre: '',
+	  	cliNom: '',
 		
-	  	activo: true,
-		usuarioMovimiento: localStorage.getItem('usuario') || '',
-		fechaMovimiento: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16)
+		cliUsuMov: localStorage.getItem('usuario') || '',
+		cliFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+		cliAct: true
 
 		};
 	}

@@ -30,7 +30,7 @@ import { PdfService } from '../../../services/pdf.service';
   standalone: true,
   imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla],
   templateUrl: './productos.html',
-  styleUrl: './productos.css'
+  styleUrl: '../../../styles/estiloGeneral.css'
 })
 
 // Definición de la lógica del componente 
@@ -44,9 +44,8 @@ export class Productos {
 	tabla!: Tabla;
 
 	//Variables de la clase
-	pestanaActiva: 'registro' | 'tabla' = 'tabla';
-	
-	//Interruptor inactivo para controlar campos obligatorios
+	vistaActiva: 'registro' | 'tabla' = 'tabla';
+	modoFormulario: 'insertar' | 'modificar' = 'insertar';
 	mostrarObligatorios = false;
 	
 	// Se crea un objeto producto con datos vacíos
@@ -58,15 +57,35 @@ export class Productos {
 	    proId: 'Id Producto',
 	    proTipPro: 'Tipo Producto',
 	    proNom: 'Nombre',
-	    proAct: 'Activo',
-	    usuMov: 'Usuario Mod.',
-	    fecMov: 'Fecha Mod.'
+		proDes: 'Descripción',
+		proCat: 'Categoría',
+		proSubCat: 'Subcategoría',
+		proMar: 'Marca',
+		porMod: 'Modelo',
+		proPro: 'Proveedor',
+		proPreCom: 'Precio Compra',
+		proPreVen: 'Precio Venta',
+		proPreDes: 'Descuento',
+		proPreIva: 'I.V.A.',
+		proPreFin: 'Precio Final',
+		proStoAct: 'Stock Actual',
+		proStoMin: 'Stock Mínimo',
+		proUniMed: 'Unidad Medida',
+		proConSto: 'Control Stock',
+		proObs: 'Observaciones',
+	    proUsuMov: 'Usuario Mod.',
+	    proFecMov: 'Fecha Mod.',
+		proAct: 'Activo',
 	};	
 
 	// Campos mostrados en la tabla
 	columnas: string[] = [ 'cliId', 'proId', 
-		'proTipPro', 'proNom', 
-		'proAct', 'usuMov', 'fecMov'
+		'proTipPro', 'proNom', 'proDes',
+		'proCat', 'proSubCat', 'proMar', 'proMod', 'proPro',
+		'proPreCom', 'proPreVen', 'proPreDes', 'proPreIva', 'proPreFin', 
+		'proStoAct', 'proStoMin', 'proUniMed', 'proConSto',
+		'proObs', 
+		'proUsuMov', 'proFecMov','proAct'
 
 	];
 
@@ -74,7 +93,7 @@ export class Productos {
 	datos: any[] = [];
 	
 	// Guarda el registro seleccionado de la tabla
-	productoSeleccionado: any = null;
+	productoSeleccionado: Producto | null = null;
 	
 	// Angular inyecta el router en modo lectura
 	constructor (
@@ -88,7 +107,7 @@ export class Productos {
 	// Este método muestra la tabla de datos
 	consultar() {
 
-		this.pestanaActiva = 'tabla';
+		this.vistaActiva = 'tabla';
 
 		this.productoService.obtenerProductos().subscribe({
 
@@ -102,7 +121,7 @@ export class Productos {
 
 				console.error(error);
 
-				alert('Error al obtener personas');
+				alert('Error al obtener productos.');
 
 			}
 
@@ -113,7 +132,8 @@ export class Productos {
 	// Este método muestra el formulario de registro y limpia los campos del formulario	
 	insertar() {
 		
-		this.pestanaActiva = 'registro';
+		this.vistaActiva = 'registro';
+		this.modoFormulario = 'insertar';
 
 		this.limpiarFormulario();
 		
@@ -124,7 +144,7 @@ export class Productos {
 
 
 			console.log('ID recibido:', id);
-		    this.producto.idProducto = id;
+		    this.producto.proId = id;
 
 		  },
 
@@ -141,16 +161,16 @@ export class Productos {
 	modificar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.productoSeleccionado) {
@@ -161,25 +181,42 @@ export class Productos {
 	    }
 
 	    // Cambia a la pestaña registro
-	    this.pestanaActiva = 'registro';
+	    this.vistaActiva = 'registro';
+		this.modoFormulario = 'modificar';
 
 	    // Copia los datos seleccionados al formulario
 		// Convierte formtato backend pro_id a formato frontend idProducto
 		this.producto = {
 
-			idCliente: this.productoSeleccionado.cliId,			
+			cliId: this.productoSeleccionado.cliId,			
+			proId: this.productoSeleccionado.proId,
+
+		  	proTipPro: this.productoSeleccionado.proTipPro,
+			proNom: this.productoSeleccionado.proNom,
+			proDes: this.productoSeleccionado.proDes,
 			
-			idProducto: this.productoSeleccionado.proId,
-
-		  	tipoProducto: this.productoSeleccionado.proTipPro,
-
-			nombre: this.productoSeleccionado.proNom,
-
-		  	activo: this.productoSeleccionado.proAct,
-
-			usuarioMovimiento: this.productoSeleccionado.usuMov,
-
-		  	fechaMovimiento: this.productoSeleccionado.fecMov
+			proCat: this.productoSeleccionado.proCat,
+			proSubCat: this.productoSeleccionado.proSubCat,
+			proMar: this.productoSeleccionado.proMar,
+			proMod: this.productoSeleccionado.proMod,
+			proPro: this.productoSeleccionado.proPro,
+			
+			proPreCom: this.productoSeleccionado.proPreCom,
+			proPreVen: this.productoSeleccionado.proPreVen,
+			proPreDes: this.productoSeleccionado.proPreDes,
+			proPreIva: this.productoSeleccionado.proPreIva,
+			proPreFin: this.productoSeleccionado.proPreFin,
+			
+			proStoAct: this.productoSeleccionado.proStoAct,
+			proStoMin: this.productoSeleccionado.proStoMin,
+			proUniMed: this.productoSeleccionado.proUniMed,
+			proConSto: this.productoSeleccionado.proConSto,
+			
+			proObs: this.productoSeleccionado.proObs,
+			
+			proUsuMov: this.productoSeleccionado.proUsuMov,
+		  	proFecMov: this.productoSeleccionado.proFecMov,
+			proAct: this.productoSeleccionado.proAct
 
 		};
 
@@ -188,21 +225,20 @@ export class Productos {
 	}
 	
 	// Este método elimina
-	// Este método elimina
 	eliminar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.productoSeleccionado) {
@@ -227,7 +263,8 @@ export class Productos {
 
 	    // Elimina el usuario
 	    this.productoService.eliminar(
-	      this.productoSeleccionado.proId
+	      this.productoSeleccionado.proId!,
+		  this.productoSeleccionado.cliId
 	    ).subscribe({
 
 	      next: () => {
@@ -290,7 +327,14 @@ export class Productos {
 
 		//Alerta para determinados campos sin valor (obligatorios)
 		if (
-		  !this.producto.nombre
+			!this.producto.proTipPro ||
+		  	!this.producto.proNom ||
+			!this.producto.proCat ||
+			!this.producto.proMar ||
+			!this.producto.proPro ||
+			!this.producto.proPreCom ||
+			!this.producto.proPreVen ||
+			!this.producto.proPreIva 
 		) {
 
 		  alert('Debe rellenar todos los campos obligatorios');
@@ -301,19 +345,35 @@ export class Productos {
 
 	  const producto = {
 
-		cliId: this.producto.idCliente,		
-		
+		cliId: this.producto.cliId,		
 	    proId: null,
 
-	    proTipPro: this.producto.tipoProducto,
+	    proTipPro: this.producto.proTipPro,
+	    proNom: this.producto.proNom,
+		proDes: this.producto.proDes,
+		
+		proCat: this.producto.proCat,
+		proSubCat: this.producto.proSubCat,
+		proMar: this.producto.proMar,
+		proMod: this.producto.proMod,
+		proPro: this.producto.proPro,
+		
+		proPreCom: this.producto.proPreCom,
+		proPreVen: this.producto.proPreVen,
+		proPreDes: this.producto.proPreDes,
+		proPreIva: this.producto.proPreIva,
+		proPreFin: this.producto.proPreFin,
+		
+		proStoAct: this.producto.proStoAct,
+		proStoMin: this.producto.proStoMin,
+		proUniMed: this.producto.proUniMed,
+		proConSto: this.producto.proConSto,
+		
+		proObs: this.producto.proObs,
 
-	    proNom: this.producto.nombre,
-
-	    proAct: this.producto.activo,
-
-	    usuMov: this.producto.usuarioMovimiento,
-
-	    fecMov: this.producto.fechaMovimiento,
+	    usuMov: this.producto.proUsuMov,
+	    fecMov: this.producto.proFecMov,
+		proAct: this.producto.proAct
 
 	  };
 
@@ -321,7 +381,9 @@ export class Productos {
 
 	    next: () => {
 
-	      alert('Producto guardado');
+	      alert('Producto guardado correctamente.');
+		  
+		  this.limpiarFormulario();
 
 	    },
 
@@ -332,6 +394,90 @@ export class Productos {
 	    }
 
 	  });
+
+	}
+	
+	// Este método actualiza el contenido del formulario en base de datos
+	actualizar() {
+		
+		// Interruptor activo para controlar campos obligatorios
+		this.mostrarObligatorios = true;
+
+		// Alerta para determinados campos sin valor (obligatorios)
+		if (
+			!this.producto.proTipPro ||
+			!this.producto.proNom ||
+			!this.producto.proCat ||
+			!this.producto.proMar ||
+			!this.producto.proPro ||
+			!this.producto.proPreCom ||
+			!this.producto.proPreVen ||
+			!this.producto.proPreIva
+		) {
+
+			alert('Debe rellenar todos los campos obligatorios');
+
+			return;
+
+		}
+
+		const producto = {
+
+			cliId: this.producto.cliId,
+
+			// Mantiene el identificador del producto que se va a modificar
+			proId: this.producto.proId,
+
+			proTipPro: this.producto.proTipPro,
+			proNom: this.producto.proNom,
+			proDes: this.producto.proDes,
+
+			proCat: this.producto.proCat,
+			proSubCat: this.producto.proSubCat,
+			proMar: this.producto.proMar,
+			proMod: this.producto.proMod,
+			proPro: this.producto.proPro,
+
+			proPreCom: this.producto.proPreCom,
+			proPreVen: this.producto.proPreVen,
+			proPreDes: this.producto.proPreDes,
+			proPreIva: this.producto.proPreIva,
+			proPreFin: this.producto.proPreFin,
+
+			proStoAct: this.producto.proStoAct,
+			proStoMin: this.producto.proStoMin,
+			proUniMed: this.producto.proUniMed,
+			proConSto: this.producto.proConSto,
+
+			proObs: this.producto.proObs,
+
+			proUsuMov: this.producto.proUsuMov,
+			proFecMov: this.producto.proFecMov,
+			proAct: this.producto.proAct
+
+		};
+
+		console.log('PRODUCTO A ACTUALIZAR:', producto);
+
+		this.productoService.actualizar(producto).subscribe({
+
+			next: () => {
+
+				alert('Producto actualizado correctamente.');
+
+				this.limpiarFormulario();
+
+			},
+
+			error: (error: any) => {
+
+				console.error(error);
+
+				alert('Error al actualizar producto.');
+
+			}
+
+		});
 
 	}
 	
@@ -347,15 +493,35 @@ export class Productos {
 
 		return {
 
-		idCliente: Number(localStorage.getItem('clienteId')) || 0,
-	  	idProducto: null,
+		cliId: Number(localStorage.getItem('clienteId')) || 0,
+	  	proId: 0,
 		
-	  	tipoProducto: '',
-	  	nombre: '',
+	  	proTipPro: '',
+	  	proNom: '',
+		proDes: '',
+		
+		proCat: '',
+		proSubCat: '',
+		proMar: '',
+		proMod: '',
+		proPro: '',
+		
+		proPreCom: 0,
+		proPreVen: 0,
+		proPreDes: 0,
+		proPreIva: 0,
+		proPreFin: 0,
+		
+		proStoAct: 0,
+		proStoMin: 0,
+		proUniMed: '',
+		proConSto: true,
+		
+		proObs: '',
 	  
-	  	activo: true,
-		usuarioMovimiento: localStorage.getItem('usuarioUsuario') || '',
-		fechaMovimiento: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16)
+		proUsuMov: localStorage.getItem('usuario') || '',
+		proFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+		proAct: true,
 		
 		};
 	}
@@ -364,6 +530,18 @@ export class Productos {
 	private limpiarFormulario() {
 
 		this.producto = this.crearProductoVacio();
+
+	}
+	
+	// Recalcula el campo precio final
+	actualizarPrecioFinal() {
+
+	  const base =
+	      (this.producto.proPreVen || 0)
+	    - (this.producto.proPreDes || 0);
+
+	  this.producto.proPreFin =
+	      base + (base * (this.producto.proPreIva || 0) / 100);
 
 	}
 	

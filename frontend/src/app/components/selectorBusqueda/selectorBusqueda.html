@@ -4,6 +4,6 @@
 <!-- Lista de resultados filtrados -->
 <ul> 
 
-	<li *ngFor="let dato of datosFiltrados" (click)="seleccionar(dato)"> {{ dato.domDir }} </li>
+	<li *ngFor="let dato of datosFiltrados" (click)="seleccionar(dato)"> {{ dato[campoDescripcion] }} </li>
 
 </ul>

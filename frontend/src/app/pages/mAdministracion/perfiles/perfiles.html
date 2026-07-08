@@ -31,7 +31,7 @@
 		
 
 <!-- FORMULARIO DE REGISTRO -->
-<div *ngIf="pestanaActiva === 'registro'" class="form-contenedor">
+<div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
 
   	<div class="form-grupo"> 
   	
@@ -41,12 +41,12 @@
 			
 			<div class="form-campo"> 
   				<label class="label">Id Cliente</label> 
-  				<input type="number" [(ngModel)]="perfil.idCliente" name="idCliente" disabled>
+  				<input type="number" [(ngModel)]="perfil.cliId" name="cliId" disabled>
   			</div>
 			
   			<div class="form-campo"> 
   				<label class="label">Id Perfil</label> 
-  				<input type="number" [(ngModel)]="perfil.idPerfil" name="idPerfil" disabled>
+  				<input type="number" [(ngModel)]="perfil.perId" name="perId" disabled>
   			</div>
   			
   		</div>
@@ -59,21 +59,21 @@
 
 		<div class="form-fila">
   			
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label"> Nombre <span class="obligatorio">*</span> </label> 
-  				<input type="text" maxlength="50" [(ngModel)]="perfil.nombre" name="nombre"> 
-  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !perfil.nombre"> Valor Obligatorio </div>
+  				<input type="text" maxlength="50" [(ngModel)]="perfil.perNom" name="perNom"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !perfil.perNom"> Valor Obligatorio </div>
   			</div>
   			
-  			<div class="form-campo">
+  			<div class="form-campo-200">
   				<label class="label"> Tipo Perfil <span class="obligatorio">*</span> </label> 
-  				<select [(ngModel)]="perfil.tipoPerfil" name="tipoPerfil"> 
+  				<select [(ngModel)]="perfil.perTipPer" name="perTipPer"> 
   					<option value="" selected hidden>Seleccione...</option>
 					<option value="Página">Página</option>
 					<option value="Módulo">Módulo</option>
 					<option value="Administrador">Administrador</option>
 				</select>
-				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !perfil.tipoPerfil"> Valor Obligatorio </div>
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !perfil.perTipPer"> Valor Obligatorio </div>
 			</div>
   			
   		</div>
@@ -86,29 +86,29 @@
 
 		<div class="form-fila">	
   			
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label">Módulo Administración</label> 
-  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.mAdministracion" name="mAdministracion"> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.perModAdm" name="perModAdm"> 
   			</div>
   			
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label">Módulo Territorio</label> 
-  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.mTerritorio" name="mTerritorio"> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.perModTer" name="perModTer"> 
   			</div>
   			
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label">Módulo Personas</label> 
-  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.mPersonas" name="mPersonas"> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.perModPer" name="perModPer"> 
   			</div>
   			
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label">Módulo Productos</label> 
-  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.mProductos" name="mProductos"> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.perModPro" name="perModPro"> 
   			</div>
   			
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label">Módulo Ventas</label> 
-  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.mVentas" name="mVentas"> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.perModVen" name="perModVen"> 
   			</div>
 
   		</div>
@@ -121,19 +121,19 @@
 
 		<div class="form-fila">
 
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label">Usuario Movimiento</label> 
-  				<input type="text" maxlength="50" [(ngModel)]="perfil.usuarioMovimiento" name="usuarioMovimiento" disabled> 
+  				<input type="text" maxlength="50" [(ngModel)]="perfil.perUsuMov" name="perUsuMov" disabled> 
   			</div>
  			
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label">Fecha Movimiento</label> 
-  				<input type="datetime-local" maxlength="100" [(ngModel)]="perfil.fechaMovimiento" name="fechaMovimiento" disabled> 
+  				<input type="datetime-local" maxlength="100" [(ngModel)]="perfil.perFecMov" name="perFecMov" disabled> 
   			</div>
   			
   			<div class="form-campo"> 
   				<label class="label">Activo</label> 
-  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.activo" name="activo" disabled> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.perAct" name="perAct" disabled> 
   			</div>
   			
  		</div>
@@ -142,7 +142,9 @@
  
 	<div class="toolbar"> 
 	
-		<button class="boton" (click)="guardar()"> Guardar </button> 
+		<button *ngIf="modoFormulario === 'insertar'" class="boton" (click)="guardar()"> Guardar </button>
+		
+		<button *ngIf="modoFormulario === 'modificar'" class="boton" (click)="actualizar()"> Actualizar </button>
 		
 		<!-- Botón Cancelar tiene misma lógica que insertar -->
 		<button class="boton" (click)="insertar()"> Cancelar </button>
@@ -152,7 +154,7 @@
 </div>
 
 <!-- TABLA DE RESULTADOS-->
-<div *ngIf="pestanaActiva === 'tabla'" class="tabla-contenedor">
+<div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
 
   	<label class="titulo"> TABLA DE PERFILES </label>
     

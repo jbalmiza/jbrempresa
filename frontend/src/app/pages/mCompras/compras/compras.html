@@ -1,0 +1,306 @@
+
+<supbar></supbar>
+
+<div class="menu">
+  
+	<sidebar modulo="compras"></sidebar>
+
+<div class="pagina">
+
+	<label class="titulo"> REGISTRO DE COMPRAS </label>
+
+<!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
+<div class="toolbar">
+
+  <button class="boton" (click)="consultar()"> Consultar </button>
+
+  <button class="boton" (click)="insertar()"> Insertar </button>
+
+  <button class="boton" (click)="modificar()"> Modificar </button>
+
+  <button class="boton" (click)="eliminar()"> Eliminar </button>
+
+  <button class="boton"> Importar </button>
+
+  <button class="boton" (click)="exportar()"> Exportar </button>
+    
+  <button class="boton" (click)="volver()"> Volver </button>
+
+</div>
+
+<!-- FORMULARIO DE REGISTRO -->
+<div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
+
+  	<div class="form-grupo"> 
+  	
+  		<label class="titulo"> Datos Identificación </label>
+
+		<div class="form-fila">
+		
+  			<div class="form-campo"> 
+  				<label class="label">Id Cliente</label> 
+  				<input type="number" maxlength="10" [(ngModel)]="compra.cliId" name="comId" disabled> 
+  			</div>
+		
+  			<div class="form-campo"> 
+  				<label class="label">Id Compra</label> 
+  				<input type="number" maxlength="10" [(ngModel)]="compra.comId" name="comId" disabled> 
+  			</div>
+
+		</div>
+	
+	</div>
+	
+	<div class="form-grupo">
+	
+		<label class="titulo"> Datos Comprador / Vendedor </label>
+	
+ 		<div class="form-fila"> 
+ 		
+ 		  	<div class="form-campo-500">
+  				<label class="label"> Selector Comprador <span class="obligatorio">*</span> </label> 
+				    <selectorBusqueda
+				        [datos]="personasLista"
+				        [idSeleccionado]="compra.perIdCom"
+				        [campoDescripcion]="'perNomCom'"
+				        [campoId]="'perIdCom'"
+				        (valorSeleccionado)="compra.perIdCom = $event">
+				    </selectorBusqueda>
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !compra.perIdCom"> Valor Obligatorio </div>
+			</div>
+ 		
+  			<div class="form-campo-500">
+  				<label class="label"> Selector Vendedor <span class="obligatorio">*</span> </label> 
+				    <selectorBusqueda
+				        [datos]="personasLista"
+				        [idSeleccionado]="compra.perIdVen"
+				        [campoDescripcion]="'perNomCom'"
+				        [campoId]="'perIdVen'"
+				        (valorSeleccionado)="compra.perIdVen = $event">
+				    </selectorBusqueda>
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !compra.perIdVen"> Valor Obligatorio </div>
+			</div>
+ 		
+  		</div>
+
+  	</div>
+	
+	<div class="form-grupo">
+	
+	    <label class="titulo"> Detalle de la Compra </label>
+	
+		<tablaEdicion
+		
+		    [columnas]="columnasDetalle"
+		
+		    [titulosColumnas]="titulosColumnasDetalle"
+		
+		    [datos]="compraDetalleLista"
+		    
+		    (insertarLinea)="insertarCompraDetalle()">
+		
+		    <!-- Columna Producto -->
+		    <ng-template tablaColumna="proId" let-fila>
+		
+		        <selectorBusqueda
+		
+		            [datos]="productosLista"
+		
+		            [idSeleccionado]="fila.proId"
+		
+		            [campoDescripcion]="'proNom'"
+		
+		            [campoId]="'proId'"
+		
+		            (valorSeleccionado)="seleccionarProductoDetalle(fila, $event)">
+		
+		        </selectorBusqueda>
+		
+		    </ng-template>
+		
+		    <!-- Columna Cantidad -->
+		    <ng-template tablaColumna="comDetCan" let-fila>
+		
+		        <input type="number" [(ngModel)]="fila.comDetCan" class="input-tabla"
+		        (ngModelChange)="actualizarLinea(fila)">
+		
+		    </ng-template>
+		
+		    <!-- Columna Precio -->
+		    <ng-template tablaColumna="comDetPre" let-fila>
+		
+		        <input type="number" [(ngModel)]="fila.comDetPre" class="input-tabla"
+		        (ngModelChange)="actualizarLinea(fila)">
+		
+		    </ng-template>
+		    
+		    <!-- Columna Descuento -->
+		    <ng-template tablaColumna="comDetDes" let-fila>
+		
+		        <input type="number" [(ngModel)]="fila.comDetDes" class="input-tabla"
+		        (ngModelChange)="actualizarLinea(fila)">
+		
+		    </ng-template>
+		    
+		    <!-- Columna IVA -->
+		    <ng-template tablaColumna="comDetIva" let-fila>
+		
+		        <input type="number" [(ngModel)]="fila.comDetIva" class="input-tabla"
+		        (ngModelChange)="actualizarLinea(fila)">
+		
+		    </ng-template>
+		
+		    <!-- Columna Importe -->
+		    <ng-template tablaColumna="comDetImp" let-fila>
+		
+		        <input type="number" [(ngModel)]="fila.comDetImp" class="input-tabla" 
+		        (ngModelChange)="actualizarLinea(fila)" disabled>
+		
+		    </ng-template>
+		
+		    <!-- Columna Acción -->
+		    <ng-template tablaColumna="accion" let-fila let-indice="indice">
+		
+		        <button class="boton" (click)="eliminarCompraDetalle(indice)"> Eliminar </button>
+		
+		    </ng-template>
+		
+		</tablaEdicion>
+	
+	</div>
+	
+	<div class="form-grupo"> 
+  	
+  		<label class="titulo"> Datos Importes </label>
+
+		<div class="form-fila">
+		
+  			<div class="form-campo-200"> 
+  				<label class="label"> Subtotal </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="compra.comImpSub" name="comImpSub" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Descuento </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="compra.comImpDes" name="comImpDes" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> I.V.A. <span class="obligatorio">*</span> </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="compra.comImpIva" name="comImpIva" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Total </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="compra.comImpTot" name="comImpTot" disabled> 
+  			</div>
+  			
+  		</div>
+  			
+  		<div class="form-fila">
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Cobrado </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="compra.comImpCob" name="comImpCob" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Pendiente </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="compra.comImpPen" name="comImpPen" disabled> 
+  			</div>
+  			
+  		</div>
+
+	</div>
+	
+	<div class="form-grupo"> 
+  	
+  		<label class="titulo"> Datos Fechas </label>
+
+		<div class="form-fila">
+		
+  			<div class="form-campo-200"> 
+  				<label class="label"> Fecha Presupuesto </label> 
+  				<input type="date" maxlength="10" [(ngModel)]="compra.comFecPre" name="comFecPre" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Fecha Pedido </label> 
+  				<input type="date" maxlength="10" [(ngModel)]="compra.comFecPed" name="comFecPed" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Fecha Albarán </label> 
+  				<input type="date" maxlength="10" [(ngModel)]="compra.comFecAlb" name="comFecAlb" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Fecha Factura </label> 
+  				<input type="date" maxlength="10" [(ngModel)]="compra.comFecFac" name="comFecFac" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Fecha Cobro </label> 
+  				<input type="date" maxlength="10" [(ngModel)]="compra.comFecCob" name="comFecCob" disabled> 
+  			</div>
+  			
+  		</div>
+
+	</div>
+
+  	<div class="form-grupo"> 
+  	
+  		<label class="titulo"> Datos Movimiento </label>
+
+		<div class="form-fila">
+
+  			<div class="form-campo-200"> 
+  				<label class="label">Usu. Mov.</label> 
+  				<input type="text" maxlength="50" [(ngModel)]="compra.comUsuMov" name="comUsuMov" disabled> 
+  			</div>
+ 			
+  			<div class="form-campo-200"> 
+  				<label class="label">Fec. Mov.</label> 
+  				<input type="datetime-local" maxlength="10" [(ngModel)]="compra.comFecMov" name="comFecMov" disabled> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Activo</label> 
+  				<input type="checkbox" maxlength="10" [(ngModel)]="compra.comAct" name="comAct" disabled> 
+  			</div>
+  			
+ 		</div>
+ 	
+ 	</div>
+ 
+	<div class="toolbar"> 
+	
+		<button *ngIf="modoFormulario === 'insertar'" class="boton" (click)="guardar()"> Guardar </button>
+		
+		<button *ngIf="modoFormulario === 'modificar'" class="boton" (click)="actualizar()"> Actualizar </button>
+		
+		<!-- Botón Cancelar tiene misma lógica que insertar -->
+		<button class="boton" (click)="insertar()"> Cancelar </button>
+		
+	</div>
+
+</div>
+
+<!-- TABLA DE RESULTADOS-->
+<div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
+
+  	<label class="titulo"> TABLA DE COMPRAS </label>
+  
+  	<tabla 
+  	
+  		[columnas]="columnas" 
+  		[titulosColumnas]="titulosColumnas"
+  		[datos]="datos" 
+		(filaSeleccionada)="compraSeleccionada = $event"> 
+  		
+  	</tabla>
+
+</div>
+
+<!-- Cierres de div class menu y pagina -->
+</div> </div>

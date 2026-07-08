@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Output, EventEmitter } from '@angular/core';
@@ -10,17 +10,46 @@ import { Output, EventEmitter } from '@angular/core';
   templateUrl: './selectorBusqueda.html',
   styleUrl: './selectorBusqueda.css'
 })
-export class SelectorBusqueda {
+
+export class SelectorBusqueda implements OnChanges {
+
+  // Lista de registros recibidos desde el componente padre
+  private _datos: any[] = [];
+
+  // Nombre del campo que se mostrará al usuario
+  @Input()
+  campoDescripcion: string = '';
+
+  // Nombre del campo cuyo valor se enviará al componente padre
+  @Input()
+  campoId: string = '';
 
   @Input()
-  datos: any[] = [];
+  set datos(value: any[]) {
+
+    this._datos = value;
+
+    // Actualiza la selección cuando cambia la lista
+    this.actualizarSeleccion();
+
+  }
+
+  get datos(): any[] {
+
+    return this._datos;
+
+  }
+
+  // Id seleccionado recibido desde el componente padre
+  @Input()
+  idSeleccionado: number = 0;
 
   // Texto introducido en el buscador
   textoBusqueda = '';
-  
-  // Guarda el domicilio seleccionado por el usuario
+
+  // Guarda el registro seleccionado por el usuario
   seleccionado: any = null;
-  
+
   // Envía el valor seleccionado al componente padre
   @Output()
   valorSeleccionado = new EventEmitter<number>();
@@ -43,7 +72,7 @@ export class SelectorBusqueda {
     }
 
     return this.datos.filter(d =>
-      d.domDir
+      String(d[this.campoDescripcion] || '')
         .toLowerCase()
         .includes(this.textoBusqueda.toLowerCase())
     );
@@ -55,13 +84,15 @@ export class SelectorBusqueda {
 
     this.seleccionado = dato;
 
-    this.textoBusqueda = dato.domDir;
+    this.textoBusqueda = dato[this.campoDescripcion];
 
-    // Envía el domId al componente padre
-    this.valorSeleccionado.emit(dato.domId);
+    // Envía el id correspondiente al componente padre
+    this.valorSeleccionado.emit(
+      dato[this.campoId]
+    );
 
   }
-  
+
   // Se ejecuta cuando el usuario modifica el texto
   cambiarTexto() {
 
@@ -72,6 +103,39 @@ export class SelectorBusqueda {
     if (this.textoBusqueda.trim() === '') {
 
       this.valorSeleccionado.emit(0);
+
+    }
+
+  }
+
+  // Se ejecuta cuando cambia algún valor recibido desde el componente padre
+  ngOnChanges(changes: SimpleChanges): void {
+
+    this.actualizarSeleccion();
+
+  }
+
+  // Actualiza el registro seleccionado en el componente
+  private actualizarSeleccion() {
+
+    // Comprueba que existe un id seleccionado y que la lista ya está cargada
+    if (this.idSeleccionado && this.datos.length > 0) {
+
+      // Busca el registro correspondiente al id recibido
+      const registro = this.datos.find(
+        d => Number(d[this.campoId]) === Number(this.idSeleccionado)
+      );
+
+      // Si encuentra el registro
+      if (registro) {
+
+        // Guarda el registro seleccionado
+        this.seleccionado = registro;
+
+        // Muestra la descripción en el cuadro de búsqueda
+        this.textoBusqueda = registro[this.campoDescripcion];
+
+      }
 
     }
 

@@ -17,7 +17,7 @@ import { Supbar } from '../../../components/supbar/supbar';
   standalone: true, // El componente funciona de forma independiente, sin módulos (NgModule).
   imports: [Sidebar, Supbar], // Otros componentes o módulos usados por este componente.
   templateUrl: './principalVentas.html', // Archivo HTML que usa este componente.
-  styleUrl: './principalVentas.css' // Archivo CSS que usa este componente.
+  styleUrl: '../../../styles/estiloPrincipal.css'
 })
 
 // Definición de la lógica del componente 

@@ -1,13 +1,10 @@
-Los components son piezas reutilizables de interfaz visual.
+Esta carpeta contiene componentes que son piezas reutilizables de interfaz visual.
 
-Un componente suele representar una parte pequeña de la pantalla.
+Un componente es un contenido visual pequeño en la pantalla que se reutiliza en distintas ventanas.
 
 Ejemplos:
-- navbar
-- sidebar
-- button
-- table
-- card
-
-Ejemplo:
-navbar.component.ts
+- El botón consultar que muestra una tabla de base de datos con todas sus columnas, la primera fila de filtro y la última fila de paginador.
+- El sidebar que muestra el menú lateral de todas las ventanas de cada módulo, según el módulo al que entras tienes unos u otros menús.
+- El supbar que muestra información y botones generales de la sesión del usuario.
+- El botón selector de búsqueda, que permite rellenar el valor de un campo con un registro de otra tabla.
+- La tabla edición que permite añadir y eliminar filas cuyos campos son registros de otra tabla y columnas editables.

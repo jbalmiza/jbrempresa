@@ -1,0 +1,34 @@
+Esta carpeta contiene directivas Angular reutilizables que añaden comportamiento a elementos HTML sin ser componentes visuales.
+
+Una directiva añade comportamiento a un elemento HTML, pero no crea una pantalla ni un componente propio.
+
+Una directiva no se llama, se utiliza. Una directiva no crea el HTML ni decide cuándo mostrarlo. 
+Solo etiqueta un trozo de HTML para que otro componente pueda encontrarlo y utilizarlo.
+
+Ejemplos:
+- La directiva TablaColumna funciona como un diccionario que relaciona el nombre de una columna con el trozo de HTML que debe mostrarse en esa columna.
+- TablaEdicion es una persona que sabe construir tablas, pero no sabe que contiene cada celda. Entonces necesita que alguien se lo diga.
+Yo le doy varias instrucciones y una de ellas es: <ng-template tablaColumna="proId"> <selectorBusqueda></selectorBusqueda> </ng-template>
+En forma de esquema la directiva sería: <ng-template X="Y"> Z </ng-template> y esto se traduce como:
+He creado la directiva X que cuando tenga el valor X me respondes con Z
+Entonces luego tablaEdicion pregunta tengo que pintar proId, alguien sabe que tengo que pintar, y la directiva responde si un selector.
+
+Esta directiva tablaColumna funciona como un diccionario, pero no todas las directivas funcionan así, 
+de hecho hay otras directivas que se están utilizando como son: 
+
+<div *ngIf="usuarioLogueado"> Bienvenido </div>
+<tr *ngFor="let persona of personas">
+<input soloNumeros>
+
+La definición más general sería:
+
+Una directiva es una clase que modifica el comportamiento de un elemento HTML.
+
+Dependiendo de la directiva, ese comportamiento puede ser:
+
+Mostrar u ocultar (ngIf).
+Repetir (ngFor).
+Aplicar estilos (ngClass).
+Resaltar un elemento.
+Validar un campo.
+Asociar una plantilla (como hace tu TablaColumna).

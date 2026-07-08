@@ -37,11 +37,14 @@ export class AccesoModulos {
 	
   }
 
-// Se define el método abrirModulo
-  abrirModulo(modulo: string) {
+	// Se define el método abrirModulo
+  	abrirModulo(modulo: string) {
 
-//Cambia la página del módulo
-	this.router.navigate(['/' + modulo]);
+		// Genera la URL del módulo
+		const url = this.router.serializeUrl( this.router.createUrlTree(['/' + modulo]) );
+
+		// Abre el módulo en una nueva pestaña
+		window.open(url, '_blank');
 
   }
   

@@ -1,13 +1,27 @@
 export interface Venta {
 
-	idCliente: number | null;	
-  	idVenta: number | null;
+	// Datos Identificación
+	cliId: number;	
+  	venId: number;
 
-  	idPersona: number;
-  	idProducto: number;
+  	perIdVen: number;
+	perIdCom: number;
+	
+	venImpSub: number;
+	venImpDes: number;
+	venImpIva: number;
+	venImpTot: number;
+	venImpCob: number;
+	venImpPen: number;
+	
+	venFecPre: string;
+	venFecPed: string;
+	venFecAlb: string;
+	venFecFac: string;
+	venFecCob: string;
  
-  	activo: boolean;
-  	usuarioMovimiento: string;
-  	fechaMovimiento: string;
+  	venUsuMov: string;
+  	venFecMov: string;
+	venAct: boolean;
 
 }

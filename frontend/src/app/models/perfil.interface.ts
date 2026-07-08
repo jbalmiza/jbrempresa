@@ -1,31 +1,31 @@
 export interface Perfil {
 
 	//Datos Identificación
-	idCliente: number | null;
-  	idPerfil: number | null;
+	cliId: number;
+  	perId: number;
 
 	//Datos Perfil
-  	nombre: string;
-	tipoPerfil: string;
+  	perNom: string;
+	perTipPer: string;
 	
 	//Permisos en el módulo de Administración
-  	mAdministracion: boolean;
+  	perModAdm: boolean;
 	
 	//Permisos en el módulo de Territorio
-	mTerritorio: boolean;
+	perModTer: boolean;
 	
 	//Permisos en el módulo de Personas
-	mPersonas: boolean;
+	perModPer: boolean;
 	
 	//Permisos en el módulo de Productos
-	mProductos: boolean;
+	perModPro: boolean;
 	
 	//Permisos en el módulo de Ventas
-	mVentas: boolean;
+	perModVen: boolean;
 
 	//Datos Movimiento
-  	usuarioMovimiento: string;
-  	fechaMovimiento: string;
-	activo: boolean;
+  	perUsuMov: string;
+  	perFecMov: string;
+	perAct: boolean;
 
 }

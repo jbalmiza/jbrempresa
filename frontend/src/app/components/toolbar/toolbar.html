@@ -1,0 +1,18 @@
+<div class="toolbar" *ngIf="toolbar">
+
+    <button
+        *ngFor="let boton of toolbar.botones"
+        type="button"
+        [disabled]="!boton.habilitado"
+        [hidden]="boton.visible === false"
+        [title]="boton.tooltip">
+
+        <span *ngIf="boton.icono" class="material-icons">
+            {{ boton.icono }}
+        </span>
+
+        {{ boton.titulo }}
+
+    </button>
+
+</div>

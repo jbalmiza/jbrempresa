@@ -8,9 +8,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,46 +39,89 @@ public class JwtFilter extends OncePerRequestFilter {
         String authHeader =
                 request.getHeader("Authorization");
 
+        // Token JWT
         String token = null;
+
+        // Nombre del usuario contenido en el token
         String username = null;
 
-        // Comprueba si existe Bearer
+        // Comprueba si existe la cabecera Authorization
+        // y comienza por Bearer
         if (authHeader != null &&
                 authHeader.startsWith("Bearer ")) {
 
+            // Extrae el token eliminando "Bearer "
             token = authHeader.substring(7);
 
-            username =
-                    jwtService.obtenerUsuario(token);
+            try {
+
+                // Obtiene el usuario del token
+                username =
+                        jwtService.obtenerUsuario(token);
+
+            }
+
+            // Si el token ha expirado
+            catch (ExpiredJwtException e) {
+
+                // Limpia el contexto de seguridad
+                SecurityContextHolder.clearContext();
+
+                // Devuelve código 401 Unauthorized
+                response.setStatus(
+                        HttpServletResponse.SC_UNAUTHORIZED);
+
+                return;
+
+            }
+
+            // Cualquier otro error relacionado con el token
+            catch (Exception e) {
+
+                // Limpia el contexto de seguridad
+                SecurityContextHolder.clearContext();
+
+                // Devuelve código 401 Unauthorized
+                response.setStatus(
+                        HttpServletResponse.SC_UNAUTHORIZED);
+
+                return;
+
+            }
 
         }
 
-        // Si hay usuario y aún no está autenticado
+        // Si existe usuario y todavía no está autenticado
         if (username != null &&
                 SecurityContextHolder
                         .getContext()
                         .getAuthentication() == null) {
 
+            // Carga los datos del usuario
             UserDetails userDetails =
                     customUserDetailsService
                             .loadUserByUsername(username);
 
+            // Crea el objeto de autenticación
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
                             userDetails.getAuthorities());
 
+            // Añade información de la petición
             authToken.setDetails(
                     new WebAuthenticationDetailsSource()
                             .buildDetails(request));
 
+            // Guarda la autenticación en el contexto de seguridad
             SecurityContextHolder
                     .getContext()
                     .setAuthentication(authToken);
 
         }
 
+        // Continúa con la cadena de filtros
         filterChain.doFilter(request, response);
 
     }

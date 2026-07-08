@@ -1,0 +1,247 @@
+/* ==========================================================
+   IMPORTA ESTILOS RESPONSIVES
+========================================================== */
+
+@import './responsive.css';
+
+/* ==========================================================
+   MENÚ Y PÁGINA
+========================================================== */
+
+.menu {
+
+    display: flex;
+
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: 30px;
+    margin-right: 30px;
+
+}
+
+.pagina {
+
+    flex: 1;
+
+    padding: 20px;
+
+    /* Evita que una tabla ancha ensanche toda la página */
+    min-width: 0;
+
+}
+
+
+/* ==========================================================
+   BARRA DE HERRAMIENTAS
+========================================================== */
+
+.toolbar {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin: 5px;
+
+    padding: 5px;
+
+    align-items: center;
+
+}
+
+.tabs {
+
+    display: flex;
+
+    gap: 10px;
+
+}
+
+.boton {
+
+    margin: 5px;
+
+    padding: 5px;
+
+    cursor: pointer;
+
+}
+
+
+/* ==========================================================
+   CONTENEDORES
+========================================================== */
+
+.form-contenedor {
+
+    border: 1px solid #cccccc;
+
+    margin: 5px;
+
+    padding: 5px;
+
+}
+
+.form-grupo {
+
+    border: 1px solid #cccccc;
+
+    margin: 5px;
+
+    padding: 5px;
+
+}
+
+.tabla-contenedor {
+
+    border: 1px solid #cccccc;
+
+    margin: 5px;
+
+    padding: 5px;
+
+}
+
+
+/* ==========================================================
+   TÍTULOS
+========================================================== */
+
+.titulo {
+
+    font-family: Calibri;
+
+  	font-size: 14px;
+    
+    font-weight: bold;
+    
+    margin: 10px 0px 10px 0px;
+
+    padding:  10px 0px 10px 0px;
+
+}
+
+
+/* ==========================================================
+   FORMULARIOS
+========================================================== */
+
+.form-fila {
+
+    /* Los campos se colocan uno al lado del otro y bajan si no caben */
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 5px;
+
+}
+
+.form-campo {
+
+    /* El label se coloca encima del input */
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+    
+    width: 100px;
+
+}
+
+.form-campo-200 {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+    
+    width: 200px;
+
+}
+
+.form-campo-500 {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+    
+    width: 500px;
+
+}
+
+/* ==========================================================
+   CONTROLES
+========================================================== */
+
+.form-campo input,
+.form-campo select,
+.form-campo textarea,
+
+.form-campo-200 input,
+.form-campo-200 select,
+.form-campo-200 textarea,
+
+.form-campo-500 input,
+.form-campo-500 select,
+.form-campo-500 textarea {
+
+    font-family: Calibri;
+
+  	font-size: 14px;
+    
+    margin: 5px;
+
+    padding: 5px;
+
+}
+
+
+/* ==========================================================
+   ETIQUETAS
+========================================================== */
+
+.label {
+
+    font-family: Calibri;
+
+  	font-size: 14px;
+    
+    margin: 5px;
+
+    padding: 0px;
+
+}
+
+
+/* ==========================================================
+   VALIDACIONES
+========================================================== */
+
+.obligatorio {
+
+    color: red;
+
+    font-weight: bold;
+
+}
+
+.mensaje-obligatorio {
+
+    font-family: Calibri;
+
+  	font-size: 14px;
+    
+    color: red;
+
+    font-size: 12px;
+
+    margin: 3px;
+
+}

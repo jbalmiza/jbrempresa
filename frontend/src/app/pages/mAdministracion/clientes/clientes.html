@@ -31,7 +31,7 @@
 		
 
 <!-- FORMULARIO DE REGISTRO -->
-<div *ngIf="pestanaActiva === 'registro'" class="form-contenedor">
+<div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
 
   	<div class="form-grupo"> 
   	
@@ -41,7 +41,7 @@
 			
 			<div class="form-campo"> 
   				<label class="label">Id Cliente</label> 
-  				<input type="number" [(ngModel)]="cliente.idCliente" name="idCliente" disabled>
+  				<input type="number" [(ngModel)]="cliente.cliId" name="cliId" disabled>
   			</div>
   			
   		</div>
@@ -54,10 +54,10 @@
 
 		<div class="form-fila">
   			
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label"> Nombre <span class="obligatorio">*</span> </label> 
-  				<input type="text" maxlength="50" [(ngModel)]="cliente.nombre" name="nombre"> 
-  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !cliente.nombre"> Valor Obligatorio </div>
+  				<input type="text" maxlength="50" [(ngModel)]="cliente.cliNom" name="cliNom"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !cliente.cliNom"> Valor Obligatorio </div>
   			</div>
   			
   			
@@ -72,19 +72,19 @@
 
 		<div class="form-fila">
 
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label">Usuario Movimiento</label> 
-  				<input type="text" maxlength="50" [(ngModel)]="cliente.usuarioMovimiento" name="usuarioMovimiento" disabled> 
+  				<input type="text" maxlength="50" [(ngModel)]="cliente.cliUsuMov" name="cliUsuMov" disabled> 
   			</div>
  			
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label">Fecha Movimiento</label> 
-  				<input type="datetime-local" maxlength="100" [(ngModel)]="cliente.fechaMovimiento" name="fechaMovimiento" disabled> 
+  				<input type="datetime-local" maxlength="100" [(ngModel)]="cliente.cliFecMov" name="cliFecMov" disabled> 
   			</div>
   			
   			<div class="form-campo"> 
   				<label class="label">Activo</label> 
-  				<input type="checkbox" maxlength="50" [(ngModel)]="cliente.activo" name="activo" disabled> 
+  				<input type="checkbox" maxlength="50" [(ngModel)]="cliente.cliAct" name="cliAct" disabled> 
   			</div>
   			
  		</div>
@@ -93,7 +93,9 @@
  
 	<div class="toolbar"> 
 	
-		<button class="boton" (click)="guardar()"> Guardar </button> 
+		<button *ngIf="modoFormulario === 'insertar'" class="boton" (click)="guardar()"> Guardar </button>
+		
+		<button *ngIf="modoFormulario === 'modificar'" class="boton" (click)="actualizar()"> Actualizar </button>
 		
 		<!-- Botón Cancelar tiene misma lógica que insertar -->
 		<button class="boton" (click)="insertar()"> Cancelar </button>
@@ -103,7 +105,7 @@
 </div>
 
 <!-- TABLA DE RESULTADOS-->
-<div *ngIf="pestanaActiva === 'tabla'" class="tabla-contenedor">
+<div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
 
   	<label class="titulo"> TABLA DE CLIENTES </label>
     

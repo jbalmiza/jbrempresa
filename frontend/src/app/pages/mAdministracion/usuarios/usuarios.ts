@@ -30,7 +30,7 @@ import { PdfService } from '../../../services/pdf.service';
   standalone: true,
   imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla],
   templateUrl: './usuarios.html',
-  styleUrl: './usuarios.css'
+  styleUrl: '../../../styles/estiloGeneral.css'
 })
 
 // Definición de la lógica del componente 
@@ -44,9 +44,8 @@ export class Usuarios {
 	tabla!: Tabla;
 
 	//Variables de la clase
-	pestanaActiva: 'registro' | 'tabla' = 'tabla';
-	
-	//Interruptor inactivo para controlar campos obligatorios
+	vistaActiva: 'registro' | 'tabla' = 'tabla';
+	modoFormulario: 'insertar' | 'modificar' = 'insertar';
 	mostrarObligatorios = false;
 	
 	// Se crea un objeto usuario con datos vacíos
@@ -61,15 +60,16 @@ export class Usuarios {
 	    perId: 'Perfil',
 	    usuNom: 'Nombre',
 	    usuEma: 'Correo Electrónico',
-	    usuAct: 'Activo',
-	    usuMov: 'Usuario Mod.',
-	    fecMov: 'Fecha Mod.'
+	    usuUsuMov: 'Usuario Mod.',
+	    usuFecMov: 'Fecha Mod.',
+		usuAct: 'Activo'
 	};
 	
 	// Campos mostrados en la tabla
 	columnas: string[] = [ 'cliId', 'usuId', 
-		'usuUsu', 'usuCon', 'perId', 'usuNom', 'usuEma',
-	  	'usuAct', 'usuMov', 'fecMov'
+		'usuUsu', 'usuCon', 'perId', 
+		'usuNom', 'usuEma',
+	  	'usuUsuMov', 'usuFecMov', 'usuAct'
 	  
 	];
 
@@ -77,10 +77,10 @@ export class Usuarios {
 	datos: any[] = [];
 	
 	// Lista para el selector de perfiles
-	usuariosLista: any[] = [];
+	usuariosLista: Usuario[] = [];
 	
 	// Guarda el registro seleccionado de la tabla
-	usuarioSeleccionado: any = null;
+	usuarioSeleccionado: Usuario | null = null;
 	
 	// Angular inyecta el router en modo lectura
 	constructor (
@@ -94,7 +94,7 @@ export class Usuarios {
 	// Este método muestra la tabla de datos
 	consultar() {
 			
-		this.pestanaActiva = 'tabla';	 
+		this.vistaActiva = 'tabla';	 
 		
 		this.usuarioService.obtenerUsuarios().subscribe({
 			
@@ -121,7 +121,8 @@ export class Usuarios {
 	// Este método muestra el formulario de registro y limpia los campos del formulario	
 	insertar() {
 
-	  	this.pestanaActiva = 'registro';
+	  	this.vistaActiva = 'registro';
+		this.modoFormulario = 'insertar';
 		
 		this.limpiarFormulario();
 		
@@ -132,7 +133,7 @@ export class Usuarios {
 
 			console.log('Id Usuario recibido:', id);
 
-		    this.usuario.idUsuario = id;
+		    this.usuario.usuId = id;
 
 		  },
 
@@ -167,16 +168,16 @@ export class Usuarios {
 	modificar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.usuarioSeleccionado) {
@@ -187,31 +188,26 @@ export class Usuarios {
 	    }
 
 	    // Cambia a la pestaña registro
-	    this.pestanaActiva = 'registro';
+	    this.vistaActiva = 'registro';
+		this.modoFormulario = 'modificar';
 
 	    // Copia los datos seleccionados al formulario
 		// Convierte formtato backend usu_id a formato frontend idUsuario
 		this.usuario = {
 
-			idCliente: this.usuarioSeleccionado.cliId,			
-			
-			idUsuario: this.usuarioSeleccionado.usuId,
+			cliId: this.usuarioSeleccionado.cliId,			
+			usuId: this.usuarioSeleccionado.usuId,
 
-			usuario: this.usuarioSeleccionado.usuUsu,
+			usuUsu: this.usuarioSeleccionado.usuUsu,
+			usuCon: this.usuarioSeleccionado.usuCon,
+			perId: this.usuarioSeleccionado.perId,
 
-			contrasena: this.usuarioSeleccionado.usuCon,
+			usuNom: this.usuarioSeleccionado.usuNom,
+			usuEma: this.usuarioSeleccionado.usuEma,
 
-			idPerfil: this.usuarioSeleccionado.perId,
-
-			nombre: this.usuarioSeleccionado.usuNom,
-
-			email: this.usuarioSeleccionado.usuEma,
-
-			activo: this.usuarioSeleccionado.usuAct,
-
-			usuarioMovimiento: this.usuarioSeleccionado.usuMov,
-
-			fechaMovimiento: this.usuarioSeleccionado.fecMov
+			usuUsuMov: this.usuarioSeleccionado.usuUsuMov,
+			usuFecMov: this.usuarioSeleccionado.usuFecMov,
+			usuAct: this.usuarioSeleccionado.usuAct
 
 			};
 
@@ -223,17 +219,17 @@ export class Usuarios {
 	eliminar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.usuarioSeleccionado) {
@@ -258,7 +254,8 @@ export class Usuarios {
 
 	    // Elimina el usuario
 	    this.usuarioService.eliminar(
-	      this.usuarioSeleccionado.usu_id
+	      this.usuarioSeleccionado.usuId!,
+		  this.usuarioSeleccionado.cliId
 	    ).subscribe({
 
 	      next: () => {
@@ -321,11 +318,11 @@ export class Usuarios {
 
 		//Alerta para determinados campos sin valor (obligatorios)
 		if (
-		  !this.usuario.usuario || 
-		  !this.usuario.contrasena || 
-		  !this.usuario.idPerfil || 
-		  !this.usuario.nombre || 
-		  !this.usuario.email
+		  !this.usuario.usuUsu || 
+		  !this.usuario.usuCon || 
+		  !this.usuario.perId || 
+		  !this.usuario.usuNom || 
+		  !this.usuario.usuEma
 		) {
 
 		  alert('Debe rellenar todos los campos obligatorios');
@@ -336,25 +333,19 @@ export class Usuarios {
 
 	  const usuario = {
 
-		cliId: this.usuario.idCliente,		
-		
+		cliId: this.usuario.cliId,		
 	    usuId: null,
 
-	    usuUsu: this.usuario.usuario,
+	    usuUsu: this.usuario.usuUsu,
+	    usuCon: this.usuario.usuCon,
+		perId: this.usuario.perId,
 
-	    usuCon: this.usuario.contrasena,
-		
-		perId: this.usuario.idPerfil,
+	    usuNom: this.usuario.usuNom,
+	    usuEma: this.usuario.usuEma,
 
-	    usuNom: this.usuario.nombre,
-
-	    usuEma: this.usuario.email,
-
-	    usuAct: this.usuario.activo,
-
-	    usuMov: this.usuario.usuarioMovimiento,
-
-	    fecMov: this.usuario.fechaMovimiento
+	    usuUsuMov: this.usuario.usuUsuMov,
+	    usuFecMov: this.usuario.usuFecMov,
+		usuAct: this.usuario.usuAct
 
 	  };
 	  
@@ -366,8 +357,7 @@ export class Usuarios {
 
 	      alert('Usuario guardado correctamente');
 		  
-		  // Cambia a la pestaña registro
-		  this.pestanaActiva = 'tabla';
+		  this.limpiarFormulario();
 
 	    },
 
@@ -380,6 +370,69 @@ export class Usuarios {
 	    }
 
 	  });
+
+	}
+	
+	// Este método actualiza el contenido del formulario en base de datos
+	actualizar() {
+		
+		// Interruptor activo para controlar campos obligatorios
+		this.mostrarObligatorios = true;
+
+		// Alerta para determinados campos sin valor (obligatorios)
+		if (
+		  !this.usuario.usuUsu || 
+		  !this.usuario.usuCon || 
+		  !this.usuario.perId || 
+		  !this.usuario.usuNom || 
+		  !this.usuario.usuEma
+		) {
+
+		  alert('Debe rellenar todos los campos obligatorios');
+
+		  return;
+
+		}
+
+		const usuario = {
+
+			cliId: this.usuario.cliId,
+		    usuId: this.usuario.usuId,
+
+		    usuUsu: this.usuario.usuUsu,
+		    usuCon: this.usuario.usuCon,
+			perId: this.usuario.perId,
+
+		    usuNom: this.usuario.usuNom,
+		    usuEma: this.usuario.usuEma,
+
+		    usuUsuMov: this.usuario.usuUsuMov,
+		    usuFecMov: this.usuario.usuFecMov,
+			usuAct: this.usuario.usuAct
+
+		};
+
+		console.log(usuario);
+
+		this.usuarioService.actualizar(usuario).subscribe({
+
+			next: () => {
+
+				alert('Usuario actualizado correctamente.');
+
+				this.limpiarFormulario();
+
+			},
+
+			error: (error: any) => {
+
+				console.error(error);
+
+				alert('Error al actualizar usuario.');
+
+			}
+
+		});
 
 	}
 
@@ -395,19 +448,19 @@ export class Usuarios {
 
 		return {
 
-		idCliente: Number(localStorage.getItem('clienteId')) || 0,
-	  	idUsuario: null,
+		cliId: Number(localStorage.getItem('clienteId')) || 0,
+	  	usuId: 0,
 		
-	  	usuario: '',
-	  	contrasena: '',
-	  	idPerfil: 0,
+	  	usuUsu: '',
+	  	usuCon: '',
+	  	perId: 0,
 		
-	  	nombre: '',
-	  	email: '',
+	  	usuNom: '',
+	  	usuEma: '',
 		
-	  	activo: true,
-		usuarioMovimiento: localStorage.getItem('usuario') || '',
-		fechaMovimiento: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16)
+		usuUsuMov: localStorage.getItem('usuario') || '',
+		usuFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+		usuAct: true
 		
 		};
 	}

@@ -29,7 +29,7 @@
 </div>
 
 <!-- FORMULARIO DE REGISTRO -->
-<div *ngIf="pestanaActiva === 'registro'" class="form-contenedor">
+<div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
 
   	<div class="form-grupo"> 
   	
@@ -39,28 +39,174 @@
 		
   			<div class="form-campo"> 
   				<label class="label">Id Cliente</label> 
-  				<input type="number" maxlength="10" [(ngModel)]="venta.idCliente" name="idCliente" disabled> 
+  				<input type="number" maxlength="10" [(ngModel)]="venta.cliId" name="cliId" disabled> 
   			</div>
 		
   			<div class="form-campo"> 
   				<label class="label">Id Venta</label> 
-  				<input type="number" maxlength="10" [(ngModel)]="venta.idVenta" name="idVenta" disabled> 
+  				<input type="number" maxlength="10" [(ngModel)]="venta.venId" name="venId" disabled> 
   			</div>
 
 		</div>
 	
 	</div>
 	
+	<div class="form-grupo">
+	
+		<label class="titulo"> Datos Comprador / Vendedor </label>
+	
+ 		<div class="form-fila"> 
+ 		
+  			<div class="form-campo-500">
+  				<label class="label"> Selector Vendedor <span class="obligatorio">*</span> </label> 
+				    <selectorBusqueda
+				        [datos]="personasLista"
+				        [idSeleccionado]="venta.perIdVen"
+				        [campoDescripcion]="'perNomCom'"
+				        [campoId]="'perIdVen'"
+				        (valorSeleccionado)="venta.perIdVen = $event">
+				    </selectorBusqueda>
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !venta.perIdVen"> Valor Obligatorio </div>
+			</div>
+ 		
+  			<div class="form-campo-500">
+  				<label class="label"> Selector Comprador <span class="obligatorio">*</span> </label> 
+				    <selectorBusqueda
+				        [datos]="personasLista"
+				        [idSeleccionado]="venta.perIdCom"
+				        [campoDescripcion]="'perNomCom'"
+				        [campoId]="'perIdCom'"
+				        (valorSeleccionado)="venta.perIdCom = $event">
+				    </selectorBusqueda>
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !venta.perIdCom"> Valor Obligatorio </div>
+			</div>
+  			
+  		</div>
+
+  	</div>
+	
+	<div class="form-grupo">
+	
+	    <label class="titulo"> Detalle de la Venta </label>
+	
+		<tablaEdicion
+		
+		    [columnas]="columnasDetalle"
+		
+		    [titulosColumnas]="titulosColumnasDetalle"
+		
+		    [datos]="ventaDetalleLista"
+		    
+		    (insertarLinea)="insertarVentaDetalle()">
+		
+		    <!-- Columna Producto -->
+		    <ng-template tablaColumna="proId" let-fila>
+		
+		        <selectorBusqueda
+		
+		            [datos]="productosLista"
+		
+		            [idSeleccionado]="fila.proId"
+		
+		            [campoDescripcion]="'proNom'"
+		
+		            [campoId]="'proId'"
+		
+		            (valorSeleccionado)="seleccionarProductoDetalle(fila, $event)">
+		
+		        </selectorBusqueda>
+		
+		    </ng-template>
+		
+		    <!-- Columna Cantidad -->
+		    <ng-template tablaColumna="venDetCan" let-fila>
+		
+		        <input type="number" [(ngModel)]="fila.venDetCan" class="input-tabla"
+		        (ngModelChange)="actualizarLinea(fila)">
+		
+		    </ng-template>
+		
+		    <!-- Columna Precio -->
+		    <ng-template tablaColumna="venDetPre" let-fila>
+		
+		        <input type="number" [(ngModel)]="fila.venDetPre" class="input-tabla"
+		        (ngModelChange)="actualizarLinea(fila)">
+		
+		    </ng-template>
+		    
+		    <!-- Columna Descuento -->
+		    <ng-template tablaColumna="venDetDes" let-fila>
+		
+		        <input type="number" [(ngModel)]="fila.venDetDes" class="input-tabla"
+		        (ngModelChange)="actualizarLinea(fila)">
+		
+		    </ng-template>
+		    
+		    <!-- Columna IVA -->
+		    <ng-template tablaColumna="venDetIva" let-fila>
+		
+		        <input type="number" [(ngModel)]="fila.venDetIva" class="input-tabla"
+		        (ngModelChange)="actualizarLinea(fila)">
+		
+		    </ng-template>
+		
+		    <!-- Columna Importe -->
+		    <ng-template tablaColumna="venDetImp" let-fila>
+		
+		        <input type="number" [(ngModel)]="fila.venDetImp" class="input-tabla" 
+		        (ngModelChange)="actualizarLinea(fila)" disabled>
+		
+		    </ng-template>
+		
+		    <!-- Columna Acción -->
+		    <ng-template tablaColumna="accion" let-fila let-indice="indice">
+		
+		        <button class="boton" (click)="eliminarVentaDetalle(indice)"> Eliminar </button>
+		
+		    </ng-template>
+		
+		</tablaEdicion>
+	
+	</div>
+	
 	<div class="form-grupo"> 
   	
-  		<label class="titulo"> Datos Persona </label>
+  		<label class="titulo"> Datos Importes </label>
 
 		<div class="form-fila">
 		
-  			<div class="form-campo"> 
-  				<label class="label"> Id Persona <span class="obligatorio">*</span> </label> 
-  				<input type="number" maxlength="10" [(ngModel)]="venta.idPersona" name="idPersona"> 
-  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !venta.idPersona"> Valor Obligatorio </div>
+  			<div class="form-campo-200"> 
+  				<label class="label"> Subtotal </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="venta.venImpSub" name="venImpSub" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Descuento </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="venta.venImpDes" name="venImpDes" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> I.V.A. <span class="obligatorio">*</span> </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="venta.venImpIva" name="venImpIva" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Total </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="venta.venImpTot" name="venImpTot" disabled> 
+  			</div>
+  			
+  		</div>
+  			
+  		<div class="form-fila">
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Cobrado </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="venta.venImpCob" name="venImpCob" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Pendiente </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="venta.venImpPen" name="venImpPen" disabled> 
   			</div>
   			
   		</div>
@@ -69,14 +215,33 @@
 	
 	<div class="form-grupo"> 
   	
-  		<label class="titulo"> Datos Producto </label>
+  		<label class="titulo"> Datos Fechas </label>
 
 		<div class="form-fila">
 		
-  			<div class="form-campo"> 
-  				<label class="label"> Id Producto <span class="obligatorio">*</span> </label> 
-  				<input type="number" maxlength="10" [(ngModel)]="venta.idProducto" name="idProducto"> 
-  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !venta.idProducto"> Valor Obligatorio </div>
+  			<div class="form-campo-200"> 
+  				<label class="label"> Fecha Presupuesto </label> 
+  				<input type="date" maxlength="10" [(ngModel)]="venta.venFecPre" name="venFecPre" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Fecha Pedido </label> 
+  				<input type="date" maxlength="10" [(ngModel)]="venta.venFecPed" name="venFecPed" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Fecha Albarán </label> 
+  				<input type="date" maxlength="10" [(ngModel)]="venta.venFecAlb" name="venFecAlb" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Fecha Factura </label> 
+  				<input type="date" maxlength="10" [(ngModel)]="venta.venFecFac" name="venFecFac" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Fecha Cobro </label> 
+  				<input type="date" maxlength="10" [(ngModel)]="venta.venFecCob" name="venFecCob" disabled> 
   			</div>
   			
   		</div>
@@ -89,19 +254,19 @@
 
 		<div class="form-fila">
 
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label">Usu. Mov.</label> 
-  				<input type="text" maxlength="50" [(ngModel)]="venta.usuarioMovimiento" name="usuarioMovimiento" disabled> 
+  				<input type="text" maxlength="50" [(ngModel)]="venta.venUsuMov" name="venUsuMov" disabled> 
   			</div>
  			
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label">Fec. Mov.</label> 
-  				<input type="datetime-local" maxlength="10" [(ngModel)]="venta.fechaMovimiento" name="fechaMovimiento" disabled> 
+  				<input type="datetime-local" maxlength="10" [(ngModel)]="venta.venFecMov" name="venFecMov" disabled> 
   			</div>
   			
   			<div class="form-campo"> 
   				<label class="label">Activo</label> 
-  				<input type="checkbox" maxlength="10" [(ngModel)]="venta.activo" name="activo" disabled> 
+  				<input type="checkbox" maxlength="10" [(ngModel)]="venta.venAct" name="venAct" disabled> 
   			</div>
   			
  		</div>
@@ -110,7 +275,9 @@
  
 	<div class="toolbar"> 
 	
-		<button class="boton" (click)="guardar()"> Guardar </button> 
+		<button *ngIf="modoFormulario === 'insertar'" class="boton" (click)="guardar()"> Guardar </button>
+		
+		<button *ngIf="modoFormulario === 'modificar'" class="boton" (click)="actualizar()"> Actualizar </button>
 		
 		<!-- Botón Cancelar tiene misma lógica que insertar -->
 		<button class="boton" (click)="insertar()"> Cancelar </button>
@@ -120,7 +287,7 @@
 </div>
 
 <!-- TABLA DE RESULTADOS-->
-<div *ngIf="pestanaActiva === 'tabla'" class="tabla-contenedor">
+<div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
 
   	<label class="titulo"> TABLA DE VENTAS </label>
   

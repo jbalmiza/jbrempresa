@@ -1,0 +1,38 @@
+<h2>{{ formulario.titulo }}</h2>
+
+<div *ngFor="let campo of formulario.campos">
+
+    <label>{{ campo.campo }}</label>
+
+    <ng-container [ngSwitch]="campo.tipo">
+
+        <input
+            *ngSwitchCase="TipoDato.TEXT"
+            type="text">
+
+        <input
+            *ngSwitchCase="TipoDato.INTEGER"
+            type="number">
+
+        <input
+            *ngSwitchCase="TipoDato.DATE"
+            type="date">
+
+        <input
+            *ngSwitchCase="TipoDato.BOOLEAN"
+            type="checkbox">
+
+    </ng-container>
+
+</div>
+
+<div>
+
+    <button
+        *ngFor="let boton of formulario.botones">
+
+        {{ boton.titulo }}
+
+    </button>
+
+</div>

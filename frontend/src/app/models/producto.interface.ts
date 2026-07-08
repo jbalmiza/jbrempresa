@@ -1,13 +1,32 @@
 export interface Producto {
 
-	idCliente: number | null;	
-  	idProducto: number | null;
+	cliId: number;	
+  	proId: number;
 
-  	tipoProducto: string;
-  	nombre: string;
+  	proTipPro: string;
+  	proNom: string;
+	proDes: string;
+	
+	proCat: string;
+	proSubCat: string;
+	proMar: string;
+	proMod: string;
+	proPro: string;
+	
+	proPreCom: number;
+	proPreVen: number;
+	proPreDes: number;
+	proPreIva: number;
+	proPreFin: number;
+	
+	proStoAct: number;
+	proStoMin: number;
+	proUniMed: string;
+	proConSto: boolean;
+	proObs: string;
  
-  	activo: boolean;
-  	usuarioMovimiento: string;
-  	fechaMovimiento: string;
+  	proUsuMov: string;
+  	proFecMov: string;
+	proAct: boolean;
 
 }

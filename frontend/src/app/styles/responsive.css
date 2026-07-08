@@ -1,0 +1,58 @@
+/* ==========================================================
+   RESPONSIVE - FORMULARIOS
+========================================================== */
+
+/* Portátiles grandes */
+@media (max-width: 1600px) {
+
+    .form-fila {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+}
+
+/* Portátiles */
+@media (max-width: 1400px) {
+
+    .form-fila,
+    .form-fila {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+}
+
+/* Tablets horizontales */
+@media (max-width: 1100px) {
+
+    .form-fila,
+    .form-fila,
+    .form-fila {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+}
+
+/* Tablets verticales */
+@media (max-width: 850px) {
+
+    .form-fila,
+    .form-fila,
+    .form-fila,
+    .form-fila {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+/* Móviles */
+@media (max-width: 600px) {
+
+    .form-fila,
+    .form-fila,
+    .form-fila,
+    .form-fila,
+    .form-fila {
+        grid-template-columns: 1fr;
+    }
+
+}

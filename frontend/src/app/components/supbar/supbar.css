@@ -1,50 +1,58 @@
 .barra-superior {
 
-  display: flex;
+    font-family: Calibri;
 
-  justify-content: space-between;
+  	font-size: 14px;
+    
+    display: flex;
 
-  align-items: center;
+    flex-wrap: wrap;
 
-  height: 40px;
+    justify-content: space-between;
 
-  padding: 20px;
-  
-  margin-top: 5px;
-  margin-bottom: 5px;
-  margin-left: 35px;
-  margin-right: 30px;
+    align-items: center;
 
-  border-bottom: 1px solid #cccccc;
+    gap: 10px;
 
-  background-color: #eeeeee;
+    padding: 5px;
 
-  box-sizing: border-box;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: 35px;
+    margin-right: 30px;
+
+    border-bottom: 1px solid #cccccc;
+
+    background-color: #eeeeee;
+
+    box-sizing: border-box;
 
 }
 
 .barra-izquierda {
 
-  font-weight: bold;
+    font-weight: bold;
 
 }
 
 .barra-derecha {
 
-  display: flex;
+    display: flex;
 
-  gap: 10px;
+    flex-wrap: wrap;
+
+    gap: 10px;
 
 }
 
 .boton {
-	
-  margin: 5px;
-  
-  padding: 5px;
 
-  cursor: pointer;
-  
-  background-color: #ffffff;
+    margin: 5px;
+
+    padding: 5px;
+
+    cursor: pointer;
+
+    background-color: #ffffff;
 
 }

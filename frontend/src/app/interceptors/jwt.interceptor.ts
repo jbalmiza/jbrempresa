@@ -1,6 +1,10 @@
 import {
-  HttpInterceptorFn
+  HttpInterceptorFn,
+  HttpErrorResponse
 } from '@angular/common/http';
+
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 // Interceptor JWT
 export const jwtInterceptor: HttpInterceptorFn = (
@@ -27,6 +31,25 @@ export const jwtInterceptor: HttpInterceptorFn = (
   }
 
   // Continúa la petición
-  return next(req);
+  return next(req).pipe(
+
+    catchError((error: HttpErrorResponse) => {
+
+      // Si el token ha expirado o no es válido
+      if (error.status === 401) {
+
+        // Elimina el token almacenado
+        localStorage.removeItem('token');
+
+        // Redirige al login
+        window.location.href = '/login';
+
+      }
+
+      return throwError(() => error);
+
+    })
+
+  );
 
 };

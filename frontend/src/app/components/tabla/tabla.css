@@ -2,30 +2,26 @@
 .tabla-scroll {
 
   overflow: auto;
+  
+  width: 100%;
 
 }
 
 table {
 	
-  min-width: 1200px;
+    font-family: Calibri;
 
-  border-collapse: collapse;
+  	font-size: 14px;
 
-  margin-top: 20px;
+  	border-collapse: collapse;
 
-  background-color: white;
-
-  font-family: Arial, sans-serif;
-
-  font-size: 14px;
-
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-
-  border-radius: 6px;
-
-  overflow: hidden;
+  	margin: 5px;
   
-  min-width: 1600px;
+  	padding: 5px;
+
+  	background-color: white;
+
+  	overflow: hidden;
 
 }
 
@@ -39,31 +35,41 @@ thead {
 
 th {
 	
-  border: 1px solid #dcdcdc;
- 
-  padding: 12px;
- 
-  text-align: left;
-  
-  font-weight: 600;
- 
-  color: #334155;
+    font-family: Calibri;
 
-  white-space: nowrap; /* Evita el salto de línea */
+  	font-size: 14px;
+  	
+  	font-weight: 600;
+	
+  	border: 1px solid #dcdcdc;
+ 
+  	padding: 5px;
+  
+  	margin: 5px;
+ 
+  	text-align: left;
+
+  	white-space: nowrap; /* Evita el salto de línea */
   
 }
 
 /* CELDAS */
 
 td {
+  	
+    font-family: Calibri;
 
-  border: 1px solid #e5e7eb;
+  	font-size: 14px;
+	
+  	border: 1px solid #dcdcdc;
+ 
+  	padding: 5px;
+  
+  	margin: 5px;
+ 
+  	text-align: left;
 
-  padding: 10px 12px;
-
-  text-align: left;
-
-  color: #475569;
+  	white-space: nowrap; /* Evita el salto de línea */
 
 }
 
@@ -71,9 +77,11 @@ td {
 
 thead input {
 
-  background-color: white;
+  	background-color: white;
 
-  font-size: 13px;
+    font-family: Calibri;
+
+  	font-size: 14px;
 
 }
 
@@ -82,17 +90,15 @@ thead input {
 input,
 select {
 
-  width: 100%;
+    width: auto;
 
-  padding: 8px;
+  	padding: 5px;
+  
+  	margin: 5px;
 
-  border: 1px solid #cbd5e1;
+    border: 1px solid #cbd5e1;
 
-  border-radius: 4px;
-
-  box-sizing: border-box;
-
-  background-color: white;
+    background-color: white;
 
 }
 
@@ -143,6 +149,10 @@ tbody tr:hover {
 
 .paginador {
 
+  font-family: Calibri;
+
+  font-size: 14px;
+  
   display: flex;
 
   align-items: center;
@@ -163,6 +173,10 @@ tbody tr:hover {
 
 .paginador button {
 
+  font-family: Calibri;
+
+  font-size: 14px;
+  
   padding: 6px 12px;
 
   border: 1px solid #cbd5e1;

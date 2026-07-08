@@ -1,24 +1,25 @@
 export interface Persona {
 
-	idCliente: number | null;	
-  	idPersona: number | null;
+	cliId: number;	
+  	perId: number;
   
 
-  	tipoDocumento: string;
-  	documento: string;
+  	perTipDoc: string;
+  	perDoc: string;
+	perNomCom: string;
 
-  	nombre: string;
-  	apellido1: string;
-  	apellido2: string;
-	fechaNacimiento: string;
+  	perNom: string;
+  	perApe1: string;
+  	perApe2: string;
+	perFecNac: string;
 
-  	telefono: string;
-  	email: string;
+  	perTel: string;
+  	perEma: string;
 
-  	idDomicilio: number;
+  	domId: number;
 
-  	activo: boolean;
-  	usuarioMovimiento: string;
-  	fechaMovimiento: string;
+  	perUsuMov: string;
+  	perFecMov: string;
+	perAct: boolean;
 
 }

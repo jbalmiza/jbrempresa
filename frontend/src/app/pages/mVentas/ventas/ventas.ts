@@ -3,38 +3,89 @@
 // Importa libreria para crear componentes Angular
 import { Component } from '@angular/core';
 
+// Permite utilizar las directivas básicas de Angular como *ngIf, *ngFor y otras utilidades comunes.
 import { CommonModule } from '@angular/common';
 
 // Importa Routes para definir las rutas de navegación Angular
 import { Router } from '@angular/router';
 
+// Permite utilizar los componentes en esta clase
 import { Sidebar } from '../../../components/sidebar/sidebar';
-
 import { Supbar } from '../../../components/supbar/supbar';
+import { Tabla } from '../../../components/tabla/tabla';
+import { SelectorBusqueda } from '../../../components/selectorBusqueda/selectorBusqueda';
+import { TablaEdicion } from '../../../components/tablaEdicion/tablaEdicion';
 
-import { Venta } from '../../../models/venta.interface';
-
+// Permite utilizar formularios en esta clase
 import { FormsModule } from '@angular/forms';
 
+// Los servicios permiten consultar, insertar, modificar y eliminar datos desde otra clase
 import { VentaService } from '../../../services/venta.service';
+import { PersonaService } from '../../../services/persona.service';
+import { ProductoService } from '../../../services/producto.service';
+import { PdfService } from '../../../services/pdf.service';
 
-import { Tabla } from '../../../components/tabla/tabla';
+// Las interfaces definen el modelo de datos que utiliza cada clase
+import { Venta } from '../../../models/venta.interface';
+import { Persona } from '../../../models/persona.interface';
+import { Producto } from '../../../models/producto.interface';
+import { VentaDetalle } from '../../../models/ventaDetalle.interface';
 
+// Permite acceder a un componente hijo para utilizar sus variables y métodos.
+// Ejemplo acceder desde ventas a : this.tabla.datosFiltrados
 import { ViewChild } from '@angular/core';
 
-import { PdfService } from '../../../services/pdf.service';
+import { TablaColumna } from '../../../directives/tablaColumna/tablaColumna';
 
 // Se define la configuración del componente Angular
 @Component({
   selector: 'Ventas',
   standalone: true,
-  imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla],
+  imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla, SelectorBusqueda, TablaEdicion, TablaColumna],
   templateUrl: './ventas.html',
-  styleUrl: './ventas.css'
+  styleUrl: '../../../styles/estiloGeneral.css'
 })
 
 // Definición de la lógica del componente 
 export class Ventas {
+	
+	//Esto se ejecuta al iniciar la clase y está iniciado para cualquier acción: insertar, modificar, etc.
+	ngOnInit() {
+
+		//Se obtiene la lista de personas / productos disponible en insertar y modificar
+		this.personaService.obtenerPersonas().subscribe({
+
+		  next: (respuesta) => {
+
+		    this.personasLista = respuesta;
+
+		  },
+
+		  error: (error) => {
+
+		    console.error(error);
+
+		  }
+
+		});
+		
+		this.productoService.obtenerProductos().subscribe({
+
+		    next: (respuesta) => {
+
+		        this.productosLista = respuesta;
+
+		    },
+
+		    error: (error) => {
+
+		        console.error(error);
+
+		    }
+
+		});
+		
+	}
 	
 	//Busca el componente tabla en el html y guarda en una variable tabla por la cual se podrá acceder a variables y métodos dentro de tabla
 	// por ejemplo a 'this.tabla.datosFiltrados' que devolverá los registros que se están mostrando en pantalla después de aplicar los filtros.
@@ -44,9 +95,8 @@ export class Ventas {
 	tabla!: Tabla;
 
 	//Variables de la clase
-	pestanaActiva: 'registro' | 'tabla' = 'tabla';
-	
-	//Interruptor inactivo para controlar campos obligatorios
+	vistaActiva: 'registro' | 'tabla' = 'tabla';
+	modoFormulario: 'insertar' | 'modificar' = 'insertar';
 	mostrarObligatorios = false;
 	
 	// Se crea un objeto producto con datos vacíos
@@ -56,31 +106,87 @@ export class Ventas {
 	titulosColumnas = {
 	    cliId: 'Id Cliente',
 	    venId: 'Id Venta',
-	    perId: 'Id Persona',
-	    proId: 'Id Producto',
-	    venAct: 'Activo',
-	    usuMov: 'Usuario Mod.',
-	    fecMov: 'Fecha Mod.'
+		
+	    perIdVen: 'Id Vendedor',
+		perIdCom: 'Id Comprador',		
+
+		venImpSub: 'Importe Subtotal',
+		venImpDes: 'Importe Descuento',
+		venImpIva: 'Importe IVA',
+		venImpTot: 'Importe Total',
+		venImpCob: 'Importe Cobrado',
+		venImpPen: 'Importe Pendiente',
+		
+		venFecPre: 'Fecha Presupuesto',
+		venFecPed: 'Fecha Pedido',
+		venFecAlb: 'Fecha Albarán',
+		venFecFac: 'Fecha Factura',
+		venFecCob: 'Fecha Cobro',
+		
+	    venUsuMov: 'Usuario Mod.',
+	    venFecMov: 'Fecha Mod.',
+		venAct: 'Activo'
 	};	
 	
 	// Campos mostrados en la tabla
 	columnas: string[] = [ 'cliId', 'venId', 
-		'perId', 'proId', 
-		'venAct', 'usuMov', 'fecMov'
+		'perIdVen', 'perIdCom', 
+		'venImpSub', 'venImpDes', 'venImpIva', 'venImpTot', 'venImpCob', 'venImpPen', 
+		'venFecPre', 'venFecPed', 'venFecAlb', 'venFecFac', 'venFecCob', 
+		'venUsuMov', 'venFecMov', 'venAct'
+
+	];
+	
+	// Títulos de las columnas del detalle de la venta.
+	titulosColumnasDetalle = {
+
+	    proId: 'Producto',
+		
+	    venDetCan: 'Cantidad',
+	    venDetPre: 'Precio',
+		venDetDes: '% Descuento',
+		venDetIva: '% I.V.A.',
+	    venDetImp: 'Importe',
+		
+	    accion: 'Acción'
+
+	};
+
+	// Campos mostrados en la tabla de detalle.
+	columnasDetalle: string[] = [
+
+	    'proId',
+		
+	    'venDetCan',
+	    'venDetPre',
+		'venDetDes',
+		'venDetIva',
+	    'venDetImp',
+
+	    'accion'
 
 	];
 
 	// Datos de la tabla
 	datos: any[] = [];
 	
+	// Lista para el selector de personas
+	personasLista: Persona[] = [];
+	productosLista: Producto[] = [];
+
+	// Lista para el selector de productos	
+	ventaDetalleLista: VentaDetalle[] = [];
+	
 	// Guarda el registro seleccionado de la tabla
-	ventaSeleccionada: any = null;
+	ventaSeleccionada: Venta | null = null;
 	
 	// Angular inyecta el router en modo lectura
 	constructor (
 		
 	  private readonly router: Router,
 	  private ventaService: VentaService,
+	  private personaService: PersonaService,
+	  private productoService: ProductoService,
 	  private pdfService: PdfService
 	  
 	) {}
@@ -88,7 +194,7 @@ export class Ventas {
 	// Este método muestra la tabla de datos
 	consultar() {
 
-		this.pestanaActiva = 'tabla';
+		this.vistaActiva = 'tabla';
 
 		this.ventaService.obtenerVentas().subscribe({
 
@@ -113,7 +219,8 @@ export class Ventas {
 	// Este método muestra el formulario de registro y limpia los campos del formulario	
 	insertar() {
 		
-		this.pestanaActiva = 'registro';
+		this.vistaActiva = 'registro';
+		this.modoFormulario = 'insertar';
 
 		this.limpiarFormulario();
 		
@@ -124,7 +231,7 @@ export class Ventas {
 
 
 			console.log('ID recibido:', id);
-		    this.venta.idVenta = id;
+		    this.venta.venId = id;
 
 		  },
 
@@ -135,22 +242,45 @@ export class Ventas {
 		  }
 		});
 		
+		// Obtiene todas las personas registradas. Se utiliza para rellenar el selector del campo Id Persona.
+		this.personaService.obtenerPersonas().subscribe({
+
+		  next: (respuesta) => {
+
+		    this.personasLista = respuesta;
+			
+			console.log('LISTA DE PERSONAS:', this.personasLista);
+
+		  },
+
+		  error: (error) => {
+
+		    console.error(error);
+
+		  }
+
+		});
+		
+		//Al pulsar insertar venta se inserta también una línea detalle por defecto.
+		this.eliminarTodasVentaDetalle()
+		this.insertarVentaDetalle();
+		
 	}
 	
 	// Este método modifica	
 	modificar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.ventaSeleccionada) {
@@ -161,27 +291,36 @@ export class Ventas {
 	    }
 
 	    // Cambia a la pestaña registro
-	    this.pestanaActiva = 'registro';
+	    this.vistaActiva = 'registro';
+		this.modoFormulario = 'modificar';
 
 	    // Copia los datos seleccionados al formulario
 		// Convierte formtato backend ven_id a formato frontend idVenta
 		this.venta = {
 
-			idCliente: this.ventaSeleccionada.cliId,
+			cliId: this.ventaSeleccionada.cliId,
+		  	venId: this.ventaSeleccionada.venId,
+
+			perIdVen: this.ventaSeleccionada.perIdVen,
+			perIdCom: this.ventaSeleccionada.perIdCom,
+
 			
-		  	idVenta: this.ventaSeleccionada.venId,
+			venImpSub: this.ventaSeleccionada.venImpSub,
+			venImpDes: this.ventaSeleccionada.venImpDes,
+			venImpIva: this.ventaSeleccionada.venImpIva,
+			venImpTot: this.ventaSeleccionada.venImpTot,
+			venImpCob: this.ventaSeleccionada.venImpCob,
+			venImpPen: this.ventaSeleccionada.venImpPen,
+			
+			venFecPre: this.ventaSeleccionada.venFecPre,
+			venFecPed: this.ventaSeleccionada.venFecPed,
+			venFecAlb: this.ventaSeleccionada.venFecAlb,
+			venFecFac: this.ventaSeleccionada.venFecFac,
+			venFecCob: this.ventaSeleccionada.venFecCob,
 
-		  
-			idPersona: this.ventaSeleccionada.perId,
-
-		  	idProducto: this.ventaSeleccionada.proId,
-
-		  
-			activo: this.ventaSeleccionada.venAct,
-
-			usuarioMovimiento: this.ventaSeleccionada.usuMov,
-
-		  	fechaMovimiento: this.ventaSeleccionada.fecMov
+			venUsuMov: this.ventaSeleccionada.venUsuMov,
+		  	venFecMov: this.ventaSeleccionada.venFecMov,
+			venAct: this.ventaSeleccionada.venAct
 
 		};
 
@@ -193,17 +332,17 @@ export class Ventas {
 	eliminar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.ventaSeleccionada) {
@@ -228,7 +367,8 @@ export class Ventas {
 
 	    // Elimina el usuario
 	    this.ventaService.eliminar(
-	      this.ventaSeleccionada.venId
+	      this.ventaSeleccionada.venId!,
+		  this.ventaSeleccionada.cliId
 	    ).subscribe({
 
 	      next: () => {
@@ -291,8 +431,8 @@ export class Ventas {
 
 		//Alerta para determinados campos sin valor (obligatorios)
 		if (
-		  !this.venta.idPersona || 
-		  !this.venta.idProducto
+		  !this.venta.perIdCom ||
+		  !this.venta.perIdVen 
 		) {
 
 		  alert('Debe rellenar todos los campos obligatorios');
@@ -302,23 +442,29 @@ export class Ventas {
 		}
 
 	  const venta = {
-
 		
-		cliId: this.venta.idCliente,
+		cliId: this.venta.cliId,
+	    venId: 0,
+
+		perIdVen: this.venta.perIdVen,		
+		perIdCom: this.venta.perIdCom,
 		
-	    venId: null,
-
-	    
-		perId: this.venta.idPersona,
-
-	    proId: this.venta.idProducto,
-
-	   
-		venAct: this.venta.activo,
-
-	    usuMov: this.venta.usuarioMovimiento,
-
-	    fecMov: this.venta.fechaMovimiento,
+		venImpSub: this.venta.venImpSub,
+		venImpDes: this.venta.venImpDes,
+		venImpIva: this.venta.venImpIva,
+		venImpTot: this.venta.venImpTot,
+		venImpCob: this.venta.venImpCob,
+		venImpPen: this.venta.venImpPen,
+		
+		venFecPre: this.venta.venFecPre,
+		venFecPed: this.venta.venFecPed,
+		venFecAlb: this.venta.venFecAlb,
+		venFecFac: this.venta.venFecFac,
+		venFecCob: this.venta.venFecCob,
+		
+		venUsuMov: this.venta.venUsuMov,
+	    venFecMov: this.venta.venFecMov,
+		venAct: this.venta.venAct
 
 	  };
 
@@ -326,17 +472,88 @@ export class Ventas {
 
 	    next: () => {
 
-	      alert('Venta guardada');
+	      alert('Venta guardada correctamente.');
+		  
+		  this.limpiarFormulario();
 
 	    },
 
 	    error: (error: any) => {
 
 	      console.error(error);
+		  
+		  alert('Error al guardar venta.');
 
 	    }
 
 	  });
+
+	}
+	
+	// Este método modifica el contenido del formulario en base de datos.
+	actualizar() {
+
+	    // Interruptor activo para controlar campos obligatorios.
+	    this.mostrarObligatorios = true;
+
+	    // Comprueba que todos los campos obligatorios tengan valor.
+	    if (
+	        !this.venta.perIdCom ||
+	        !this.venta.perIdVen
+	    ) {
+
+	        alert('Debe rellenar todos los campos obligatorios');
+
+	        return;
+
+	    }
+
+	    const venta = {
+
+	        cliId: this.venta.cliId,
+	        venId: this.venta.venId,
+
+	        perIdVen: this.venta.perIdVen,
+	        perIdCom: this.venta.perIdCom,
+
+	        venImpSub: this.venta.venImpSub,
+	        venImpDes: this.venta.venImpDes,
+	        venImpIva: this.venta.venImpIva,
+	        venImpTot: this.venta.venImpTot,
+	        venImpCob: this.venta.venImpCob,
+	        venImpPen: this.venta.venImpPen,
+
+	        venFecPre: this.venta.venFecPre,
+	        venFecPed: this.venta.venFecPed,
+	        venFecAlb: this.venta.venFecAlb,
+	        venFecFac: this.venta.venFecFac,
+	        venFecCob: this.venta.venFecCob,
+
+	        venUsuMov: this.venta.venUsuMov,
+	        venFecMov: this.venta.venFecMov,
+	        venAct: this.venta.venAct
+
+	    };
+
+	    this.ventaService.actualizar(venta).subscribe({
+
+	        next: () => {
+
+	            alert('Venta actualizada correctamente.');
+
+	            this.consultar();
+
+	        },
+
+	        error: (error: any) => {
+
+	            console.error(error);
+				
+				alert('Error al actualizar venta.');
+
+	        }
+
+	    });
 
 	}
 	
@@ -352,15 +569,28 @@ export class Ventas {
 
 		return {
 
-		idCliente: Number(localStorage.getItem('clienteId')) || 0,
-	  	idVenta: null,
+		cliId: Number(localStorage.getItem('clienteId')) || 0,
+	  	venId: 0,
 		
-	  	idPersona: 0,
-	  	idProducto: 0,
+	  	perIdVen: 0,
+		perIdCom: 0,
+		
+		venImpSub: 0,
+		venImpDes: 0,
+		venImpIva: 0,
+		venImpTot: 0,
+		venImpCob: 0,
+		venImpPen: 0,
+		
+		venFecPre: '',
+		venFecPed: '',
+		venFecAlb: '',
+		venFecFac: '',
+		venFecCob: '',
 	  
-	  	activo: true,
-		usuarioMovimiento: localStorage.getItem('usuario') || '',
-	  	fechaMovimiento: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16)
+		venUsuMov: localStorage.getItem('usuario') || '',
+	  	venFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+		venAct: true
 		
 		};
 	}
@@ -369,6 +599,151 @@ export class Ventas {
 	private limpiarFormulario() {
 
 		this.venta = this.crearVentaVacia();
+
+	}
+	
+	// Este método crea una venta detalle vacía
+	crearVentaDetalleVacia(): VentaDetalle {
+
+	    return {
+
+	        venDetId: 0,	
+	        venId: 0,
+			
+	        proId: 0,
+	        venDetCan: 1, 
+			venDetPre: 0, 
+			venDetDes: 0,
+			venDetIva: 0,
+			venDetImp: 0,
+			
+			venDetUsuMov: localStorage.getItem('usuario') || '',
+			venDetFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+			venDetAct: true
+
+	    };
+
+	}
+
+	// Este método inserta una nueva venta detalle en la lista
+	insertarVentaDetalle() {
+
+	    this.ventaDetalleLista.push(
+	       
+			 this.crearVentaDetalleVacia()
+	    );
+
+	}
+
+	// Este método elimina una nueva venta detalle de la lista	
+	eliminarVentaDetalle(indice: number) {
+
+		// Elimina una linea detalle de venta pasando el número de línea.
+	    this.ventaDetalleLista.splice(indice, 1);
+		
+		// Se recalculan los totales de la venta.
+		this.calcularTotalesVenta();
+
+	}
+	
+	// Elimina todas las líneas del detalle de la venta.
+	eliminarTodasVentaDetalle(): void {
+
+		// Elimina todas las lineas detalle de venta.
+	    this.ventaDetalleLista = [];
+		
+		// Se recalculan los totales de la venta.
+		this.calcularTotalesVenta();
+
+	}
+	
+	// Asigna el producto seleccionado a la línea del detalle y carga su precio.
+	seleccionarProductoDetalle(fila: VentaDetalle, proId: number): void {
+
+	  // Guarda el identificador del producto.
+	  fila.proId = proId;
+
+	  // Busca el producto seleccionado en la lista de productos.
+	  const producto = this.productosLista.find(
+
+	    producto => producto.proId === proId
+
+	  );
+
+	  // Si el producto existe...
+	  if (producto) {
+
+	    // Copia el precio de venta del producto a la línea del detalle.
+	    fila.venDetPre = producto.proPreVen;
+		fila.venDetDes = producto.proPreDes;
+		fila.venDetIva = producto.proPreIva;
+		
+		// Recalcula la línea completa
+		 this.actualizarLinea(fila);
+
+	  }
+
+	}
+	
+	// Este método actualiza el importe total por linea y el importe total por venta 
+	actualizarLinea(fila: VentaDetalle): void {
+
+	    this.calcularImporteLinea(fila);
+
+	    this.calcularTotalesVenta();
+
+	}
+	
+	// Este método actualiza el importe total de cada línea.
+	calcularImporteLinea(fila: VentaDetalle): void {
+
+	    const base = fila.venDetCan * fila.venDetPre;
+
+	    const descuento = base * fila.venDetDes / 100;
+
+	    const baseDescontada = base - descuento;
+
+	    const iva = baseDescontada * fila.venDetIva / 100;
+
+	    fila.venDetImp = baseDescontada + iva;
+
+	}
+	
+	// Este método actualiza el importe total de la venta.
+	calcularTotalesVenta(): void {
+
+	  let subtotal = 0;
+	  let descuento = 0;
+	  let iva = 0;
+	  let total = 0;
+
+	  this.ventaDetalleLista.forEach(fila => {
+
+	    const base = fila.venDetCan * fila.venDetPre;
+
+	    const impDes = base * fila.venDetDes / 100;
+
+	    const baseDescontada = base - impDes;
+
+	    const impIva = baseDescontada * fila.venDetIva / 100;
+
+	    const impTotal = baseDescontada + impIva;
+
+	    subtotal += base;
+	    descuento += impDes;
+	    iva += impIva;
+	    total += impTotal;
+
+	  });
+
+	  this.venta.venImpSub = subtotal;
+	  this.venta.venImpDes = descuento;
+	  this.venta.venImpIva = iva;
+	  this.venta.venImpTot = total;
+
+	  // Si no hay cobros registrados, mantenemos el importe cobrado
+	  // y calculamos el pendiente.
+	  this.venta.venImpPen = this.venta.venImpTot - this.venta.venImpCob;
 
 	}
 	

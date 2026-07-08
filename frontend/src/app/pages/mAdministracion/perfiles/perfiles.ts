@@ -30,7 +30,7 @@ import { PdfService } from '../../../services/pdf.service';
   standalone: true,
   imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla],
   templateUrl: './perfiles.html',
-  styleUrl: './perfiles.css'
+  styleUrl: '../../../styles/estiloGeneral.css'
 })
 
 // Definición de la lógica del componente 
@@ -44,9 +44,8 @@ export class Perfiles {
 	tabla!: Tabla;
 
 	//Variables de la clase
-	pestanaActiva: 'registro' | 'tabla' = 'tabla';
-	
-	//Interruptor inactivo para controlar campos obligatorios
+	vistaActiva: 'registro' | 'tabla' = 'tabla';
+	modoFormulario: 'insertar' | 'modificar' = 'insertar';
 	mostrarObligatorios = false;
 	
 	// Se crea un objeto usuario con datos vacíos
@@ -63,16 +62,16 @@ export class Perfiles {
 	    perModPer: 'Mód. Per.',
 	    perModPro: 'Mód. Pro.',
 	    perModVen: 'Mód. Ven.',
-	    perAct: 'Activo',
-	    usuMov: 'Usuario Mod.',
-	    fecMov: 'Fecha Mod.'
+	    perUsuMov: 'Usuario Mod.',
+	    perFecMov: 'Fecha Mod.',
+		perAct: 'Activo'
 	};
 	
 	// Campos mostrados en la tabla
 	columnas: string[] = [ 'cliId', 'perId', 
 		'perNom', 'perTipPer',
 		'perModAdm', 'perModTer', 'perModPer', 'perModPro', 'perModVen',
-		'perAct', 'usuMov', 'fecMov'
+		'perUsuMov', 'perFecMov','perAct'
 	  
 	];
 	
@@ -80,10 +79,10 @@ export class Perfiles {
 	datos: any[] = [];
 	
 	// Lista para el selector de perfiles
-	perfilesLista: any[] = [];
+	perfilesLista: Perfil[] = [];
 	
 	// Guarda el registro seleccionado de la tabla
-	perfilSeleccionado: any = null;
+	perfilSeleccionado: Perfil | null = null;
 	
 	// Angular inyecta el router en modo lectura
 	constructor (
@@ -97,7 +96,7 @@ export class Perfiles {
 	// Este método muestra la tabla de datos
 	consultar() {
 			
-		this.pestanaActiva = 'tabla';	 
+		this.vistaActiva = 'tabla';	 
 		
 		this.perfilService.obtenerPerfiles().subscribe({
 			
@@ -124,7 +123,8 @@ export class Perfiles {
 	// Este método muestra el formulario de registro y limpia los campos del formulario	
 	insertar() {
 
-	  	this.pestanaActiva = 'registro';
+	  	this.vistaActiva = 'registro';
+		this.modoFormulario = 'insertar';
 		
 		this.limpiarFormulario();
 		
@@ -135,7 +135,7 @@ export class Perfiles {
 
 			console.log('Id Perfil recibido:', id);
 
-		    this.perfil.idPerfil = id;
+		    this.perfil.perId = id;
 
 		  },
 
@@ -153,16 +153,16 @@ export class Perfiles {
 	modificar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.perfilSeleccionado) {
@@ -173,38 +173,36 @@ export class Perfiles {
 	    }
 
 	    // Cambia a la pestaña registro
-	    this.pestanaActiva = 'registro';
+	    this.vistaActiva = 'registro';
+		this.modoFormulario = 'modificar';
 
 	    // Copia los datos seleccionados al formulario
 		// Convierte formtato backend usu_id a formato frontend idUsuario
 		this.perfil = {
 
-			idCliente: this.perfilSeleccionado.cliId,			
+			cliId: this.perfilSeleccionado.cliId,			
 			
-			idPerfil: this.perfilSeleccionado.perId,
+			perId: this.perfilSeleccionado.perId,
 			
+			perNom: this.perfilSeleccionado.perNom,
 
-			nombre: this.perfilSeleccionado.perNom,
-
-			tipoPerfil: this.perfilSeleccionado.perTipPer,
+			perTipPer: this.perfilSeleccionado.perTipPer,
 			
+			perModAdm: this.perfilSeleccionado.perModAdm,
 
-			mAdministracion: this.perfilSeleccionado.perModAdm,
+			perModTer: this.perfilSeleccionado.perModTer,
 
-			mTerritorio: this.perfilSeleccionado.perModTer,
-
-			mPersonas: this.perfilSeleccionado.perModPer,
+			perModPer: this.perfilSeleccionado.perModPer,
 			
-			mProductos: this.perfilSeleccionado.perModPro,
+			perModPro: this.perfilSeleccionado.perModPro,
 
-			mVentas: this.perfilSeleccionado.perModVen,
+			perModVen: this.perfilSeleccionado.perModVen,
+
+			perUsuMov: this.perfilSeleccionado.perUsuMov,
+
+			perFecMov: this.perfilSeleccionado.perFecMov,
 			
-
-			activo: this.perfilSeleccionado.perAct,
-
-			usuarioMovimiento: this.perfilSeleccionado.usuMov,
-
-			fechaMovimiento: this.perfilSeleccionado.fecMov
+			perAct: this.perfilSeleccionado.perAct
 
 			};
 
@@ -216,17 +214,17 @@ export class Perfiles {
 	eliminar() {
 
 	  // Si estamos en la pestaña registro
-	  if (this.pestanaActiva === 'registro') {
+	  if (this.vistaActiva === 'registro') {
 
 	    // Cambia a la pestaña tabla
-	    this.pestanaActiva = 'tabla';
+	    this.vistaActiva = 'tabla';
 
 	    return;
 
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.pestanaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.perfilSeleccionado) {
@@ -251,7 +249,8 @@ export class Perfiles {
 
 	    // Elimina el usuario
 	    this.perfilService.eliminar(
-	      this.perfilSeleccionado.perId
+	      this.perfilSeleccionado.perId!,
+		  this.perfilSeleccionado.cliId
 	    ).subscribe({
 
 	      next: () => {
@@ -314,8 +313,8 @@ export class Perfiles {
 
 		//Alerta para determinados campos sin valor (obligatorios)
 		if (
-		  !this.perfil.nombre ||
-		  !this.perfil.tipoPerfil
+		  !this.perfil.perNom ||
+		  !this.perfil.perTipPer
 		) {
 
 		  alert('Debe rellenar todos los campos obligatorios');
@@ -327,32 +326,29 @@ export class Perfiles {
 
 	  const perfil = {
 
-		cliId: this.perfil.idCliente,		
+		cliId: this.perfil.cliId,		
 		
 	    perId: null,
 		
+	    perNom: this.perfil.perNom,
 
-	    perNom: this.perfil.nombre,
+	    perTipPer: this.perfil.perTipPer,
+				
+		perModAdm: this.perfil.perModAdm,
 
-	    perTipPer: this.perfil.tipoPerfil,
+	    perModTer: this.perfil.perModTer,
+
+	    perModPer: this.perfil.perModPer,
 		
+		perModPro: this.perfil.perModPro,
+
+		perModVen: this.perfil.perModVen,
+
+	    perUsuMov: this.perfil.perUsuMov,
+
+	    perFecMov: this.perfil.perFecMov,
 		
-		perModAdm: this.perfil.mAdministracion,
-
-	    perModTer: this.perfil.mTerritorio,
-
-	    perModPer: this.perfil.mPersonas,
-		
-		perModPro: this.perfil.mProductos,
-
-		perModVen: this.perfil.mVentas,
-
-		
-	    perAct: this.perfil.activo,
-
-	    usuMov: this.perfil.usuarioMovimiento,
-
-	    fecMov: this.perfil.fechaMovimiento
+		perAct: this.perfil.perAct
 
 	  };
 	  
@@ -362,10 +358,9 @@ export class Perfiles {
 
 	    next: () => {
 
-	      alert('Perfil guardado correctamente');
+	      alert('Perfil guardado correctamente.');
 		  
-		  // Cambia a la pestaña registro
-		  this.pestanaActiva = 'tabla';
+		  this.limpiarFormulario();
 
 	    },
 
@@ -378,6 +373,77 @@ export class Perfiles {
 	    }
 
 	  });
+
+	}
+	
+	// Este método actualiza el contenido del formulario en base de datos
+	actualizar() {
+		
+		// Interruptor activo para controlar campos obligatorios
+		this.mostrarObligatorios = true;
+
+		// Alerta para determinados campos sin valor (obligatorios)
+		if (
+		  !this.perfil.perNom ||
+		  !this.perfil.perTipPer
+		) {
+
+		  alert('Debe rellenar todos los campos obligatorios');
+
+		  return;
+
+		}
+
+		const perfil = {
+
+			cliId: this.perfil.cliId,
+
+		    // Mantiene el identificador del perfil que se va a modificar
+		    perId: this.perfil.perId,
+
+		    perNom: this.perfil.perNom,
+
+		    perTipPer: this.perfil.perTipPer,
+
+			perModAdm: this.perfil.perModAdm,
+
+		    perModTer: this.perfil.perModTer,
+
+		    perModPer: this.perfil.perModPer,
+
+			perModPro: this.perfil.perModPro,
+
+			perModVen: this.perfil.perModVen,
+
+		    perUsuMov: this.perfil.perUsuMov,
+
+		    perFecMov: this.perfil.perFecMov,
+
+			perAct: this.perfil.perAct
+
+		};
+
+		console.log('PERFIL A ACTUALIZAR:', perfil);
+
+		this.perfilService.actualizar(perfil).subscribe({
+
+			next: () => {
+
+				alert('Perfil actualizado correctamente.');
+
+				this.limpiarFormulario();
+
+			},
+
+			error: (error: any) => {
+
+				console.error(error);
+
+				alert('Error al actualizar perfil.');
+
+			}
+
+		});
 
 	}
 
@@ -393,21 +459,21 @@ export class Perfiles {
 
 		return {
 
-		idCliente: Number(localStorage.getItem('clienteId')) || 0,
-	  	idPerfil: null,
+		cliId: Number(localStorage.getItem('clienteId')) || 0,
+	  	perId: 0,
 		
-	  	nombre: '',
-	  	tipoPerfil: '',
+	  	perNom: '',
+	  	perTipPer: '',
 		
-	  	mAdministracion: false,
-	  	mTerritorio: false,
-		mPersonas: false,
-		mProductos: false,
-		mVentas: false,
+	  	perModAdm: false,
+	  	perModTer: false,
+		perModPer: false,
+		perModPro: false,
+		perModVen: false,
 		
-	  	activo: true,
-		usuarioMovimiento: localStorage.getItem('usuario') || '',
-		fechaMovimiento: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16)
+		perUsuMov: localStorage.getItem('usuario') || '',
+		perFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+		perAct: true,
 
 		};
 	}

@@ -1,0 +1,47 @@
+
+<button class="botonDerecha" (click)="insertarLinea.emit()"> Insertar línea </button>
+
+<div class="tabla-scroll">
+
+<table>
+
+	<!-- Cabecera de la tabla -->
+    <thead>
+     
+        <tr>
+            <!-- Recorre las columnas para mostrar el título de cada una -->
+            <th *ngFor="let columna of columnas"> {{ titulosColumnas[columna] }} </th>
+
+        </tr>
+
+    </thead>
+
+    <!-- Cuerpo de la tabla -->
+    <tbody>
+
+        <!-- Recorre la lista de datos para crear una fila por cada registro -->
+        <tr *ngFor="let fila of datos; let indice = index">
+
+            <!-- Recorre las columnas para crear una celda por cada campo -->
+            <td *ngFor="let columna of columnas">
+
+                <!-- Muestra la plantilla correspondiente a la columna 
+                ngTemplateOutlet pinta html, 
+                obtenerPlantilla llama a pintar y columna es lo que tiene que pintar,
+                ?.template es la directiva que esta en la carpeta directivas -->
+                <ng-container
+
+                    *ngTemplateOutlet="obtenerPlantilla(columna)?.template;
+                        				context: { $implicit: fila, indice: indice }">
+
+                </ng-container>
+
+            </td>
+
+        </tr>
+
+    </tbody>
+
+</table>
+
+</div>

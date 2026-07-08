@@ -29,7 +29,7 @@
 </div>
 
 <!-- FORMULARIO DE REGISTRO -->
-<div *ngIf="pestanaActiva === 'registro'" class="form-contenedor">
+<div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
 
   	<div class="form-grupo"> 
   	
@@ -39,12 +39,12 @@
 
   			<div class="form-campo"> 
   				<label class="label">Id Cliente</label> 
-  				<input type="number" maxlength="10" [(ngModel)]="producto.idCliente" name="idCliente" disabled> 
+  				<input type="number" maxlength="10" [(ngModel)]="producto.cliId" name="cliId" disabled> 
   			</div>
 
   			<div class="form-campo"> 
   				<label class="label">Id Producto</label> 
-  				<input type="number" maxlength="10" [(ngModel)]="producto.idProducto" name="idProducto" disabled> 
+  				<input type="number" maxlength="10" [(ngModel)]="producto.proId" name="proId" disabled> 
   			</div>
   			
   		</div>
@@ -57,21 +57,151 @@
 
 		<div class="form-fila">
 		
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label"> Tipo Producto <span class="obligatorio">*</span> </label> 
-  				<input type="text" maxlength="30" [(ngModel)]="producto.tipoProducto" name="tipoProducto">
-  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.tipoProducto"> Valor Obligatorio </div>
+  				<input type="text" maxlength="30" [(ngModel)]="producto.proTipPro" name="proTipPro">
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proTipPro"> Valor Obligatorio </div>
   			</div>
 
-  			<div class="form-campo"> 
+  			<div class="form-campo-200"> 
   				<label class="label"> Nombre <span class="obligatorio">*</span> </label> 
-  				<input type="text" maxlength="50" [(ngModel)]="producto.nombre" name="nombre">
-  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.nombre"> Valor Obligatorio </div>
+  				<input type="text" maxlength="50" [(ngModel)]="producto.proNom" name="proNom">
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proNom"> Valor Obligatorio </div>
+  			</div>
+  			
+  			<div class="form-campo-500"> 
+  				<label class="label"> Descripción </label> 
+  				<input type="text" maxlength="200" [(ngModel)]="producto.proDes" name="proDes">
   			</div>
   			
   		</div>
 
 	</div>
+	
+	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Clasificación </label>
+
+		<div class="form-fila">
+		
+  			<div class="form-campo-200"> 
+  				<label class="label"> Categoría <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="50" [(ngModel)]="producto.proCat" name="proCat">
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proCat"> Valor Obligatorio </div>
+  			</div>
+
+  			<div class="form-campo-200"> 
+  				<label class="label"> Subcategoría </label> 
+  				<input type="text" maxlength="50" [(ngModel)]="producto.proSubCat" name="proSubCat">
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Marca <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="50" [(ngModel)]="producto.proMar" name="proMar">
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proMar"> Valor Obligatorio </div>
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Modelo </label> 
+  				<input type="text" maxlength="50" [(ngModel)]="producto.proMod" name="proMod">
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Proveedor <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="200" [(ngModel)]="producto.proPro" name="proPro">
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proPro"> Valor Obligatorio </div>
+  			</div>
+  			
+  		</div>
+
+	</div>
+	
+	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Económicos </label>
+
+		<div class="form-fila">
+		
+  			<div class="form-campo-200"> 
+  				<label class="label"> Precio Compra <span class="obligatorio">*</span> </label> 
+  				<input type="number" maxlength="30" [(ngModel)]="producto.proPreCom" name="proPreCom">
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proPreCom"> Valor Obligatorio </div>
+  			</div>
+
+  			<div class="form-campo-200"> 
+  				<label class="label"> Precio Venta <span class="obligatorio">*</span> </label> 
+  				<input type="number" maxlength="50" [(ngModel)]="producto.proPreVen" name="proPreVen" 
+  				(input)="actualizarPrecioFinal()">
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proPreVen"> Valor Obligatorio </div>
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label"> Descuento </label> 
+  				<input type="number" maxlength="200" [(ngModel)]="producto.proPreDes" name="proPreDes" 
+  				(input)="actualizarPrecioFinal()">
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label"> I.V.A. <span class="obligatorio">*</span> </label> 
+  				<input type="number" maxlength="200" [(ngModel)]="producto.proPreIva" name="proPreIva" 
+  				(input)="actualizarPrecioFinal()">
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proPreIva"> Valor Obligatorio </div>
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Precio Final </label> 
+  				<input type="number" maxlength="200" [(ngModel)]="producto.proPreFin" name="proPreFin" disabled>
+  			</div>
+  			
+  		</div>
+
+	</div>
+
+	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Inventario </label>
+
+		<div class="form-fila">
+		
+  			<div class="form-campo-200"> 
+  				<label class="label"> Stock Actual </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="producto.proStoAct" name="proStoAct">
+  			</div>
+
+  			<div class="form-campo-200"> 
+  				<label class="label"> Stock Mínimo </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="producto.proStoMin" name="proStoMin">
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Unidad Medida </label> 
+  				<input type="text" maxlength="30" [(ngModel)]="producto.proUniMed" name="proUniMed">
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Control Stock</label> 
+  				<input type="checkbox" maxlength="10" [(ngModel)]="producto.proConSto" name="proConSto"> 
+  			</div>
+  			
+  		</div>
+
+	</div>
+	
+	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Adicionales </label>
+
+		<div class="form-fila">
+		
+  			<div class="form-campo-500"> 
+  				<label class="label"> Observaciones </label> 
+  				<input type="text" maxlength="200" [(ngModel)]="producto.proObs" name="proObs">
+  			</div>
+  			
+  		</div>
+
+	</div>
+
 
   	<div class="form-grupo"> 
   	
@@ -79,19 +209,19 @@
 
 		<div class="form-fila">
 
-  			<div class="form-campo"> 
-  				<label class="label">Usu. Mov.</label> 
-  				<input type="text" maxlength="50" [(ngModel)]="producto.usuarioMovimiento" name="usuarioMovimiento" disabled> 
+  			<div class="form-campo-200"> 
+  				<label class="label">Usurio Movimiento</label> 
+  				<input type="text" maxlength="50" [(ngModel)]="producto.proUsuMov" name="proUsuMov" disabled> 
   			</div>
  			
-  			<div class="form-campo"> 
-  				<label class="label">Fec. Mov.</label> 
-  				<input type="datetime-local" maxlength="10" [(ngModel)]="producto.fechaMovimiento" name="fechaMovimiento" disabled> 
+  			<div class="form-campo-200"> 
+  				<label class="label">Fecha Movimiento</label> 
+  				<input type="datetime-local" maxlength="10" [(ngModel)]="producto.proFecMov" name="proFecMov" disabled> 
   			</div>
   			
   			<div class="form-campo"> 
   				<label class="label">Activo</label> 
-  				<input type="checkbox" maxlength="10" [(ngModel)]="producto.activo" name="activo" disabled> 
+  				<input type="checkbox" maxlength="10" [(ngModel)]="producto.proAct" name="proAct" disabled> 
   			</div>
   			
  		</div>
@@ -100,17 +230,19 @@
  
 	<div class="toolbar"> 
 	
-		<button class="boton" (click)="guardar()"> Guardar </button> 
+		<button *ngIf="modoFormulario === 'insertar'" class="boton" (click)="guardar()"> Guardar </button>
 		
-		<!-- Botón Cancelar tiene misma lógica que insertar -->
-		<button class="boton" (click)="insertar()"> Cancelar </button>
+		<button *ngIf="modoFormulario === 'modificar'" class="boton" (click)="actualizar()"> Actualizar </button>
+		
+		<!-- Botón Cancelar tiene misma lógica que consultar -->
+		<button class="boton" (click)="consultar()"> Cancelar </button>
 		
 	</div>
 
 </div>
 
 <!-- TABLA DE RESULTADOS-->
-<div *ngIf="pestanaActiva === 'tabla'" class="tabla-contenedor">
+<div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
 
   	<label class="titulo"> TABLA DE PRODUCTOS </label>
   

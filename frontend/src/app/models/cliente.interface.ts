@@ -1,14 +1,14 @@
 export interface Cliente {
 
 	//Datos Identificación
-	idCliente: number | null;
+	cliId: number;
 
 	//Datos Cliente
-  	nombre: string;
+  	cliNom: string;
 
 	//Datos Movimiento
-  	usuarioMovimiento: string;
-  	fechaMovimiento: string;
-	activo: boolean;
+  	cliUsuMov: string;
+  	cliFecMov: string;
+	cliAct: boolean;
 
 }
