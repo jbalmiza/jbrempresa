@@ -1,0 +1,42 @@
+<button type="button" class="boton" (click)="abrirMalla()">
+    ▦ Seleccionar en Malla
+</button>
+
+<div class="fondo" *ngIf="mostrarMalla">
+
+    <div class="ventana">
+
+        <div class="cabecera">
+
+            <span>Seleccionar Malla</span>
+
+            <button
+                type="button"
+                class="boton"
+                (click)="cerrarMalla()">
+                ✖
+            </button>
+
+        </div>
+
+        <div #contenedor class="malla"></div>
+
+        <div class="pie">
+
+            <button
+                class="boton"
+                (click)="aceptarMalla()">
+                Aceptar
+            </button>
+
+            <button
+                class="boton"
+                (click)="cerrarMalla()">
+                Cancelar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>

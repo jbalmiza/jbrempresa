@@ -1,110 +1,155 @@
-// Define el paquete donde está ubicado este archivo Java
+// Define el paquete.
 package com.jbrempresa.backend.controller;
 
-//Importa la anotación @Autowired.
-//Sirve para que Spring inyecte automáticamente objetos necesarios.
+// Importa Autowired.
 import org.springframework.beans.factory.annotation.Autowired;
 
-//Importa todas las anotaciones REST de Spring:
-//@RestController
-//@RequestMapping
-//@PostMapping
-//@RequestBody
-//@CrossOrigin
-import org.springframework.web.bind.annotation.*;
+// Importa LocalDateTime.
+import java.time.LocalDateTime;
 
-//Importa la entidad Persona.
-//Esta entidad representa la tabla PERSONA de PostgreSQL.
-import com.jbrempresa.backend.entity.Persona;
-
-//Importa PersonaRepository.
-//El repository contiene los métodos CRUD automáticos de JPA.
-import com.jbrempresa.backend.repository.PersonaRepository;
-
+// Importa List.
 import java.util.List;
 
-//Indica que esta clase es un controlador REST.
-//Un controlador REST recibe peticiones HTTP desde Angular.
+// Importa Authentication.
+import org.springframework.security.core.Authentication;
+
+// Importa SecurityContextHolder.
+import org.springframework.security.core.context.SecurityContextHolder;
+
+// Importa las anotaciones REST.
+import org.springframework.web.bind.annotation.*;
+
+// Importa Persona.
+import com.jbrempresa.backend.entity.Persona;
+
+// Importa PersonaRepository.
+import com.jbrempresa.backend.repository.PersonaRepository;
+
+// Importa JwtUser.
+import com.jbrempresa.backend.security.JwtUser;
+
+// Define el controlador.
 @RestController
 
-//Define la ruta base del controlador.
-//Todas las URLs empezarán por:
-/*
-http://localhost:8080/personas
-*/
+// Define la ruta base.
 @RequestMapping("/personas")
 
-//Permite conexiones desde Angular.
-//Angular normalmente funciona en localhost:4200.
-//Sin esto el navegador bloquearía las peticiones por seguridad CORS.
+// Permite peticiones desde Angular.
 @CrossOrigin(origins = "http://localhost:4200")
-
-//Define la clase PersonaController.
-//Esta clase gestionará las operaciones REST de Persona.
 public class PersonaController {
 
-    // @Autowired hace que Spring cree automáticamente
-    // un objeto PersonaRepository y lo inyecte aquí.
+    // Repositorio de personas.
     @Autowired
-    
-    // Variable que permitirá acceder a base de datos.
     private PersonaRepository personaRepository;
 
-    // @PostMapping indica que este método responderá
-    // a peticiones HTTP POST.
-    //
-    // URL:
-    // POST http://localhost:8080/personas
-    @PostMapping
-    
-    // Método guardar.
-    // Recibe una Persona desde Angular y devuelve la Persona guardada.
-    
-    // @RequestBody significa:
-    // convierte automáticamente el JSON recibido
-    // en un objeto Persona Java.
-    public Persona guardar(@RequestBody Persona persona) {
+    // Obtiene el cliente autenticado.
+    private Long obtenerCliente() {
 
-        // save() guarda automáticamente en PostgreSQL.
-        //
-        // Si el ID no existe:
-        // INSERT
-        //
-        // Si el ID existe:
-        // UPDATE
+        // Obtiene la autenticación.
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        // Obtiene el usuario.
+        JwtUser usuario =
+                (JwtUser) authentication.getPrincipal();
+
+        // Devuelve el cliente.
+        return usuario.getClienteId();
+
+    }
+
+    // Guarda una persona.
+    @PostMapping
+    public Persona guardar(
+            @RequestBody Persona persona) {
+
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Asigna el cliente.
+        persona.setCliId(cliId);
+
+        // Si el identificador es 0, se trata de un registro nuevo.
+        if (persona.getPerId() != null && persona.getPerId() == 0) {
+
+            persona.setPerId(null);
+
+        }
+
+        // Asigna la fecha.
+        persona.setPerFecMov(LocalDateTime.now());
+
+        // Guarda el registro.
         return personaRepository.save(persona);
 
     }
-    
-    // @GetMapping responde a peticiones GET.
-    //
-    // URL:
-    // GET http://localhost:8080/personas
-    @GetMapping
 
-    public List<Persona> obtenerPersonas() {
+    // Actualiza una persona.
+    @PutMapping("/{id}")
+    public Persona actualizar(
+            @PathVariable Long id,
+            @RequestBody Persona persona) {
 
-        // findAll() obtiene todos los registros
-        // de la tabla personas.
-        return personaRepository.findAll();
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Comprueba la persona.
+        personaRepository.findByCliIdAndPerId(cliId, id)
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada."));
+
+        // Asigna el identificador.
+        persona.setPerId(id);
+
+        // Asigna el cliente.
+        persona.setCliId(cliId);
+
+        // Asigna la fecha.
+        persona.setPerFecMov(LocalDateTime.now());
+
+        // Guarda el registro.
+        return personaRepository.save(persona);
 
     }
-    
+
+    // Obtiene las personas.
+    @GetMapping
+    public List<Persona> obtenerPersonas() {
+
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Devuelve los registros.
+        return personaRepository.findByCliId(cliId);
+
+    }
+
+    // Obtiene el siguiente ID.
     @GetMapping("/siguiente-id")
     public Long obtenerSiguienteId() {
 
+        // Devuelve el identificador.
         return personaRepository.obtenerSiguienteId();
 
     }
-    
-    // Elimina una persona.
-    //
-    // URL:
-    // DELETE http://localhost:8080/personas/1
-    @DeleteMapping("/{id}")
-    public void eliminar(@PathVariable Long id) {
 
-        personaRepository.deleteById(id);
+    // Elimina una persona.
+    @DeleteMapping("/{id}")
+    public void eliminar(
+            @PathVariable Long id) {
+
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Busca la persona.
+        Persona persona =
+                personaRepository
+                        .findByCliIdAndPerId(cliId, id)
+                        .orElseThrow(() -> new RuntimeException("Persona no encontrada."));
+
+        // Elimina el registro.
+        personaRepository.delete(persona);
 
     }
 

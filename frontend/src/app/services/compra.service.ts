@@ -1,91 +1,79 @@
-// Importa el decorador Injectable de Angular.
-//
-// Injectable permite que este servicio pueda
-// ser utilizado e inyectado en otros componentes.
+// Importa Injectable.
 import { Injectable } from '@angular/core';
 
 // Importa HttpClient.
-//
-// HttpClient permite realizar peticiones HTTP
-// al backend Spring Boot.
 import { HttpClient } from '@angular/common/http';
 
+// Importa Observable.
 import { Observable } from 'rxjs';
 
-import { Compra } from '../models/compra.interface';
+// Importa la interfaz Compra.
+import { Compra } from '../interfaces/compra.interface';
 
-// @Injectable define esta clase como un servicio Angular.
-//
-// providedIn: 'root' crea una única instancia global
-// disponible en toda la aplicación.
+// Define el servicio.
 @Injectable({
   providedIn: 'root'
 })
 
-// Define la clase PersonaService.
-//
-// Este servicio gestionará las peticiones HTTP
-// relacionadas con personas.
+// Gestiona las operaciones de compras.
 export class CompraService {
 
-  // URL base del controlador REST de personas.
-  //
-  // Angular enviará peticiones a:
-  // http://localhost:8080/personas
+  // URL del controlador.
   private apiUrl = 'http://localhost:8080/compras';
 
-  // Constructor del servicio.
-  //
-  // Angular inyecta automáticamente HttpClient.
+  // Constructor.
   constructor(private http: HttpClient) {}
 
-  // Método guardar.
-  //
-  // Envía una persona al backend mediante HTTP POST.
-  guardar(compra: any) {
+  // Guarda una compra.
+  guardar(compra: Compra) {
 
-    // this.http.post(...)
-    //
-    // Realiza una petición POST al backend.
-    //
-    // this.apiUrl → URL destino
-    // persona → datos enviados
-    return this.http.post(this.apiUrl, compra);
+    // Envía la petición.
+    return this.http.post(
+      this.apiUrl,
+      compra
+    );
 
   }
-  
-  // Obtiene las ventas del cliente que ha iniciado sesión.
+
+  // Obtiene las compras.
   obtenerCompras() {
 
-      // Obtiene el cliente guardado en el login
-      const cliente = localStorage.getItem('usuarioCliente');
-
-      // Envía el cliente como parámetro
-      return this.http.get<any[]>( this.apiUrl + '?cliente=' + cliente );
+    // Envía la petición.
+    return this.http.get<any[]>(
+      this.apiUrl
+    );
 
   }
-  
-  	// Obtiene el siguiente ID disponible desde Spring Boot.
-  	obtenerSiguienteId() {
 
-    	return this.http.get<number>( this.apiUrl + '/siguiente-id' );
+  // Obtiene el siguiente ID.
+  obtenerSiguienteId() {
 
- 	}
-  
-	// Elimina el registro por id y cliente
-	eliminar(id: number, cliente: number) {
+    // Envía la petición.
+    return this.http.get<number>(
+      `${this.apiUrl}/siguiente-id`
+    );
 
-	  return this.http.delete( `${this.apiUrl}/${id}?cliente=${cliente}` );
+  }
 
-	}
-  
-  	// actualiza un perfil por su ID.
-	actualizar(compra: Compra): Observable<Compra> {
+  // Elimina una compra.
+  eliminar(id: number) {
 
-		return this.http.put<Compra>( `${this.apiUrl}/${compra.comId}`, compra );
+    // Envía la petición.
+    return this.http.delete(
+      `${this.apiUrl}/${id}`
+    );
 
-	}
-	
+  }
+
+  // Actualiza una compra.
+  actualizar(compra: Compra): Observable<Compra> {
+
+    // Envía la petición.
+    return this.http.put<Compra>(
+      `${this.apiUrl}/${compra.comId}`,
+      compra
+    );
+
+  }
+
 }
-
-

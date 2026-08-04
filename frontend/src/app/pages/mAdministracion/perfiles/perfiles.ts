@@ -2,27 +2,23 @@
 
 // Importa libreria para crear componentes Angular
 import { Component } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
-
-// Importa Routes para definir las rutas de navegación Angular
 import { Router } from '@angular/router';
 
 import { Sidebar } from '../../../components/sidebar/sidebar';
-
 import { Supbar } from '../../../components/supbar/supbar';
+import { Tabla } from '../../../components/tabla/tabla';
 
-import { Perfil } from '../../../models/perfil.interface';
+import { FechasUtil } from '../../../core/utils/fechas.util';
+
+import { Perfil } from '../../../interfaces/perfil.interface';
 
 import { FormsModule } from '@angular/forms';
 
 import { PerfilService } from '../../../services/perfil.service';
-
-import { Tabla } from '../../../components/tabla/tabla';
+import { PdfService } from '../../../services/pdf.service';
 
 import { ViewChild } from '@angular/core';
-
-import { PdfService } from '../../../services/pdf.service';
 
 // Se define la configuración del componente Angular
 @Component({
@@ -249,8 +245,7 @@ export class Perfiles {
 
 	    // Elimina el usuario
 	    this.perfilService.eliminar(
-	      this.perfilSeleccionado.perId!,
-		  this.perfilSeleccionado.cliId
+	      this.perfilSeleccionado.perId!
 	    ).subscribe({
 
 	      next: () => {
@@ -305,52 +300,67 @@ export class Perfiles {
 
 	}
 	
+	// Comprueba que los campos obligatorios están informados
+	private validarObligatorios(): boolean {
+
+		// Comprueba los campos obligatorios
+		if (
+			!this.perfil.perNom ||
+			!this.perfil.perTipPer
+		) {
+
+			// Muestra el mensaje
+			alert('Debe rellenar todos los campos obligatorios.');
+
+			// Indica que el formulario no es válido
+			return false;
+
+		}
+
+		// Indica que el formulario es válido
+		return true;
+
+	}
+	
 	// Este método guarda el contenido del formulario en base de datos
 	guardar() {
 		
 		//Interruptor activo para controlar campos obligatorios
 		this.mostrarObligatorios = true;
 
-		//Alerta para determinados campos sin valor (obligatorios)
-		if (
-		  !this.perfil.perNom ||
-		  !this.perfil.perTipPer
-		) {
-
-		  alert('Debe rellenar todos los campos obligatorios');
-
-		  return;
-
-		}
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
 
-	  const perfil = {
+	  	const perfil = {
 
-		cliId: this.perfil.cliId,		
-		
-	    perId: null,
-		
-	    perNom: this.perfil.perNom,
+			cliId: this.perfil.cliId,		
+			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
+			// El backend interpreta este registro como nuevo e ignora este valor,
+			// dejando que la base de datos asigne automáticamente el identificador definitivo.
+		    perId: 0,
+			
+		    perNom: this.perfil.perNom,
+	
+		    perTipPer: this.perfil.perTipPer,
+					
+			perModAdm: this.perfil.perModAdm,
+	
+		    perModTer: this.perfil.perModTer,
+	
+		    perModPer: this.perfil.perModPer,
+			
+			perModPro: this.perfil.perModPro,
+	
+			perModVen: this.perfil.perModVen,
+	
+		    perUsuMov: this.perfil.perUsuMov,
+	
+		    perFecMov: this.perfil.perFecMov,
+			
+			perAct: this.perfil.perAct
 
-	    perTipPer: this.perfil.perTipPer,
-				
-		perModAdm: this.perfil.perModAdm,
-
-	    perModTer: this.perfil.perModTer,
-
-	    perModPer: this.perfil.perModPer,
-		
-		perModPro: this.perfil.perModPro,
-
-		perModVen: this.perfil.perModVen,
-
-	    perUsuMov: this.perfil.perUsuMov,
-
-	    perFecMov: this.perfil.perFecMov,
-		
-		perAct: this.perfil.perAct
-
-	  };
+	  	};
 	  
 	  console.log('PERFIL A ENVIAR:', perfil);
 	  
@@ -361,6 +371,8 @@ export class Perfiles {
 	      alert('Perfil guardado correctamente.');
 		  
 		  this.limpiarFormulario();
+
+		  this.consultar();
 
 	    },
 
@@ -382,23 +394,12 @@ export class Perfiles {
 		// Interruptor activo para controlar campos obligatorios
 		this.mostrarObligatorios = true;
 
-		// Alerta para determinados campos sin valor (obligatorios)
-		if (
-		  !this.perfil.perNom ||
-		  !this.perfil.perTipPer
-		) {
-
-		  alert('Debe rellenar todos los campos obligatorios');
-
-		  return;
-
-		}
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
 		const perfil = {
 
 			cliId: this.perfil.cliId,
-
-		    // Mantiene el identificador del perfil que se va a modificar
 		    perId: this.perfil.perId,
 
 		    perNom: this.perfil.perNom,
@@ -432,6 +433,8 @@ export class Perfiles {
 				alert('Perfil actualizado correctamente.');
 
 				this.limpiarFormulario();
+
+				this.consultar();
 
 			},
 
@@ -472,7 +475,7 @@ export class Perfiles {
 		perModVen: false,
 		
 		perUsuMov: localStorage.getItem('usuario') || '',
-		perFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+		perFecMov: '',
 		perAct: true,
 
 		};

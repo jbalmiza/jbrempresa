@@ -19,7 +19,7 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     List<Persona> findByCliId(Long cliId);
 
     // Busca una persona concreta perteneciente a un cliente
-    Optional<Persona> findByPerIdAndCliId(
+    Optional<Persona> findByCliIdAndPerId(
             Long perId,
             Long cliId);
 

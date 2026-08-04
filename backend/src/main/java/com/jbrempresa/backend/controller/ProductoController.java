@@ -1,110 +1,142 @@
-// Define el paquete donde está ubicado este archivo Java
+// Define el paquete.
 package com.jbrempresa.backend.controller;
 
-//Importa la anotación @Autowired.
-//Sirve para que Spring inyecte automáticamente objetos necesarios.
-import org.springframework.beans.factory.annotation.Autowired;
-
-//Importa todas las anotaciones REST de Spring:
-//@RestController
-//@RequestMapping
-//@PostMapping
-//@RequestBody
-//@CrossOrigin
-import org.springframework.web.bind.annotation.*;
-
-//Importa la entidad Producto.
-//Esta entidad representa la tabla PRODUCTO de PostgreSQL.
-import com.jbrempresa.backend.entity.Producto;
-
-//Importa ProductoRepository.
-//El repository contiene los métodos CRUD automáticos de JPA.
-import com.jbrempresa.backend.repository.ProductoRepository;
-
+// Importa List.
 import java.util.List;
 
-//Indica que esta clase es un controlador REST.
-//Un controlador REST recibe peticiones HTTP desde Angular.
+// Importa Autowired.
+import org.springframework.beans.factory.annotation.Autowired;
+
+// Importa Authentication.
+import org.springframework.security.core.Authentication;
+
+// Importa SecurityContextHolder.
+import org.springframework.security.core.context.SecurityContextHolder;
+
+// Importa las anotaciones REST.
+import org.springframework.web.bind.annotation.*;
+
+// Importa Producto.
+import com.jbrempresa.backend.entity.Producto;
+
+// Importa JwtUser.
+import com.jbrempresa.backend.security.JwtUser;
+
+// Importa ProductoService.
+import com.jbrempresa.backend.service.ProductoService;
+
+// Define el controlador.
 @RestController
 
-//Define la ruta base del controlador.
-//Todas las URLs empezarán por:
-/*
-http://localhost:8080/productos
-*/
+// Define la ruta base.
 @RequestMapping("/productos")
 
-//Permite conexiones desde Angular.
-//Angular normalmente funciona en localhost:4200.
-//Sin esto el navegador bloquearía las peticiones por seguridad CORS.
+// Permite peticiones desde Angular.
 @CrossOrigin(origins = "http://localhost:4200")
-
-//Define la clase PersonaController.
-//Esta clase gestionará las operaciones REST de Producto.
 public class ProductoController {
 
-    // @Autowired hace que Spring cree automáticamente
-    // un objeto PersonaRepository y lo inyecte aquí.
+    // Servicio de productos.
     @Autowired
-    
-    // Variable que permitirá acceder a base de datos.
-    private ProductoRepository productoRepository;
+    private ProductoService productoService;
 
-    // @PostMapping indica que este método responderá
-    // a peticiones HTTP POST.
-    //
-    // URL:
-    // POST http://localhost:8080/productos
-    @PostMapping
-    
-    // Método guardar.
-    // Recibe un Producto desde Angular y devuelve el producto guardado.
-    
-    // @RequestBody significa:
-    // convierte automáticamente el JSON recibido
-    // en un objeto Producto Java.
-    public Producto guardar(@RequestBody Producto producto) {
+    // Obtiene el cliente autenticado.
+    private Long obtenerCliente() {
 
-        // save() guarda automáticamente en PostgreSQL.
-        //
-        // Si el ID no existe:
-        // INSERT
-        //
-        // Si el ID existe:
-        // UPDATE
-        return productoRepository.save(producto);
+        // Obtiene la autenticación.
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        // Obtiene el usuario.
+        JwtUser usuario =
+                (JwtUser) authentication.getPrincipal();
+
+        // Devuelve el cliente.
+        return usuario.getClienteId();
 
     }
-    
-    // @GetMapping responde a peticiones GET.
-    //
-    // URL:
-    // GET http://localhost:8080/productos
-    @GetMapping
 
+    // Guarda un producto.
+    @PostMapping
+    public Producto guardar(
+            @RequestBody Producto producto) {
+
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Asigna el cliente.
+        producto.setCliId(cliId);
+
+        // Si el identificador es 0, se trata de un registro nuevo.
+        if (producto.getProId() != null && producto.getProId() == 0) {
+
+            producto.setProId(null);
+
+        }
+
+        // Guarda el registro.
+        return productoService.guardar(
+                cliId,
+                producto);
+
+    }
+
+    // Actualiza un producto.
+    @PutMapping("/{id}")
+    public Producto actualizar(
+            @PathVariable Long id,
+            @RequestBody Producto producto) {
+
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Asigna el identificador.
+        producto.setProId(id);
+
+        // Asigna el cliente.
+        producto.setCliId(cliId);
+
+        // Guarda el registro.
+        return productoService.actualizar(
+                cliId,
+                producto);
+
+    }
+
+    // Obtiene los productos.
+    @GetMapping
     public List<Producto> obtenerProductos() {
 
-        // findAll() obtiene todos los registros
-        // de la tabla productos.
-        return productoRepository.findAll();
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Devuelve los registros.
+        return productoService.obtenerProductos(cliId);
 
     }
-    
+
+    // Obtiene el siguiente ID.
     @GetMapping("/siguiente-id")
     public Long obtenerSiguienteId() {
 
-        return productoRepository.obtenerSiguienteId();
+        // Devuelve el identificador.
+        return productoService.obtenerSiguienteId();
 
     }
-    
-    // Elimina un producto.
-    //
-    // URL:
-    // DELETE http://localhost:8080/productos/1
-    @DeleteMapping("/{id}")
-    public void eliminar(@PathVariable Long id) {
 
-        productoRepository.deleteById(id);
+    // Elimina un producto.
+    @DeleteMapping("/{id}")
+    public void eliminar(
+            @PathVariable Long id) {
+
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Elimina el registro.
+        productoService.eliminar(
+                cliId,
+                id);
 
     }
 

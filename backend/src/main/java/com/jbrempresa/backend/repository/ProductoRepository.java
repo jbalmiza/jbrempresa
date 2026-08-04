@@ -19,7 +19,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     List<Producto> findByCliId(Long cliId);
 
     // Busca un producto concreto perteneciente a un cliente
-    Optional<Producto> findByProIdAndCliId(
+    Optional<Producto> findByCliIdAndProId(
             Long proId,
             Long cliId);
 

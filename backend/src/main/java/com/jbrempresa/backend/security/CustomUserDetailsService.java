@@ -1,42 +1,58 @@
+// Define el paquete.
 package com.jbrempresa.backend.security;
 
+// Importa Autowired.
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.*;
+
+// Importa UserDetails.
+import org.springframework.security.core.userdetails.UserDetails;
+
+// Importa UserDetailsService.
+import org.springframework.security.core.userdetails.UserDetailsService;
+
+// Importa UsernameNotFoundException.
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+// Importa Service.
 import org.springframework.stereotype.Service;
 
+// Importa Usuario.
 import com.jbrempresa.backend.entity.Usuario;
+
+// Importa UsuarioRepository.
 import com.jbrempresa.backend.repository.UsuarioRepository;
 
-import java.util.Collections;
-
-// Servicio de usuarios para Spring Security
+// Define el servicio.
 @Service
 public class CustomUserDetailsService
         implements UserDetailsService {
 
-    // Acceso a usuarios
+    // Repositorio de usuarios.
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // Busca un usuario por su nombre
+    // Carga un usuario.
     @Override
     public UserDetails loadUserByUsername(
             String username)
             throws UsernameNotFoundException {
 
+        // Busca el usuario.
         Usuario usuario =
                 usuarioRepository
                         .findByUsuUsu(username)
                         .orElseThrow(() ->
                                 new UsernameNotFoundException(
-                                        "Usuario no encontrado"));
+                                        "Usuario no encontrado."));
 
-        return new User(
+        // Devuelve el usuario autenticado.
+        return new JwtUser(
 
                 usuario.getUsuUsu(),
                 usuario.getUsuCon(),
-
-                Collections.emptyList()
+                usuario.getUsuId(),
+                usuario.getCliId(),
+                usuario.getPerId()
 
         );
 

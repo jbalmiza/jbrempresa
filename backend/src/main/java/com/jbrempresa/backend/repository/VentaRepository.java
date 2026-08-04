@@ -19,7 +19,7 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
     List<Venta> findByCliId(Long cliId);
 
     // Busca una venta concreta perteneciente a un cliente
-    Optional<Venta> findByVenIdAndCliId(
+    Optional<Venta> findByCliIdAndVenId(
             Long venId,
             Long cliId);
 

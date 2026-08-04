@@ -1,110 +1,123 @@
-// Define el paquete donde está ubicado este archivo Java
+// Define el paquete.
 package com.jbrempresa.backend.controller;
 
-//Importa la anotación @Autowired.
-//Sirve para que Spring inyecte automáticamente objetos necesarios.
+// Importa Autowired.
 import org.springframework.beans.factory.annotation.Autowired;
 
-//Importa todas las anotaciones REST de Spring:
-//@RestController
-//@RequestMapping
-//@PostMapping
-//@RequestBody
-//@CrossOrigin
-import org.springframework.web.bind.annotation.*;
+// Importa LocalDateTime.
+import java.time.LocalDateTime;
 
-//Importa la entidad Producto.
-//Esta entidad representa la tabla VENTA de PostgreSQL.
-import com.jbrempresa.backend.entity.Compra;
-
-//Importa VentaRepository.
-//El repository contiene los métodos CRUD automáticos de JPA.
-import com.jbrempresa.backend.repository.CompraRepository;
-
+// Importa List.
 import java.util.List;
 
-//Indica que esta clase es un controlador REST.
-//Un controlador REST recibe peticiones HTTP desde Angular.
+// Importa las anotaciones REST.
+import org.springframework.web.bind.annotation.*;
+
+// Importa Compra.
+import com.jbrempresa.backend.entity.Compra;
+
+// Importa CompraRepository.
+import com.jbrempresa.backend.repository.CompraRepository;
+
+// Define el controlador.
 @RestController
 
-//Define la ruta base del controlador.
-//Todas las URLs empezarán por:
-/*
-http://localhost:8080/ventas
-*/
+// Define la ruta base.
 @RequestMapping("/compras")
 
-//Permite conexiones desde Angular.
-//Angular normalmente funciona en localhost:4200.
-//Sin esto el navegador bloquearía las peticiones por seguridad CORS.
+// Permite peticiones desde Angular.
 @CrossOrigin(origins = "http://localhost:4200")
-
-//Define la clase PersonaController.
-//Esta clase gestionará las operaciones REST de Venta.
 public class CompraController {
 
-    // @Autowired hace que Spring cree automáticamente
-    // un objeto PersonaRepository y lo inyecte aquí.
+    // Repositorio de compras.
     @Autowired
-    
-    // Variable que permitirá acceder a base de datos.
     private CompraRepository compraRepository;
 
-    // @PostMapping indica que este método responderá
-    // a peticiones HTTP POST.
-    //
-    // URL:
-    // POST http://localhost:8080/productos
-    @PostMapping
-    
-    // Método guardar.
-    // Recibe un Producto desde Angular y devuelve el producto guardado.
-    
-    // @RequestBody significa:
-    // convierte automáticamente el JSON recibido
-    // en un objeto Venta Java.
-    public Compra guardar(@RequestBody Compra compra) {
+    // Guarda una compra.
+    @PostMapping("/{cliId}")
+    public Compra guardar(
+            @PathVariable Long cliId,
+            @RequestBody Compra compra) {
+    	
+        // Si el identificador es 0, se trata de un registro nuevo.
+        if (compra.getCliId() != null && compra.getCliId() == 0) {
 
-        // save() guarda automáticamente en PostgreSQL.
-        //
-        // Si el ID no existe:
-        // INSERT
-        //
-        // Si el ID existe:
-        // UPDATE
+            compra.setCliId(null);
+
+        }
+
+        // Comprueba el cliente.
+        if (!cliId.equals(compra.getCliId())) {
+            throw new RuntimeException("El cliente de la compra no coincide con el cliente de la operación.");
+        }
+
+        // Asigna la fecha.
+        compra.setComFecMov(LocalDateTime.now());
+
+        // Guarda el registro.
         return compraRepository.save(compra);
 
     }
-    
-    // @GetMapping responde a peticiones GET.
-    //
-    // URL:
-    // GET http://localhost:8080/productos
-    @GetMapping
 
-    public List<Compra> obtenerCompras() {
+    // Actualiza una compra.
+    @PutMapping("/{cliId}/{id}")
+    public Compra actualizar(
+            @PathVariable Long cliId,
+            @PathVariable Long id,
+            @RequestBody Compra compra) {
 
-        // findAll() obtiene todos los registros
-        // de la tabla productos.
-        return compraRepository.findAll();
+        // Comprueba el cliente.
+        if (!cliId.equals(compra.getCliId())) {
+            throw new RuntimeException("El cliente de la compra no coincide con el cliente de la operación.");
+        }
+
+        // Comprueba la compra.
+        compraRepository.findByCliIdAndComId(cliId, id)
+                .orElseThrow(() -> new RuntimeException("Compra no encontrada."));
+
+        // Asigna el identificador.
+        compra.setComId(id);
+
+        // Asigna la fecha.
+        compra.setComFecMov(LocalDateTime.now());
+
+        // Guarda el registro.
+        return compraRepository.save(compra);
 
     }
-    
+
+    // Obtiene las compras.
+    @GetMapping("/{cliId}")
+    public List<Compra> obtenerCompras(
+            @PathVariable Long cliId) {
+
+        // Devuelve los registros.
+        return compraRepository.findByCliId(cliId);
+
+    }
+
+    // Obtiene el siguiente ID.
     @GetMapping("/siguiente-id")
     public Long obtenerSiguienteId() {
 
+        // Devuelve el identificador.
         return compraRepository.obtenerSiguienteId();
 
     }
-    
-    // Elimina un producto.
-    //
-    // URL:
-    // DELETE http://localhost:8080/productos/1
-    @DeleteMapping("/{id}")
-    public void eliminar(@PathVariable Long id) {
 
-        compraRepository.deleteById(id);
+    // Elimina una compra.
+    @DeleteMapping("/{cliId}/{id}")
+    public void eliminar(
+            @PathVariable Long cliId,
+            @PathVariable Long id) {
+
+        // Busca la compra.
+        Compra compra = compraRepository
+                .findByCliIdAndComId(cliId, id)
+                .orElseThrow(() -> new RuntimeException("Compra no encontrada."));
+
+        // Elimina el registro.
+        compraRepository.delete(compra);
 
     }
 

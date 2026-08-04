@@ -19,8 +19,8 @@ public interface CompraRepository extends JpaRepository<Compra, Long> {
     List<Compra> findByCliId(Long cliId);
 
     // Busca una venta concreta perteneciente a un cliente
-    Optional<Compra> findByComIdAndCliId(
-            Long comId,
-            Long cliId);
+    Optional<Compra> findByCliIdAndComId(
+            Long cliId,
+            Long comId);
 
 }

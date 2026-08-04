@@ -2,33 +2,33 @@
 
 // Importa libreria para crear componentes Angular
 import { Component } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
-
-// Importa Routes para definir las rutas de navegación Angular
 import { Router } from '@angular/router';
 
 import { Sidebar } from '../../../components/sidebar/sidebar';
-
 import { Supbar } from '../../../components/supbar/supbar';
+import { Tabla } from '../../../components/tabla/tabla';
 
-import { Producto } from '../../../models/producto.interface';
+import { SelectorMalla } from '../../../components/selectorMalla/selectorMalla';
+import { MallaRegistros } from '../../../components/mallaRegistros/mallaRegistros';
+
+import { FechasUtil } from '../../../core/utils/fechas.util';
+
+import { Producto } from '../../../interfaces/producto.interface';
 
 import { FormsModule } from '@angular/forms';
 
 import { ProductoService } from '../../../services/producto.service';
-
-import { Tabla } from '../../../components/tabla/tabla';
+import { MallaService } from '../../../services/malla.service';
+import { PdfService } from '../../../services/pdf.service';
 
 import { ViewChild } from '@angular/core';
-
-import { PdfService } from '../../../services/pdf.service';
 
 // Se define la configuración del componente Angular
 @Component({
   selector: 'GestionProductos',
   standalone: true,
-  imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla],
+  imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla, SelectorMalla, MallaRegistros],
   templateUrl: './gestionProductos.html',
   styleUrl: '../../../styles/estiloGeneral.css'
 })
@@ -44,7 +44,7 @@ export class GestionProductos {
 	tabla!: Tabla;
 
 	//Variables de la clase
-	vistaActiva: 'registro' | 'tabla' = 'tabla';
+	vistaActiva: 'malla' | 'registro' | 'tabla' = 'malla';
 	modoFormulario: 'consultar' | 'insertar' | 'modificar' = 'consultar';
 	mostrarObligatorios = false;
 	
@@ -73,6 +73,9 @@ export class GestionProductos {
 		proUniMed: 'Unidad Medida',
 		proConSto: 'Control Stock',
 		proObs: 'Observaciones',
+		proUbi: 'Ubicación',
+		proFilMal: 'Fila Malla',
+		proColMal: 'Columna Malla',
 	    proUsuMov: 'Usuario Mod.',
 	    proFecMov: 'Fecha Mod.',
 		proAct: 'Activo',
@@ -84,7 +87,8 @@ export class GestionProductos {
 		'proCat', 'proSubCat', 'proMar', 'proMod', 'proPro',
 		'proPreCom', 'proPreVen', 'proPreDes', 'proPreIva', 'proPreFin', 
 		'proStoAct', 'proStoMin', 'proUniMed', 'proConSto',
-		'proObs', 
+		'proObs',
+		'proUbi', 'proFilMal', 'proColMal',
 		'proUsuMov', 'proFecMov','proAct'
 
 	];
@@ -100,9 +104,33 @@ export class GestionProductos {
 		
 	  private readonly router: Router,
 	  private productoService: ProductoService,
+	  private mallaService: MallaService,
 	  private pdfService: PdfService
 	  
 	) {}
+	
+	// Este método muestra el mapa de datos
+	malla() {
+
+		this.vistaActiva = 'malla';
+		
+	}
+	
+	// Este método obtiene los productos para mostrarlos en la malla.
+	obtenerProductos = () => {
+
+	    // Devuelve los productos obtenidos desde el servicio.
+	    return this.productoService.obtenerProductos();
+
+	};
+	
+	// Este método obtiene los registros de la malla.
+	obtenerMallas = () => {
+
+	    // Devuelve las posiciones de la malla obtenidas desde el servicio.
+	    return this.mallaService.obtenerMallas();
+
+	};
 
 	// Este método muestra la tabla de datos
 	consultar() {
@@ -223,6 +251,10 @@ export class GestionProductos {
 			proConSto: this.productoSeleccionado.proConSto,
 
 			proObs: this.productoSeleccionado.proObs,
+			
+			proFilMal: this.producto.proFilMal,
+			proColMal: this.producto.proColMal,
+			proUbi: this.producto.proUbi,
 
 			proUsuMov: this.productoSeleccionado.proUsuMov,
 			proFecMov: this.productoSeleccionado.proFecMov,
@@ -273,8 +305,7 @@ export class GestionProductos {
 
 	    // Elimina el usuario
 	    this.productoService.eliminar(
-	      this.productoSeleccionado.proId!,
-		  this.productoSeleccionado.cliId
+	      this.productoSeleccionado.proId!
 	    ).subscribe({
 
 	      next: () => {
@@ -336,7 +367,7 @@ export class GestionProductos {
 		this.mostrarObligatorios = true;
 
 		//Alerta para determinados campos sin valor (obligatorios)
-		if (
+/*		if (
 			!this.producto.proTipPro ||
 			!this.producto.proNom ||
 			!this.producto.proCat ||
@@ -352,11 +383,14 @@ export class GestionProductos {
 		  return;
 
 		}
-
+*/
 	  const producto = {
 
-		cliId: this.producto.cliId,		
-		proId: null,
+		cliId: this.producto.cliId,
+		// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
+		// El backend interpreta este registro como nuevo e ignora este valor,
+		// dejando que la base de datos asigne automáticamente el identificador definitivo.	
+		proId: 0,
 
 		proTipPro: this.producto.proTipPro,
 		proNom: this.producto.proNom,
@@ -380,9 +414,13 @@ export class GestionProductos {
 		proConSto: this.producto.proConSto,
 
 		proObs: this.producto.proObs,
+		
+		proFilMal: this.producto.proFilMal,
+		proColMal: this.producto.proColMal,
+		proUbi: this.producto.proUbi,
 
-		usuMov: this.producto.proUsuMov,
-		fecMov: this.producto.proFecMov,
+		proUsuMov: this.producto.proUsuMov,
+		proFecMov: this.producto.proFecMov,
 		proAct: this.producto.proAct
 
 	  };
@@ -458,6 +496,10 @@ export class GestionProductos {
 			proConSto: this.producto.proConSto,
 
 			proObs: this.producto.proObs,
+			
+			proFilMal: this.producto.proFilMal,
+			proColMal: this.producto.proColMal,
+			proUbi: this.producto.proUbi,
 
 			proUsuMov: this.producto.proUsuMov,
 			proFecMov: this.producto.proFecMov,
@@ -474,6 +516,8 @@ export class GestionProductos {
 				alert('Producto actualizado correctamente.');
 
 				this.limpiarFormulario();
+
+				this.consultar();
 
 			},
 
@@ -526,9 +570,13 @@ export class GestionProductos {
 			proConSto: true,
 
 			proObs: '',
+			
+			proFilMal: 0,
+			proColMal: 0,
+			proUbi: '',
 
 			proUsuMov: localStorage.getItem('usuario') || '',
-			proFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+			proFecMov: FechasUtil.formatearFechaHora(),
 			proAct: true,
 		
 		};

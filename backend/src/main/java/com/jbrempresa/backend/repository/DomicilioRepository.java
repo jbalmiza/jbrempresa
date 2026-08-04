@@ -19,7 +19,7 @@ public interface DomicilioRepository extends JpaRepository<Domicilio, Long> {
     List<Domicilio> findByCliId(Long cliId);
 
     // Busca un domicilio concreto perteneciente a un cliente
-    Optional<Domicilio> findByDomIdAndCliId(
+    Optional<Domicilio> findByCliIdAndDomId(
             Long domId,
             Long cliId);
 

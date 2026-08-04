@@ -56,6 +56,16 @@
   	<label class="titulo"> Datos Domicilio </label>
 
 		<div class="form-fila">
+		
+		  	<div class="form-campo-200"> 
+  				<label class="label"> C.I.V. <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="100" [(ngModel)]="domicilio.domCiv" name="domDir"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !domicilio.domCiv"> Valor Obligatorio </div>
+  			</div>
+  			
+  		</div>
+  			
+  		<div class="form-fila">
 
   			<div class="form-campo"> 
   				<label class="label"> Tipo Vía <span class="obligatorio">*</span> </label> 
@@ -163,6 +173,40 @@
  		</div>
  	
  	</div>
+ 	
+ 	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Ubicación </label>
+
+		<div class="form-fila">
+
+  			<div class="form-campo-200"> 
+  				<label class="label"> Coordenada X </label> 
+  				<input type="number" maxlength="100" [(ngModel)]="domicilio.domCoX" name="domCoX" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Coordenada Y </label> 
+  				<input type="number" maxlength="100" [(ngModel)]="domicilio.domCoY" name="domCoY" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Huso UTM </label> 
+  				<input type="number" maxlength="100" [(ngModel)]="domicilio.domHus" name="domHus" disabled> 
+  			</div>
+  			
+			<div class="form-campo-200">
+			    <label class="label"> Mapa </label>
+			    <selectorMapa
+   					[(x)]="domicilio.domCoX"
+					[(y)]="domicilio.domCoY"
+    				[(epsg)]="domicilio.domHus">
+				</selectorMapa>
+			</div>
+ 		
+ 		</div>
+ 	
+ 	</div>
 
  	<div class="form-grupo"> 
   	
@@ -177,7 +221,7 @@
  			
   			<div class="form-campo-200"> 
   				<label class="label">Fecha Movimiento</label> 
-  				<input type="datetime-local" maxlength="10" [(ngModel)]="domicilio.domFecMov" name="domFecMov" disabled> 
+  				<input type="text" maxlength="10" [(ngModel)]="domicilio.domFecMov" name="domFecMov" disabled> 
   			</div>
   			
   			<div class="form-campo"> 

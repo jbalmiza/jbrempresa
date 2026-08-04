@@ -9,20 +9,19 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { Sidebar } from '../../../components/sidebar/sidebar';
-
 import { Supbar } from '../../../components/supbar/supbar';
+import { Tabla } from '../../../components/tabla/tabla';
 
-import { Cliente } from '../../../models/cliente.interface';
+import { FechasUtil } from '../../../core/utils/fechas.util';
+
+import { Cliente } from '../../../interfaces/cliente.interface';
 
 import { FormsModule } from '@angular/forms';
 
 import { ClienteService } from '../../../services/cliente.service';
-
-import { Tabla } from '../../../components/tabla/tabla';
+import { PdfService } from '../../../services/pdf.service';
 
 import { ViewChild } from '@angular/core';
-
-import { PdfService } from '../../../services/pdf.service';
 
 // Se define la configuración del componente Angular
 @Component({
@@ -169,13 +168,10 @@ export class Clientes {
 		this.cliente = {
 
 			cliId: this.clienteSeleccionado.cliId,			
-			
 			cliNom: this.clienteSeleccionado.cliNom,
 
 			cliUsuMov: this.clienteSeleccionado.cliUsuMov,
-
 			cliFecMov: this.clienteSeleccionado.cliFecMov,
-			
 			cliAct: this.clienteSeleccionado.cliAct,
 
 			};
@@ -278,36 +274,51 @@ export class Clientes {
 
 	}
 	
+	// Comprueba que los campos obligatorios están informados
+	private validarObligatorios(): boolean {
+
+		// Comprueba los campos obligatorios
+		if (
+		  	!this.cliente.cliNom
+		) {
+
+			// Muestra el mensaje
+			alert('Debe rellenar todos los campos obligatorios.');
+
+			// Indica que el formulario no es válido
+			return false;
+
+		}
+
+		// Indica que el formulario es válido
+		return true;
+
+	}
+	
 	// Este método guarda el contenido del formulario en base de datos
 	guardar() {
 		
 		//Interruptor activo para controlar campos obligatorios
 		this.mostrarObligatorios = true;
-
-		//Alerta para determinados campos sin valor (obligatorios)
-		if (
-		  !this.cliente.cliNom
-		) {
-
-		  alert('Debe rellenar todos los campos obligatorios');
-
-		  return;
-
-		}
-
-	  const cliente = {
-
-		cliId: null,		
 		
-	    cliNom: this.cliente.cliNom,
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
-	    cliUsuMov: this.cliente.cliUsuMov,
+	 
+		const cliente = {
 
-	    cliFecMov: this.cliente.cliFecMov,
-		
-		cliAct: this.cliente.cliAct,
+			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
+			// El backend interpreta este registro como nuevo e ignora este valor,
+			// dejando que la base de datos asigne automáticamente el identificador definitivo.
+			cliId: 0,	
+				
+		    cliNom: this.cliente.cliNom,
+	
+		    cliUsuMov: this.cliente.cliUsuMov,
+		    cliFecMov: this.cliente.cliFecMov,	
+			cliAct: this.cliente.cliAct,
 
-	  };
+	  	};
 	  
 	  console.log(cliente);
 	  
@@ -318,6 +329,8 @@ export class Clientes {
 	      alert('Cliente guardado correctamente');
 		  
 		  this.limpiarFormulario();
+
+		  this.consultar();
 
 	    },
 
@@ -339,28 +352,18 @@ export class Clientes {
 		// Interruptor activo para controlar campos obligatorios
 		this.mostrarObligatorios = true;
 
-		// Alerta para determinados campos sin valor (obligatorios)
-		if (
-		  !this.cliente.cliNom
-		) {
-
-		  alert('Debe rellenar todos los campos obligatorios');
-
-		  return;
-
-		}
-
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
+		
+		
 		const cliente = {
 
 			// Mantiene el identificador del cliente que se va a modificar
 			cliId: this.cliente.cliId,
-
 		    cliNom: this.cliente.cliNom,
 
 		    cliUsuMov: this.cliente.cliUsuMov,
-
 		    cliFecMov: this.cliente.cliFecMov,
-
 			cliAct: this.cliente.cliAct
 
 		};
@@ -374,6 +377,8 @@ export class Clientes {
 				alert('Cliente actualizado correctamente.');
 
 				this.limpiarFormulario();
+
+				this.consultar();
 
 			},
 
@@ -406,7 +411,7 @@ export class Clientes {
 	  	cliNom: '',
 		
 		cliUsuMov: localStorage.getItem('usuario') || '',
-		cliFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+		cliFecMov: FechasUtil.formatearFechaHora(),
 		cliAct: true
 
 		};

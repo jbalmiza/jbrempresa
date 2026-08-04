@@ -1,109 +1,97 @@
-// Importa el decorador Injectable de Angular.
-//
-// Injectable permite que esta clase pueda ser inyectada
-// automáticamente en otros componentes o servicios.
+// Importa Injectable.
 import { Injectable } from '@angular/core';
 
 // Importa HttpClient.
-//
-// HttpClient permite realizar peticiones HTTP
-// al backend Spring Boot.
 import { HttpClient } from '@angular/common/http';
 
+// Importa Observable.
 import { Observable } from 'rxjs';
 
-import { Usuario } from '../models/usuario.interface';
+// Importa la interfaz Usuario.
+import { Usuario } from '../interfaces/usuario.interface';
 
-// @Injectable indica que esta clase es un servicio Angular.
-//
-// providedIn: 'root' hace que Angular cree
-// una única instancia global del servicio.
+// Define el servicio.
 @Injectable({
   providedIn: 'root'
 })
 
-// Define la clase UsuarioService.
-//
-// Este servicio se encargará de comunicarse
-// con el backend Spring Boot.
+// Gestiona las operaciones de usuarios.
 export class UsuarioService {
 
-  // URL base del controlador REST de usuarios.
-  //
-  // Angular enviará peticiones a:
-  // http://localhost:8080/usuarios
+  // URL del controlador.
   private apiUrl = 'http://localhost:8080/usuarios';
 
-  // Constructor del servicio.
-  //
-  // Angular inyecta automáticamente HttpClient.
+  // Constructor.
   constructor(private http: HttpClient) {}
 
-  // Método guardar.
-  //
-  // Envía un usuario al backend mediante HTTP POST.
-  guardar(usuario: any) {
+  // Guarda un usuario.
+  guardar(usuario: Usuario) {
 
-    // this.http.post(...)
-    //
-    // Realiza una petición POST al backend.
-    //
-    // this.apiUrl → URL destino
-    // usuario → datos enviados
-    return this.http.post(this.apiUrl, usuario);
+    // Envía la petición.
+    return this.http.post(
+      this.apiUrl,
+      usuario
+    );
 
   }
-  
- 	// Obtiene los usuarios del cliente que ha iniciado sesión.
-  	obtenerUsuarios() {
 
-      	// Obtiene el cliente guardado en el login
-      	const cliente = localStorage.getItem('clienteId');
+  // Obtiene los usuarios.
+  obtenerUsuarios() {
 
-      	// Envía el cliente como parámetro
-      	return this.http.get<any[]>( this.apiUrl + '?cliente=' + cliente );
+    // Envía la petición.
+    return this.http.get<Usuario[]>(
+      this.apiUrl
+    );
 
-  	}
-  
-  	// Obtiene el siguiente ID disponible desde Spring Boot.
-  	obtenerSiguienteId() {
+  }
 
-    	return this.http.get<number>( this.apiUrl + '/siguiente-id' );
+  // Obtiene el siguiente ID.
+  obtenerSiguienteId() {
 
-  	}
-  
-	// Elimina el registro por id y cliente
-	eliminar(id: number, cliente: number) {
+    // Envía la petición.
+    return this.http.get<number>(
+      `${this.apiUrl}/siguiente-id`
+    );
 
-	  return this.http.delete( `${this.apiUrl}/${id}?cliente=${cliente}` );
+  }
 
-	}
-  
-  	// actualiza un perfil por su ID.
-  	actualizar(usuario: Usuario): Observable<Usuario> {
+  // Elimina un usuario.
+  eliminar(id: number) {
 
-		return this.http.put<Usuario>( `${this.apiUrl}/${usuario.usuId}`, usuario );
-	  
-	}
-  
-  // Método login.
-  //
-  // Comprueba usuario y contraseña.
+    // Envía la petición.
+    return this.http.delete(
+      `${this.apiUrl}/${id}`
+    );
+
+  }
+
+  // Actualiza un usuario.
+  actualizar(usuario: Usuario): Observable<Usuario> {
+
+    // Envía la petición.
+    return this.http.put<Usuario>(
+      `${this.apiUrl}/${usuario.usuId}`,
+      usuario
+    );
+
+  }
+
+  // Comprueba el acceso.
   login(usuario: string, password: string) {
 
-    // Objeto que se enviará al backend.
+    // Crea los datos del acceso.
     const datosLogin = {
 
-      // Usuario introducido
       usuUsu: usuario,
-
-      // Contraseña introducida
       usuCon: password
 
     };
 
-    // Envía una petición POST al endpoint login
-    return this.http.post( this.apiUrl + '/login', datosLogin );
+    // Envía la petición.
+    return this.http.post(
+      `${this.apiUrl}/login`,
+      datosLogin
+    );
 
   }
 

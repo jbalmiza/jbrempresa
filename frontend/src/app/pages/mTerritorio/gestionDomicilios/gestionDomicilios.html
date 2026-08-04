@@ -1,0 +1,281 @@
+
+<supbar></supbar>
+
+<div class="menu">
+  
+	<sidebar modulo="territorio"></sidebar>
+
+<div class="pagina">
+
+	<label class="titulo"> GESTIÓN DE DOMICILIOS </label>
+
+<!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
+<div class="toolbar">
+
+  	<button class="boton" (click)="mapa()"> Mapa </button>
+  	
+  	<button class="boton" (click)="consultar()"> Consultar </button>
+
+    <button class="boton"> Baja </button>
+    
+	<button class="boton"> Reactivar </button>
+
+  	<button class="boton"> Importar </button>
+
+  	<button class="boton" (click)="exportar()"> Exportar </button>
+  	
+  	<button class="boton" (click)="modificar()"> Modificar </button>
+    
+  	<button class="boton" (click)="volver()"> Volver </button>
+
+</div>
+
+<!-- MAPA DE REGISTROS -->
+<div *ngIf="vistaActiva === 'mapa'" class="form-contenedor">
+
+	<mapaRegistros
+    	[obtenerRegistros]="obtenerDomicilios"
+	    campoTitulo="domDir"
+	    campoX="domCoX"
+	    campoY="domCoY"
+	    campoEpsg="domHus">
+	</mapaRegistros>
+	
+</div>
+
+<!-- FORMULARIO DE REGISTRO -->
+<div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
+
+  	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Identificación </label>
+
+		<div class="form-fila">
+	
+  			<div class="form-campo"> 
+  				<label class="label">Id Cliente</label> 
+  				<input type="number" maxlength="10" [(ngModel)]="domicilio.cliId" name="cliId" disabled> 
+  			</div>
+		
+  			<div class="form-campo"> 
+  				<label class="label">Id Domicilio</label> 
+  				<input type="number" maxlength="10" [(ngModel)]="domicilio.domId" name="domId" disabled> 
+  			</div>
+  			
+  		</div>
+  		
+  	</div>
+  			
+  	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Domicilio </label>
+
+		<div class="form-fila">
+		
+		  	<div class="form-campo-200"> 
+  				<label class="label"> C.I.V. <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="100" [(ngModel)]="domicilio.domCiv" name="domDir"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !domicilio.domCiv"> Valor Obligatorio </div>
+  			</div>
+  			
+  		</div>
+  			
+  		<div class="form-fila">
+
+  			<div class="form-campo"> 
+  				<label class="label"> Tipo Vía <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="10" [(ngModel)]="domicilio.domTipVia" name="domTipVia" (ngModelChange)="actualizarDireccion()"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !domicilio.domTipVia"> Valor Obligatorio </div>
+  			</div>
+
+  			<div class="form-campo-200"> 
+  				<label class="label"> Vía <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="100" [(ngModel)]="domicilio.domVia" name="domVia" (ngModelChange)="actualizarDireccion()"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !domicilio.domVia"> Valor Obligatorio </div>
+  			</div>
+		
+  			<div class="form-campo"> 
+  				<label class="label"> Número <span class="obligatorio">*</span> </label> 
+  				<input type="number" maxlength="10" [(ngModel)]="domicilio.domNum" name="domNum" (ngModelChange)="actualizarDireccion()"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !domicilio.domNum"> Valor Obligatorio </div>
+  			</div>
+  			
+  		</div>
+
+		<div class="form-fila">
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Km</label> 
+  				<input type="text" maxlength="10" [(ngModel)]="domicilio.domKm" name="domKm" (ngModelChange)="actualizarDireccion()"> 
+  			</div>
+
+  			<div class="form-campo"> 
+  				<label class="label">Edificio</label> 
+  				<input type="text" maxlength="10" [(ngModel)]="domicilio.domEdi" name="domEdi" (ngModelChange)="actualizarDireccion()"> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Bloque</label> 
+  				<input type="text" maxlength="10" [(ngModel)]="domicilio.domBlo" name="domBlo" (ngModelChange)="actualizarDireccion()"> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Portal</label> 
+  				<input type="text" maxlength="10" [(ngModel)]="domicilio.domPor" name="domPor" (ngModelChange)="actualizarDireccion()"> 
+  			</div>
+  			  			
+  			<div class="form-campo"> 
+  				<label class="label">Escalera</label> 
+  				<input type="text" maxlength="10" [(ngModel)]="domicilio.domEsc" name="domEsc" (ngModelChange)="actualizarDireccion()"> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Planta</label> 
+  				<input type="text" maxlength="10" [(ngModel)]="domicilio.domPla" name="domPla" (ngModelChange)="actualizarDireccion()"> 
+  			</div>
+  			  			
+  			<div class="form-campo"> 
+  				<label class="label">Puerta</label> 
+  				<input type="text" maxlength="10" [(ngModel)]="domicilio.domPue" name="domPue" (ngModelChange)="actualizarDireccion()"> 
+  			</div>
+  			
+  		</div>
+  		
+  		<div class="form-fila">
+  			  			
+  			<div class="form-campo"> 
+  				<label class="label"> C.P. <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="10" [(ngModel)]="domicilio.domCp" name="domCp" (ngModelChange)="actualizarDireccion()"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !domicilio.domCp"> Valor Obligatorio </div>
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Municipio <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="50" [(ngModel)]="domicilio.domMun" name="domMun" (ngModelChange)="actualizarDireccion()"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !domicilio.domMun"> Valor Obligatorio </div>
+  			</div>
+  			  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Provincia <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="50" [(ngModel)]="domicilio.domPro" name="domPro" (ngModelChange)="actualizarDireccion()"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !domicilio.domPro"> Valor Obligatorio </div>
+  			</div>
+  			
+  		</div>
+  		
+  		<div class="form-fila">
+  			  			
+  			<div class="form-campo-500"> 
+  				<label class="label">Observaciones</label> 
+  				<input type="text" maxlength="100" [(ngModel)]="domicilio.domObs" name="domObs" (ngModelChange)="actualizarDireccion()"> 
+  			</div>
+  			
+  		</div>
+
+	</div>
+	
+	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Dirección </label>
+
+		<div class="form-fila">
+
+  			<div class="form-campo-500"> 
+  				<label class="label">Dirección Postal</label> 
+  				<input type="text" maxlength="100" [(ngModel)]="domicilio.domDir" name="domDir"> 
+  			</div>
+ 		
+ 		</div>
+ 	
+ 	</div>
+ 	
+ 	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Ubicación </label>
+
+		<div class="form-fila">
+
+  			<div class="form-campo-200"> 
+  				<label class="label"> Coordenada X </label> 
+  				<input type="number" maxlength="100" [(ngModel)]="domicilio.domCoX" name="domCoX" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Coordenada Y </label> 
+  				<input type="number" maxlength="100" [(ngModel)]="domicilio.domCoY" name="domCoY" disabled> 
+  			</div>
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Huso UTM </label> 
+  				<input type="number" maxlength="100" [(ngModel)]="domicilio.domHus" name="domHus" disabled> 
+  			</div>
+  			
+			<div class="form-campo-200">
+			    <label class="label"> Mapa </label>
+			    <selectorMapa
+   					[(x)]="domicilio.domCoX"
+					[(y)]="domicilio.domCoY"
+    				[(epsg)]="domicilio.domHus">
+				</selectorMapa>
+			</div>
+ 		
+ 		</div>
+ 	
+ 	</div>
+
+ 	<div class="form-grupo"> 
+  	
+  	<label class="titulo"> Datos Movimiento </label>
+
+		<div class="form-fila">
+
+  			<div class="form-campo-200"> 
+  				<label class="label">Usuario Movimiento</label> 
+  				<input type="text" maxlength="50" [(ngModel)]="domicilio.domUsuMov" name="domUsuMov" disabled> 
+  			</div>
+ 			
+  			<div class="form-campo-200"> 
+  				<label class="label">Fecha Movimiento</label> 
+  				<input type="text" maxlength="10" [(ngModel)]="domicilio.domFecMov" name="domFecMov" disabled> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label">Activo</label> 
+  				<input type="checkbox" maxlength="10" [(ngModel)]="domicilio.domAct" name="domAct" disabled> 
+  			</div>
+  			
+ 		</div>
+ 	
+ 	</div>
+ 
+	<div class="toolbar"> 
+	
+		<button *ngIf="modoFormulario === 'insertar'" class="boton" (click)="guardar()"> Guardar </button>
+		
+		<button *ngIf="modoFormulario === 'modificar'" class="boton" (click)="actualizar()"> Actualizar </button> 
+		
+		<!-- Botón Cancelar tiene misma lógica que consultar -->
+		<button class="boton" (click)="consultar()"> Cancelar </button>
+		
+	</div>
+
+</div>
+
+<!-- TABLA DE RESULTADOS-->
+<div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
+
+  	<label class="titulo"> TABLA DE DOMICILIOS </label>
+  
+  	<tabla 
+  	
+  		[columnas]="columnas" 
+  		[titulosColumnas]="titulosColumnas"
+  		[datos]="datos" 
+		(filaSeleccionada)="domicilioSeleccionado = $event"> 
+  		
+  	</tabla>
+
+</div>
+
+<!-- Cierres de div class menu y pagina -->
+</div> </div>

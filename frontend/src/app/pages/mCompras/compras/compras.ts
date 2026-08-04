@@ -2,34 +2,29 @@
 
 // Importa libreria para crear componentes Angular
 import { Component } from '@angular/core';
-
-// Permite utilizar las directivas básicas de Angular como *ngIf, *ngFor y otras utilidades comunes.
 import { CommonModule } from '@angular/common';
-
-// Importa Routes para definir las rutas de navegación Angular
 import { Router } from '@angular/router';
 
-// Permite utilizar los componentes en esta clase
 import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
 import { Tabla } from '../../../components/tabla/tabla';
 import { SelectorBusqueda } from '../../../components/selectorBusqueda/selectorBusqueda';
 import { TablaEdicion } from '../../../components/tablaEdicion/tablaEdicion';
 
-// Permite utilizar formularios en esta clase
+import { FechasUtil } from '../../../core/utils/fechas.util';
+
 import { FormsModule } from '@angular/forms';
 
-// Los servicios permiten consultar, insertar, modificar y eliminar datos desde otra clase
 import { CompraService } from '../../../services/compra.service';
 import { PersonaService } from '../../../services/persona.service';
 import { ProductoService } from '../../../services/producto.service';
 import { PdfService } from '../../../services/pdf.service';
 
 // Las interfaces definen el modelo de datos que utiliza cada clase
-import { Compra } from '../../../models/compra.interface';
-import { Persona } from '../../../models/persona.interface';
-import { Producto } from '../../../models/producto.interface';
-import { CompraDetalle } from '../../../models/compraDetalle.interface';
+import { Compra } from '../../../interfaces/compra.interface';
+import { Persona } from '../../../interfaces/persona.interface';
+import { Producto } from '../../../interfaces/producto.interface';
+import { CompraDetalle } from '../../../interfaces/compraDetalle.interface';
 
 // Permite acceder a un componente hijo para utilizar sus variables y métodos.
 // Ejemplo acceder desde ventas a : this.tabla.datosFiltrados
@@ -368,8 +363,7 @@ export class Compras {
 
 	    // Elimina el usuario
 	    this.compraService.eliminar(
-	      this.compraSeleccionada.comId!,
-		  this.compraSeleccionada.cliId
+	      this.compraSeleccionada.comId!
 	    ).subscribe({
 
 	      next: () => {
@@ -423,6 +417,28 @@ export class Compras {
 	    );
 
 	}
+	
+	// Comprueba que los campos obligatorios están informados
+	private validarObligatorios(): boolean {
+
+		// Comprueba los campos obligatorios
+		if (
+			!this.compra.perIdCom ||
+			!this.compra.perIdVen 
+		) {
+
+			// Muestra el mensaje
+			alert('Debe rellenar todos los campos obligatorios.');
+
+			// Indica que el formulario no es válido
+			return false;
+
+		}
+
+		// Indica que el formulario es válido
+		return true;
+
+	}
 
 	// Este método guarda el contenido del formulario en base de datos
 	guardar() {
@@ -430,44 +446,38 @@ export class Compras {
 		//Interruptor activo para controlar campos obligatorios
 		this.mostrarObligatorios = true;
 
-		//Alerta para determinados campos sin valor (obligatorios)
-		if (
-		  !this.compra.perIdCom ||
-		  !this.compra.perIdVen 
-		) {
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
-		  alert('Debe rellenar todos los campos obligatorios');
-
-		  return;
-
-		}
-
-	  const compra = {
+	  	const compra = {
 		
-		cliId: this.compra.cliId,
-	    comId: 0,
+			cliId: this.compra.cliId,
+			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
+			// El backend interpreta este registro como nuevo e ignora este valor,
+			// dejando que la base de datos asigne automáticamente el identificador definitivo.
+		    comId: 0,
+	
+			perIdCom: this.compra.perIdCom,		
+			perIdVen: this.compra.perIdVen,
+			
+			comImpSub: this.compra.comImpSub,
+			comImpDes: this.compra.comImpDes,
+			comImpIva: this.compra.comImpIva,
+			comImpTot: this.compra.comImpTot,
+			comImpCob: this.compra.comImpCob,
+			comImpPen: this.compra.comImpPen,
+			
+			comFecPre: this.compra.comFecPre,
+			comFecPed: this.compra.comFecPed,
+			comFecAlb: this.compra.comFecAlb,
+			comFecFac: this.compra.comFecFac,
+			comFecCob: this.compra.comFecCob,
+			
+			comUsuMov: this.compra.comUsuMov,
+		    comFecMov: this.compra.comFecMov,
+			comAct: this.compra.comAct
 
-		perIdCom: this.compra.perIdCom,		
-		perIdVen: this.compra.perIdVen,
-		
-		comImpSub: this.compra.comImpSub,
-		comImpDes: this.compra.comImpDes,
-		comImpIva: this.compra.comImpIva,
-		comImpTot: this.compra.comImpTot,
-		comImpCob: this.compra.comImpCob,
-		comImpPen: this.compra.comImpPen,
-		
-		comFecPre: this.compra.comFecPre,
-		comFecPed: this.compra.comFecPed,
-		comFecAlb: this.compra.comFecAlb,
-		comFecFac: this.compra.comFecFac,
-		comFecCob: this.compra.comFecCob,
-		
-		comUsuMov: this.compra.comUsuMov,
-	    comFecMov: this.compra.comFecMov,
-		comAct: this.compra.comAct
-
-	  };
+	  	};
 
 	  this.compraService.guardar(compra).subscribe({
 
@@ -497,17 +507,8 @@ export class Compras {
 	    // Interruptor activo para controlar campos obligatorios.
 	    this.mostrarObligatorios = true;
 
-	    // Comprueba que todos los campos obligatorios tengan valor.
-	    if (
-	        !this.compra.perIdVen ||
-	        !this.compra.perIdCom
-	    ) {
-
-	        alert('Debe rellenar todos los campos obligatorios');
-
-	        return;
-
-	    }
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
 	    const compra = {
 
@@ -590,7 +591,7 @@ export class Compras {
 		comFecCob: '',
 	  
 		comUsuMov: localStorage.getItem('usuario') || '',
-	  	comFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+	  	comFecMov: '',
 		comAct: true
 		
 		};
@@ -619,7 +620,7 @@ export class Compras {
 			comDetImp: 0,
 			
 			comDetUsuMov: localStorage.getItem('usuario') || '',
-			comDetFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+			comDetFecMov: FechasUtil.formatearFechaHora(),
 			comDetAct: true
 
 	    };

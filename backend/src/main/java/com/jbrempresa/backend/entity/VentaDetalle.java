@@ -1,9 +1,10 @@
 
 package com.jbrempresa.backend.entity;
 
+//Importa las anotaciones JPA.
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 

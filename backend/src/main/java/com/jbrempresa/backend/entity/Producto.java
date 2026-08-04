@@ -4,9 +4,9 @@ package com.jbrempresa.backend.entity;
 
 // Importa las anotaciones JPA.
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 // Entidad JPA
 @Entity
@@ -106,6 +106,18 @@ public class Producto {
     // Observaciones
     @Column(name = "pro_obs")
     private String proObs;
+    
+    // Ubicación
+    @Column(name = "pro_ubi")
+    private String proUbi;
+    
+    // Fila Malla
+    @Column(name = "pro_fil_mal")
+    private Integer proFilMal;
+    
+    // Columna Malla
+    @Column(name = "pro_col_mal")
+    private Integer proColMal;
 
     // Activo
     @Column(name = "pro_act")
@@ -116,6 +128,7 @@ public class Producto {
     private String proUsuMov;
 
     // Fecha de movimiento
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "pro_fec_mov")
     private LocalDateTime proFecMov;
 
@@ -303,6 +316,30 @@ public class Producto {
 
     public void setProObs(String proObs) {
         this.proObs = proObs;
+    }
+    
+    public String getProUbi() {
+        return proUbi;
+    }
+
+    public void setProUbi(String proUbi) {
+        this.proUbi = proUbi;
+    }
+
+    public Integer getProFilMal() {
+        return proFilMal;
+    }
+
+    public void setProFilMal(Integer proFilMal) {
+        this.proFilMal = proFilMal;
+    }
+
+    public Integer getProColMal() {
+        return proColMal;
+    }
+
+    public void setProColMal(Integer proColMal) {
+        this.proColMal = proColMal;
     }
 
     // Obtiene el estado activo

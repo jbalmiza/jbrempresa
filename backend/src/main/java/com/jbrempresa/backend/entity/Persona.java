@@ -1,9 +1,11 @@
 
 package com.jbrempresa.backend.entity;
 
+//Importa las anotaciones JPA.
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 // Entidad JPA
 @Entity
@@ -81,6 +83,7 @@ public class Persona {
     private String perUsuMov;
 
     // Fecha de movimiento
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "per_fec_mov")
     private LocalDateTime perFecMov;
 

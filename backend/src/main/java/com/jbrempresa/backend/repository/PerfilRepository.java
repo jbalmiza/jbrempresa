@@ -19,7 +19,7 @@ public interface PerfilRepository extends JpaRepository<Perfil, Long> {
     List<Perfil> findByCliId(Long cliId);
 
     // Busca un perfil concreto perteneciente a un cliente
-    Optional<Perfil> findByPerIdAndCliId(
+    Optional<Perfil> findByCliIdAndPerId(
             Long perId,
             Long cliId);
 

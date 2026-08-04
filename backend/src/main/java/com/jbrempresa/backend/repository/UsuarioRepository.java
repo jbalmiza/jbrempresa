@@ -3,11 +3,11 @@ package com.jbrempresa.backend.repository;
 import java.util.List;
 import java.util.Optional;
 
-import com.jbrempresa.backend.entity.Usuario;
-
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import com.jbrempresa.backend.entity.Usuario;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
@@ -20,12 +20,13 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     List<Usuario> findByCliId(Long cliId);
 
     // Busca un usuario concreto de un cliente
-    Optional<Usuario> findByUsuIdAndCliId(
-            Long usuId,
-            Long cliId);
+    Optional<Usuario> findByCliIdAndUsuId(
+            Long cliId,
+            Long usuId);
 
     // Busca un usuario por nombre de usuario
-    Optional<Usuario> findByUsuUsu(String usuUsu);
+    Optional<Usuario> findByUsuUsu(
+            String usuUsu);
 
     // Comprueba usuario y contraseña
     @Query("""

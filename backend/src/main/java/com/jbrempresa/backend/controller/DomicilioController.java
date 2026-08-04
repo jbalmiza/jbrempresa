@@ -1,110 +1,155 @@
-// Define el paquete donde está ubicado este archivo Java
+// Define el paquete.
 package com.jbrempresa.backend.controller;
 
-//Importa la anotación @Autowired.
-//Sirve para que Spring inyecte automáticamente objetos necesarios.
+// Importa Autowired.
 import org.springframework.beans.factory.annotation.Autowired;
 
-//Importa todas las anotaciones REST de Spring:
-//@RestController
-//@RequestMapping
-//@PostMapping
-//@RequestBody
-//@CrossOrigin
-import org.springframework.web.bind.annotation.*;
+// Importa LocalDateTime.
+import java.time.LocalDateTime;
 
-//Importa la entidad Persona.
-//Esta entidad representa la tabla PERSONA de PostgreSQL.
-import com.jbrempresa.backend.entity.Domicilio;
-
-//Importa PersonaRepository.
-//El repository contiene los métodos CRUD automáticos de JPA.
-import com.jbrempresa.backend.repository.DomicilioRepository;
-
+// Importa List.
 import java.util.List;
 
-//Indica que esta clase es un controlador REST.
-//Un controlador REST recibe peticiones HTTP desde Angular.
+// Importa Authentication.
+import org.springframework.security.core.Authentication;
+
+// Importa SecurityContextHolder.
+import org.springframework.security.core.context.SecurityContextHolder;
+
+// Importa las anotaciones REST.
+import org.springframework.web.bind.annotation.*;
+
+// Importa Domicilio.
+import com.jbrempresa.backend.entity.Domicilio;
+
+// Importa DomicilioRepository.
+import com.jbrempresa.backend.repository.DomicilioRepository;
+
+// Importa JwtUser.
+import com.jbrempresa.backend.security.JwtUser;
+
+// Define el controlador.
 @RestController
 
-//Define la ruta base del controlador.
-//Todas las URLs empezarán por:
-/*
-http://localhost:8080/personas
-*/
+// Define la ruta base.
 @RequestMapping("/domicilio")
 
-//Permite conexiones desde Angular.
-//Angular normalmente funciona en localhost:4200.
-//Sin esto el navegador bloquearía las peticiones por seguridad CORS.
+// Permite peticiones desde Angular.
 @CrossOrigin(origins = "http://localhost:4200")
-
-//Define la clase PersonaController.
-//Esta clase gestionará las operaciones REST de Persona.
 public class DomicilioController {
 
-    // @Autowired hace que Spring cree automáticamente
-    // un objeto PersonaRepository y lo inyecte aquí.
+    // Repositorio de domicilios.
     @Autowired
-    
-    // Variable que permitirá acceder a base de datos.
     private DomicilioRepository domicilioRepository;
 
-    // @PostMapping indica que este método responderá
-    // a peticiones HTTP POST.
-    //
-    // URL:
-    // POST http://localhost:8080/personas
-    @PostMapping
-    
-    // Método guardar.
-    // Recibe una Persona desde Angular y devuelve la Persona guardada.
-    
-    // @RequestBody significa:
-    // convierte automáticamente el JSON recibido
-    // en un objeto Persona Java.
-    public Domicilio guardar(@RequestBody Domicilio domicilio) {
+    // Obtiene el cliente autenticado.
+    private Long obtenerCliente() {
 
-        // save() guarda automáticamente en PostgreSQL.
-        //
-        // Si el ID no existe:
-        // INSERT
-        //
-        // Si el ID existe:
-        // UPDATE
+        // Obtiene la autenticación.
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        // Obtiene el usuario.
+        JwtUser usuario =
+                (JwtUser) authentication.getPrincipal();
+
+        // Devuelve el cliente.
+        return usuario.getClienteId();
+
+    }
+
+    // Guarda un domicilio.
+    @PostMapping
+    public Domicilio guardar(
+            @RequestBody Domicilio domicilio) {
+
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Asigna el cliente.
+        domicilio.setCliId(cliId);
+
+        // Si el identificador es 0, se trata de un registro nuevo.
+        if (domicilio.getDomId() != null && domicilio.getDomId() == 0) {
+
+            domicilio.setDomId(null);
+
+        }
+
+        // Asigna la fecha.
+        domicilio.setDomFecMov(LocalDateTime.now());
+
+        // Guarda el registro.
         return domicilioRepository.save(domicilio);
 
     }
-    
-    // @GetMapping responde a peticiones GET.
-    //
-    // URL:
-    // GET http://localhost:8080/domicilios
-    @GetMapping
 
-    public List<Domicilio> obtenerDomicilios() {
+    // Actualiza un domicilio.
+    @PutMapping("/{id}")
+    public Domicilio actualizar(
+            @PathVariable Long id,
+            @RequestBody Domicilio domicilio) {
 
-        // findAll() obtiene todos los registros
-        // de la tabla domicilios.
-        return domicilioRepository.findAll();
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Comprueba el domicilio.
+        domicilioRepository.findByCliIdAndDomId(cliId, id)
+                .orElseThrow(() -> new RuntimeException("Domicilio no encontrado."));
+
+        // Asigna el identificador.
+        domicilio.setDomId(id);
+
+        // Asigna el cliente.
+        domicilio.setCliId(cliId);
+
+        // Asigna la fecha.
+        domicilio.setDomFecMov(LocalDateTime.now());
+
+        // Guarda el registro.
+        return domicilioRepository.save(domicilio);
 
     }
-    
+
+    // Obtiene los domicilios.
+    @GetMapping
+    public List<Domicilio> obtenerDomicilios() {
+
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Devuelve los registros.
+        return domicilioRepository.findByCliId(cliId);
+
+    }
+
+    // Obtiene el siguiente ID.
     @GetMapping("/siguiente-id")
     public Long obtenerSiguienteId() {
 
+        // Devuelve el identificador.
         return domicilioRepository.obtenerSiguienteId();
 
     }
-    
-    // Elimina un domicilio.
-    //
-    // URL:
-    // DELETE http://localhost:8080/usuarios/1
-    @DeleteMapping("/{id}")
-    public void eliminar(@PathVariable Long id) {
 
-        domicilioRepository.deleteById(id);
+    // Elimina un domicilio.
+    @DeleteMapping("/{id}")
+    public void eliminar(
+            @PathVariable Long id) {
+
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Busca el domicilio.
+        Domicilio domicilio =
+                domicilioRepository
+                        .findByCliIdAndDomId(cliId, id)
+                        .orElseThrow(() -> new RuntimeException("Domicilio no encontrado."));
+
+        // Elimina el registro.
+        domicilioRepository.delete(domicilio);
 
     }
 

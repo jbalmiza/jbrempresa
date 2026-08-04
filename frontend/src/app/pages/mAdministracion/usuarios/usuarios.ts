@@ -9,20 +9,19 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { Sidebar } from '../../../components/sidebar/sidebar';
-
 import { Supbar } from '../../../components/supbar/supbar';
+import { Tabla } from '../../../components/tabla/tabla';
 
-import { Usuario } from '../../../models/usuario.interface';
+import { FechasUtil } from '../../../core/utils/fechas.util';
+
+import { Usuario } from '../../../interfaces/usuario.interface';
 
 import { FormsModule } from '@angular/forms';
 
 import { UsuarioService } from '../../../services/usuario.service';
-
-import { Tabla } from '../../../components/tabla/tabla';
+import { PdfService } from '../../../services/pdf.service';
 
 import { ViewChild } from '@angular/core';
-
-import { PdfService } from '../../../services/pdf.service';
 
 // Se define la configuración del componente Angular
 @Component({
@@ -254,8 +253,7 @@ export class Usuarios {
 
 	    // Elimina el usuario
 	    this.usuarioService.eliminar(
-	      this.usuarioSeleccionado.usuId!,
-		  this.usuarioSeleccionado.cliId
+	      this.usuarioSeleccionado.usuId!
 	    ).subscribe({
 
 	      next: () => {
@@ -310,44 +308,60 @@ export class Usuarios {
 
 	}
 	
+	// Comprueba que los campos obligatorios están informados
+	private validarObligatorios(): boolean {
+
+		// Comprueba los campos obligatorios
+		if (
+			!this.usuario.usuUsu || 
+			!this.usuario.usuCon || 
+			!this.usuario.perId || 
+			!this.usuario.usuNom || 
+			!this.usuario.usuEma
+		) {
+
+			// Muestra el mensaje
+			alert('Debe rellenar todos los campos obligatorios.');
+
+			// Indica que el formulario no es válido
+			return false;
+
+		}
+
+		// Indica que el formulario es válido
+		return true;
+
+	}
+	
 	// Este método guarda el contenido del formulario en base de datos
 	guardar() {
 		
 		//Interruptor activo para controlar campos obligatorios
 		this.mostrarObligatorios = true;
 
-		//Alerta para determinados campos sin valor (obligatorios)
-		if (
-		  !this.usuario.usuUsu || 
-		  !this.usuario.usuCon || 
-		  !this.usuario.perId || 
-		  !this.usuario.usuNom || 
-		  !this.usuario.usuEma
-		) {
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
-		  alert('Debe rellenar todos los campos obligatorios');
+	  	const usuario = {
 
-		  return;
+			cliId: this.usuario.cliId,	
+			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
+			// El backend interpreta este registro como nuevo e ignora este valor,
+			// dejando que la base de datos asigne automáticamente el identificador definitivo.	
+		    usuId: 0,
+	
+		    usuUsu: this.usuario.usuUsu,
+		    usuCon: this.usuario.usuCon,
+			perId: this.usuario.perId,
+	
+		    usuNom: this.usuario.usuNom,
+		    usuEma: this.usuario.usuEma,
+	
+		    usuUsuMov: this.usuario.usuUsuMov,
+		    usuFecMov: this.usuario.usuFecMov,
+			usuAct: this.usuario.usuAct
 
-		}
-
-	  const usuario = {
-
-		cliId: this.usuario.cliId,		
-	    usuId: null,
-
-	    usuUsu: this.usuario.usuUsu,
-	    usuCon: this.usuario.usuCon,
-		perId: this.usuario.perId,
-
-	    usuNom: this.usuario.usuNom,
-	    usuEma: this.usuario.usuEma,
-
-	    usuUsuMov: this.usuario.usuUsuMov,
-	    usuFecMov: this.usuario.usuFecMov,
-		usuAct: this.usuario.usuAct
-
-	  };
+	  	};
 	  
 	  console.log(usuario);
 	  
@@ -358,6 +372,8 @@ export class Usuarios {
 	      alert('Usuario guardado correctamente');
 		  
 		  this.limpiarFormulario();
+
+		  this.consultar();
 
 	    },
 
@@ -379,20 +395,8 @@ export class Usuarios {
 		// Interruptor activo para controlar campos obligatorios
 		this.mostrarObligatorios = true;
 
-		// Alerta para determinados campos sin valor (obligatorios)
-		if (
-		  !this.usuario.usuUsu || 
-		  !this.usuario.usuCon || 
-		  !this.usuario.perId || 
-		  !this.usuario.usuNom || 
-		  !this.usuario.usuEma
-		) {
-
-		  alert('Debe rellenar todos los campos obligatorios');
-
-		  return;
-
-		}
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
 		const usuario = {
 
@@ -421,6 +425,8 @@ export class Usuarios {
 				alert('Usuario actualizado correctamente.');
 
 				this.limpiarFormulario();
+
+				this.consultar();
 
 			},
 
@@ -459,7 +465,7 @@ export class Usuarios {
 	  	usuEma: '',
 		
 		usuUsuMov: localStorage.getItem('usuario') || '',
-		usuFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+		usuFecMov: FechasUtil.formatearFechaHora(),
 		usuAct: true
 		
 		};

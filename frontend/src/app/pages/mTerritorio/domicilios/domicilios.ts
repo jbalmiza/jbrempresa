@@ -2,33 +2,31 @@
 
 // Importa libreria para crear componentes Angular
 import { Component } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
-
-// Importa Routes para definir las rutas de navegación Angular
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { Sidebar } from '../../../components/sidebar/sidebar';
-
 import { Supbar } from '../../../components/supbar/supbar';
-
-import { Domicilio } from '../../../models/domicilio.interface';
-
-import { FormsModule } from '@angular/forms';
-
-import { DomicilioService } from '../../../services/domicilio.service';
-
 import { Tabla } from '../../../components/tabla/tabla';
 
-import { ViewChild } from '@angular/core';
+import { SelectorMapa } from '../../../components/selectorMapa/selectorMapa';
+import { MapaRegistros } from '../../../components/mapaRegistros/mapaRegistros';
 
+import { FechasUtil } from '../../../core/utils/fechas.util';
+
+import { Domicilio } from '../../../interfaces/domicilio.interface';
+
+import { DomicilioService } from '../../../services/domicilio.service';
 import { PdfService } from '../../../services/pdf.service';
+
+import { ViewChild } from '@angular/core';
 
 // Se define la configuración del componente Angular
 @Component({
   selector: 'Domicilios',
   standalone: true,
-  imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla],
+  imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla, SelectorMapa, MapaRegistros],
   templateUrl: './domicilios.html',
   styleUrl: '../../../styles/estiloGeneral.css'
 })
@@ -44,7 +42,7 @@ export class Domicilios {
 	tabla!: Tabla;
 
 	//Variables de la clase
-	vistaActiva: 'registro' | 'tabla' = 'tabla';
+	vistaActiva: 'mapa' | 'registro' | 'tabla' = 'tabla';
 	modoFormulario: 'insertar' | 'modificar' = 'insertar';
 	mostrarObligatorios = false;
 	
@@ -55,6 +53,7 @@ export class Domicilios {
 	titulosColumnas = {
 	    cliId: 'Id Cliente',
 	    domId: 'Id Domicilio',
+		domCiv: 'C.I.V.',
 	    domTipVia: 'Tipo Vía',
 	    domVia: 'Vía',
 	    domNum: 'Número',
@@ -70,6 +69,9 @@ export class Domicilios {
 		domPro: 'Provincia',
 	    domObs: 'Observaciones',
 	    domDir: 'Dirección Postal',
+		domCoX: 'Coordenada X',
+		domCoY: 'Coordenada Y',
+		domHus: 'Huso UTM',
 	    domUsuMov: 'Usuario Mod.',
 	    domFecMov: 'Fecha Mod.',
 		domAct: 'Activo',
@@ -77,9 +79,12 @@ export class Domicilios {
 	
 	// Campos mostrados en la tabla
 	columnas: string[] = [ 'cliId', 'domId', 
+		'domCiv',
 		'domTipVia', 'domVia', 'domNum', 
 		'domKm', 'domEdi', 'domBlo', 'domPor', 'domEsc', 'domPla', 'domPue', 
-		'domCp', 'domMun', 'domPro', 'domObs', 'domDir',
+		'domCp', 'domMun', 'domPro', 'domObs', 
+		'domDir',
+		'domCoX', 'domCoY', 'domHus',
 	  	'domUsuMov', 'domFecMov', 'domAct'
 
 	];
@@ -98,16 +103,23 @@ export class Domicilios {
 		private pdfService: PdfService
 	
 	) {}
+	
+	// Este método muestra el mapa de datos
+	mapa() {
+
+		this.vistaActiva = 'mapa';
+		
+	}
 
 	 // Este método muestra la tabla de datos
 	 consultar() {
-
+		
 	 	this.vistaActiva = 'tabla';
 
 	 	this.domicilioService.obtenerDomicilios().subscribe({
 
 	 		next: (respuesta) => {
-
+				
 	 			this.datos = respuesta;
 
 	 		},
@@ -128,6 +140,7 @@ export class Domicilios {
 	insertar() {
 
 		this.vistaActiva = 'registro';
+		
 		this.modoFormulario = 'insertar';
 
 	  	this.limpiarFormulario();
@@ -186,6 +199,8 @@ export class Domicilios {
 			cliId: this.domicilioSeleccionado.cliId,	
 			
 		 	domId: this.domicilioSeleccionado.domId,
+			
+			domCiv: this.domicilioSeleccionado.domCiv,
 
 		  	domTipVia: this.domicilioSeleccionado.domTipVia,
 
@@ -216,6 +231,12 @@ export class Domicilios {
 			domObs: this.domicilioSeleccionado.domObs,
 		  
 		  	domDir: this.domicilioSeleccionado.domDir,
+			
+			domCoX: this.domicilioSeleccionado.domCoX,
+
+			domCoY: this.domicilioSeleccionado.domCoY,
+
+			domHus: this.domicilioSeleccionado.domHus,
 
 			domUsuMov: this.domicilioSeleccionado.domUsuMov,
 
@@ -267,15 +288,14 @@ export class Domicilios {
 
 	    }
 
-	    // Elimina el usuario
+	    // Elimina el domicilio
 	    this.domicilioService.eliminar(
-	      this.domicilioSeleccionado.domId!,
-		  this.domicilioSeleccionado.cliId
+	      this.domicilioSeleccionado.domId!
 	    ).subscribe({
 
 	      next: () => {
 
-	        alert('Domicilio eliminado correctamente');
+	        alert('Domicilio eliminado correctamente.');
 
 	        // Limpia selección
 	        this.domicilioSeleccionado = null;
@@ -289,7 +309,7 @@ export class Domicilios {
 
 	        console.error(error);
 
-	        alert('Error al eliminar usuario');
+	        alert('Error al eliminar domicilio.');
 
 	      }
 
@@ -325,90 +345,99 @@ export class Domicilios {
 
 	}
 	
+	// Comprueba que los campos obligatorios están informados
+	private validarObligatorios(): boolean {
+/*
+		// Comprueba los campos obligatorios
+		if (
+			!this.domicilio.domCiv ||
+			!this.domicilio.domTipVia ||
+			!this.domicilio.domVia ||
+			!this.domicilio.domNum ||
+			!this.domicilio.domCp ||
+			!this.domicilio.domMun ||
+			!this.domicilio.domPro
+		) {
+
+			// Muestra el mensaje
+			alert('Debe rellenar todos los campos obligatorios.');
+
+			// Indica que el formulario no es válido
+			return false;
+
+		}
+*/
+		// Indica que el formulario es válido
+		return true;
+
+	}
+	
 	// Este método guarda el contenido del formulario en base de datos
 	guardar() {
 		
 		//Interruptor activo para controlar campos obligatorios
 		this.mostrarObligatorios = true;
 
-		//Alerta para determinados campos sin valor (obligatorios)
-		if (
-		  !this.domicilio.domTipVia || 
-		  !this.domicilio.domVia || 
-		  !this.domicilio.domNum ||
-		  !this.domicilio.domCp ||
-		  !this.domicilio.domMun ||
-		  !this.domicilio.domPro
-		  
-		) {
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
-		  alert('Debe rellenar todos los campos obligatorios');
+	  	const domicilio = {
 
-		  return;
+			cliId: this.domicilio.cliId,
+			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
+			// El backend interpreta este registro como nuevo e ignora este valor,
+			// dejando que la base de datos asigne automáticamente el identificador definitivo.
+		    domId: 0,
+			
+			domCiv: this.domicilio.domCiv,
+		    domTipVia: this.domicilio.domTipVia,
+		    domVia: this.domicilio.domVia,
+		    domNum: this.domicilio.domNum,
+	
+		    domKm: this.domicilio.domKm,
+		    domEdi: this.domicilio.domEdi,
+			domBlo: this.domicilio.domBlo,
+		    domPor: this.domicilio.domPor,
+		    domEsc: this.domicilio.domEsc,
+		    domPla: this.domicilio.domPla,
+		    domPue: this.domicilio.domPue,
+	
+			domCp:  this.domicilio.domCp,
+			domMun: this.domicilio.domMun,
+			domPro: this.domicilio.domPro,			
+			
+			domObs: this.domicilio.domObs,
+			domDir: this.domicilio.domDir,
+			
+			domCoX: this.domicilio.domCoX,			
+			domCoY: this.domicilio.domCoY,
+			domHus: this.domicilio.domHus,
+	
+		    domUsuMov: this.domicilio.domUsuMov,
+		    domFecMov: this.domicilio.domFecMov,
+			domAct: this.domicilio.domAct
 
-		}
-
-	  const domicilio = {
-
-		cliId: this.domicilio.cliId,
-		
-	    domId: null,
-
-	    domTipVia: this.domicilio.domTipVia,
-
-	    domVia: this.domicilio.domVia,
-
-	    domNum: this.domicilio.domNum,
-
-	    domKm: this.domicilio.domKm,
-
-	    domEdi: this.domicilio.domEdi,
-		
-		domBlo: this.domicilio.domBlo,
-
-	    domPor: this.domicilio.domPor,
-
-	    domEsc: this.domicilio.domEsc,
-
-	    domPla: this.domicilio.domPla,
-
-	    domPue: this.domicilio.domPue,
-
-		domCp:  this.domicilio.domCp,
-
-		domMun: this.domicilio.domMun,
-		
-		domPro: this.domicilio.domPro,			
-		
-		domObs: this.domicilio.domObs,
-		
-		domDir: this.domicilio.domDir,
-
-	    domUsuMov: this.domicilio.domUsuMov,
-
-	    domFecMov: this.domicilio.domFecMov,
-		
-		domAct: this.domicilio.domAct
-
-	  };
+	  	};
 	  
 	  console.log('DOMICILIO A ENVIAR:', domicilio);
 
 	  this.domicilioService.guardar(domicilio).subscribe({
 
-	    next: () => {
+		next: () => {
+			
+			alert('Domicilio guardado correctamente.');
+		
+		  	this.limpiarFormulario();
 
-	      alert('Domicilio guardado correctamente.');
-		  
-		  this.limpiarFormulario();
+		 	this.consultar();
 
-	    },
+	    	},
 
 	    error: (error: any) => {
 
 	      console.error(error);
 
-	      alert('Error al guardar domicilio');
+	      alert('Error al guardar domicilio.');
 
 	    }
 
@@ -422,21 +451,8 @@ export class Domicilios {
 		// Interruptor activo para controlar campos obligatorios
 		this.mostrarObligatorios = true;
 
-		// Alerta para determinados campos sin valor (obligatorios)
-		if (
-		  !this.domicilio.domTipVia || 
-		  !this.domicilio.domVia || 
-		  !this.domicilio.domNum ||
-		  !this.domicilio.domCp ||
-		  !this.domicilio.domMun ||
-		  !this.domicilio.domPro
-		) {
-
-		  alert('Debe rellenar todos los campos obligatorios');
-
-		  return;
-
-		}
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
 		const domicilio = {
 
@@ -444,6 +460,8 @@ export class Domicilios {
 
 		    // Mantiene el identificador del domicilio que se va a modificar
 		    domId: this.domicilio.domId,
+			
+			domCiv: this.domicilio.domCiv,
 
 		    domTipVia: this.domicilio.domTipVia,
 
@@ -474,6 +492,12 @@ export class Domicilios {
 			domObs: this.domicilio.domObs,
 
 			domDir: this.domicilio.domDir,
+			
+			domCoX: this.domicilio.domCoX,
+
+			domCoY: this.domicilio.domCoY,
+
+			domHus: this.domicilio.domHus,
 
 		    domUsuMov: this.domicilio.domUsuMov,
 
@@ -493,6 +517,8 @@ export class Domicilios {
 
 				this.limpiarFormulario();
 
+				this.consultar();
+				
 			},
 
 			error: (error: any) => {
@@ -522,12 +548,14 @@ export class Domicilios {
 		cliId: Number(localStorage.getItem('clienteId')) || 0,
 		domId: 0,
 		
+		domCiv: '',
 	    domTipVia: '', domVia: '', domNum: '',
 	    domKm: '', domEdi: '', domBlo: '', domPor: '', domEsc: '', domPla: '', domPue: '',
 		domCp: '', domMun: '', domPro: '', domObs: '', domDir: '',
 		
+		domCoX: 0, domCoY: 0, domHus: 25830,
 		domUsuMov: localStorage.getItem('usuario') || '',
-	    domFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+	    domFecMov: FechasUtil.formatearFechaHora(),
 		domAct: true
 
 	  };
@@ -591,6 +619,17 @@ export class Domicilios {
 	   // Construye la dirección.
 	   this.domicilio.domDir = partes.join(' - ');
 
-	 }
+	 }
+	 
 	
 }
+
+
+
+
+
+
+
+
+
+

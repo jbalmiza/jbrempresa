@@ -1,33 +1,58 @@
+// Define el paquete.
 package com.jbrempresa.backend.security;
 
+// Importa IOException.
 import java.io.IOException;
 
+// Importa Autowired.
 import org.springframework.beans.factory.annotation.Autowired;
+
+// Importa UsernamePasswordAuthenticationToken.
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
+// Importa SecurityContextHolder.
 import org.springframework.security.core.context.SecurityContextHolder;
+
+// Importa UserDetails.
 import org.springframework.security.core.userdetails.UserDetails;
+
+// Importa WebAuthenticationDetailsSource.
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+
+// Importa Component.
 import org.springframework.stereotype.Component;
+
+// Importa OncePerRequestFilter.
 import org.springframework.web.filter.OncePerRequestFilter;
 
+// Importa ExpiredJwtException.
 import io.jsonwebtoken.ExpiredJwtException;
+
+// Importa FilterChain.
 import jakarta.servlet.FilterChain;
+
+// Importa ServletException.
 import jakarta.servlet.ServletException;
+
+// Importa HttpServletRequest.
 import jakarta.servlet.http.HttpServletRequest;
+
+// Importa HttpServletResponse.
 import jakarta.servlet.http.HttpServletResponse;
 
-// Filtro JWT
+// Define el filtro JWT.
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    // Servicio JWT
+    // Servicio JWT.
     @Autowired
     private JwtService jwtService;
 
-    // Servicio de usuarios
+    // Servicio de usuarios.
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
+    // Filtra las peticiones.
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -35,39 +60,36 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Obtiene la cabecera Authorization
+        // Obtiene la cabecera Authorization.
         String authHeader =
                 request.getHeader("Authorization");
 
-        // Token JWT
+        // Token JWT.
         String token = null;
 
-        // Nombre del usuario contenido en el token
+        // Usuario del token.
         String username = null;
 
-        // Comprueba si existe la cabecera Authorization
-        // y comienza por Bearer
+        // Comprueba la cabecera.
         if (authHeader != null &&
                 authHeader.startsWith("Bearer ")) {
 
-            // Extrae el token eliminando "Bearer "
+            // Obtiene el token.
             token = authHeader.substring(7);
 
             try {
 
-                // Obtiene el usuario del token
+                // Obtiene el usuario.
                 username =
                         jwtService.obtenerUsuario(token);
 
             }
 
-            // Si el token ha expirado
+            // El token ha expirado.
             catch (ExpiredJwtException e) {
 
-                // Limpia el contexto de seguridad
                 SecurityContextHolder.clearContext();
 
-                // Devuelve código 401 Unauthorized
                 response.setStatus(
                         HttpServletResponse.SC_UNAUTHORIZED);
 
@@ -75,13 +97,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
             }
 
-            // Cualquier otro error relacionado con el token
+            // Error en el token.
             catch (Exception e) {
 
-                // Limpia el contexto de seguridad
                 SecurityContextHolder.clearContext();
 
-                // Devuelve código 401 Unauthorized
                 response.setStatus(
                         HttpServletResponse.SC_UNAUTHORIZED);
 
@@ -91,38 +111,40 @@ public class JwtFilter extends OncePerRequestFilter {
 
         }
 
-        // Si existe usuario y todavía no está autenticado
+        // Comprueba si el usuario no está autenticado.
         if (username != null &&
                 SecurityContextHolder
                         .getContext()
                         .getAuthentication() == null) {
 
-            // Carga los datos del usuario
+            // Carga el usuario.
             UserDetails userDetails =
                     customUserDetailsService
                             .loadUserByUsername(username);
 
-            // Crea el objeto de autenticación
+            // Crea la autenticación.
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
                             userDetails.getAuthorities());
 
-            // Añade información de la petición
+            // Añade los detalles.
             authToken.setDetails(
                     new WebAuthenticationDetailsSource()
                             .buildDetails(request));
 
-            // Guarda la autenticación en el contexto de seguridad
+            // Guarda la autenticación.
             SecurityContextHolder
                     .getContext()
                     .setAuthentication(authToken);
 
         }
 
-        // Continúa con la cadena de filtros
-        filterChain.doFilter(request, response);
+        // Continúa la petición.
+        filterChain.doFilter(
+                request,
+                response);
 
     }
 

@@ -201,7 +201,40 @@
   		</div>
 
 	</div>
+	
+		<div class="form-grupo"> 
+	
+	<label class="titulo"> Datos Ubicación </label>
 
+		<div class="form-fila">
+
+  			<div class="form-campo-200"> 
+  				<label class="label"> Ubicación </label> 
+  				<input type="text" maxlength="100" [(ngModel)]="producto.proUbi" name="domUbi"> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label"> Fila Malla </label> 
+  				<input type="number" maxlength="100" [(ngModel)]="producto.proFilMal" name="domFilMal" disabled> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label"> Columna Malla </label> 
+  				<input type="number" maxlength="100" [(ngModel)]="producto.proColMal" name="domColMal" disabled> 
+  			</div>
+  			
+			<div class="form-campo-200">
+			    <label class="label"> Malla </label>
+				<selectorMalla
+					entidad="PRODUCTOS"
+				    [(fila)]="producto.proFilMal"
+				    [(columna)]="producto.proColMal">
+				</selectorMalla>
+			</div>
+ 		
+ 		</div>
+ 	
+ 	</div>
 
   	<div class="form-grupo"> 
   	
@@ -216,7 +249,7 @@
  			
   			<div class="form-campo-200"> 
   				<label class="label">Fecha Movimiento</label> 
-  				<input type="datetime-local" maxlength="10" [(ngModel)]="producto.proFecMov" name="proFecMov" disabled> 
+  				<input type="text" maxlength="10" [(ngModel)]="producto.proFecMov" name="proFecMov" disabled> 
   			</div>
   			
   			<div class="form-campo"> 

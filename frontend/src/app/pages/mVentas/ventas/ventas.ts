@@ -2,34 +2,28 @@
 
 // Importa libreria para crear componentes Angular
 import { Component } from '@angular/core';
-
-// Permite utilizar las directivas básicas de Angular como *ngIf, *ngFor y otras utilidades comunes.
 import { CommonModule } from '@angular/common';
-
-// Importa Routes para definir las rutas de navegación Angular
 import { Router } from '@angular/router';
 
-// Permite utilizar los componentes en esta clase
 import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
 import { Tabla } from '../../../components/tabla/tabla';
 import { SelectorBusqueda } from '../../../components/selectorBusqueda/selectorBusqueda';
 import { TablaEdicion } from '../../../components/tablaEdicion/tablaEdicion';
 
-// Permite utilizar formularios en esta clase
+import { FechasUtil } from '../../../core/utils/fechas.util';
+
 import { FormsModule } from '@angular/forms';
 
-// Los servicios permiten consultar, insertar, modificar y eliminar datos desde otra clase
 import { VentaService } from '../../../services/venta.service';
 import { PersonaService } from '../../../services/persona.service';
 import { ProductoService } from '../../../services/producto.service';
 import { PdfService } from '../../../services/pdf.service';
 
-// Las interfaces definen el modelo de datos que utiliza cada clase
-import { Venta } from '../../../models/venta.interface';
-import { Persona } from '../../../models/persona.interface';
-import { Producto } from '../../../models/producto.interface';
-import { VentaDetalle } from '../../../models/ventaDetalle.interface';
+import { Venta } from '../../../interfaces/venta.interface';
+import { Persona } from '../../../interfaces/persona.interface';
+import { Producto } from '../../../interfaces/producto.interface';
+import { VentaDetalle } from '../../../interfaces/ventaDetalle.interface';
 
 // Permite acceder a un componente hijo para utilizar sus variables y métodos.
 // Ejemplo acceder desde ventas a : this.tabla.datosFiltrados
@@ -367,8 +361,7 @@ export class Ventas {
 
 	    // Elimina el usuario
 	    this.ventaService.eliminar(
-	      this.ventaSeleccionada.venId!,
-		  this.ventaSeleccionada.cliId
+	      this.ventaSeleccionada.venId!
 	    ).subscribe({
 
 	      next: () => {
@@ -422,6 +415,28 @@ export class Ventas {
 	    );
 
 	}
+	
+	// Comprueba que los campos obligatorios están informados
+	private validarObligatorios(): boolean {
+
+		// Comprueba los campos obligatorios
+		if (
+			!this.venta.perIdCom ||
+			!this.venta.perIdVen 
+		) {
+
+			// Muestra el mensaje
+			alert('Debe rellenar todos los campos obligatorios.');
+
+			// Indica que el formulario no es válido
+			return false;
+
+		}
+
+		// Indica que el formulario es válido
+		return true;
+
+	}
 
 	// Este método guarda el contenido del formulario en base de datos
 	guardar() {
@@ -429,52 +444,48 @@ export class Ventas {
 		//Interruptor activo para controlar campos obligatorios
 		this.mostrarObligatorios = true;
 
-		//Alerta para determinados campos sin valor (obligatorios)
-		if (
-		  !this.venta.perIdCom ||
-		  !this.venta.perIdVen 
-		) {
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
-		  alert('Debe rellenar todos los campos obligatorios');
-
-		  return;
-
-		}
-
-	  const venta = {
+	  	const venta = {
 		
-		cliId: this.venta.cliId,
-	    venId: 0,
+			cliId: this.venta.cliId,
+			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
+			// El backend interpreta este registro como nuevo e ignora este valor,
+			// dejando que la base de datos asigne automáticamente el identificador definitivo.
+		    venId: 0,
+	
+			perIdVen: this.venta.perIdVen,		
+			perIdCom: this.venta.perIdCom,
+			
+			venImpSub: this.venta.venImpSub,
+			venImpDes: this.venta.venImpDes,
+			venImpIva: this.venta.venImpIva,
+			venImpTot: this.venta.venImpTot,
+			venImpCob: this.venta.venImpCob,
+			venImpPen: this.venta.venImpPen,
+			
+			venFecPre: this.venta.venFecPre,
+			venFecPed: this.venta.venFecPed,
+			venFecAlb: this.venta.venFecAlb,
+			venFecFac: this.venta.venFecFac,
+			venFecCob: this.venta.venFecCob,
+			
+			venUsuMov: this.venta.venUsuMov,
+		    venFecMov: this.venta.venFecMov,
+			venAct: this.venta.venAct
 
-		perIdVen: this.venta.perIdVen,		
-		perIdCom: this.venta.perIdCom,
-		
-		venImpSub: this.venta.venImpSub,
-		venImpDes: this.venta.venImpDes,
-		venImpIva: this.venta.venImpIva,
-		venImpTot: this.venta.venImpTot,
-		venImpCob: this.venta.venImpCob,
-		venImpPen: this.venta.venImpPen,
-		
-		venFecPre: this.venta.venFecPre,
-		venFecPed: this.venta.venFecPed,
-		venFecAlb: this.venta.venFecAlb,
-		venFecFac: this.venta.venFecFac,
-		venFecCob: this.venta.venFecCob,
-		
-		venUsuMov: this.venta.venUsuMov,
-	    venFecMov: this.venta.venFecMov,
-		venAct: this.venta.venAct
-
-	  };
+	  	};
 
 	  this.ventaService.guardar(venta).subscribe({
 
 	    next: () => {
 
 	      alert('Venta guardada correctamente.');
-		  
+
 		  this.limpiarFormulario();
+
+		  this.consultar();
 
 	    },
 
@@ -496,17 +507,8 @@ export class Ventas {
 	    // Interruptor activo para controlar campos obligatorios.
 	    this.mostrarObligatorios = true;
 
-	    // Comprueba que todos los campos obligatorios tengan valor.
-	    if (
-	        !this.venta.perIdCom ||
-	        !this.venta.perIdVen
-	    ) {
-
-	        alert('Debe rellenar todos los campos obligatorios');
-
-	        return;
-
-	    }
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
 	    const venta = {
 
@@ -540,6 +542,8 @@ export class Ventas {
 	        next: () => {
 
 	            alert('Venta actualizada correctamente.');
+				
+				this.limpiarFormulario();
 
 	            this.consultar();
 
@@ -618,7 +622,7 @@ export class Ventas {
 			venDetImp: 0,
 			
 			venDetUsuMov: localStorage.getItem('usuario') || '',
-			venDetFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+			venDetFecMov: FechasUtil.formatearFechaHora(),
 			venDetAct: true
 
 	    };

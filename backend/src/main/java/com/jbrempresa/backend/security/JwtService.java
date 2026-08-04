@@ -1,23 +1,33 @@
+// Define el paquete.
 package com.jbrempresa.backend.security;
 
+// Importa Service.
 import org.springframework.stereotype.Service;
 
+// Importa Claims.
 import io.jsonwebtoken.Claims;
+
+// Importa Jwts.
 import io.jsonwebtoken.Jwts;
+
+// Importa Keys.
 import io.jsonwebtoken.security.Keys;
 
+// Importa Date.
 import java.util.Date;
 
+// Importa SecretKey.
 import javax.crypto.SecretKey;
 
-// Servicio JWT
+// Define el servicio.
 @Service
 public class JwtService {
 
-    // Clave secreta para firmar los tokens
+    // Clave secreta.
     private static final String CLAVE_SECRETA =
             "MiClaveSecretaSuperLargaParaGreenSaaS2026";
 
+    // Obtiene la clave.
     private SecretKey obtenerClave() {
 
         return Keys.hmacShaKeyFor(
@@ -25,44 +35,46 @@ public class JwtService {
 
     }
 
-    // Genera un token JWT
+    // Genera un token.
     public String generarToken(
             String usuario,
-    		Long usuarioId,
+            Long usuarioId,
             Long clienteId,
             Long perfilId) {
 
         return Jwts.builder()
 
-                // Usuario del token
-        		.subject(usuario)
+                // Usuario.
+                .subject(usuario)
 
-        		// ID del usuario
-        		.claim("usuarioId", usuarioId)
-        		
-                // ID del cliente
+                // Identificador del usuario.
+                .claim("usuarioId", usuarioId)
+
+                // Identificador del cliente.
                 .claim("clienteId", clienteId)
 
-                // ID del perfil
+                // Identificador del perfil.
                 .claim("perfilId", perfilId)
 
-                // Fecha de creación
+                // Fecha de creación.
                 .issuedAt(new Date())
 
-                // Expira en 24 horas
+                // Fecha de expiración.
                 .expiration(
                         new Date(
                                 System.currentTimeMillis()
                                 + 1000 * 60 * 60 * 24))
 
-                // Firma del token
+                // Firma el token.
                 .signWith(obtenerClave())
 
                 .compact();
 
     }
 
-    private Claims obtenerClaims(String token) {
+    // Obtiene los datos del token.
+    private Claims obtenerClaims(
+            String token) {
 
         return Jwts
                 .parser()
@@ -73,32 +85,36 @@ public class JwtService {
 
     }
 
-    // Obtiene el usuario del token
-    public String obtenerUsuario(String token) {
+    // Obtiene el usuario.
+    public String obtenerUsuario(
+            String token) {
 
         return obtenerClaims(token)
                 .getSubject();
 
     }
 
-    // Obtiene el ID del usuario del token
-    public Long obtenerUsuarioId(String token) {
+    // Obtiene el identificador del usuario.
+    public Long obtenerUsuarioId(
+            String token) {
 
         return obtenerClaims(token)
                 .get("usuarioId", Long.class);
 
     }
-    
-    // Obtiene el ID del cliente del token
-    public Long obtenerCliente(String token) {
+
+    // Obtiene el identificador del cliente.
+    public Long obtenerCliente(
+            String token) {
 
         return obtenerClaims(token)
                 .get("clienteId", Long.class);
 
     }
 
-    // Obtiene el ID del perfil del token
-    public Long obtenerPerfil(String token) {
+    // Obtiene el identificador del perfil.
+    public Long obtenerPerfil(
+            String token) {
 
         return obtenerClaims(token)
                 .get("perfilId", Long.class);

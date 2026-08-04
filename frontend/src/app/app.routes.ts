@@ -23,6 +23,7 @@ import { Productos } from './pages/mProductos/productos/productos';
 import { Ventas } from './pages/mVentas/ventas/ventas';
 import { Compras } from './pages/mCompras/compras/compras';
 
+import { GestionDomicilios } from './pages/mTerritorio/gestionDomicilios/gestionDomicilios';
 import { GestionProductos } from './pages/mProductos/gestionProductos/gestionProductos';
 
 // Definición de la lógica del componente / Define las rutas de la aplicación
@@ -133,6 +134,12 @@ export const routes: Routes = [
     path: 'territorio/domicilios',
     component: Domicilios,
 	title: 'Domicilios'
+  },
+  
+  {
+    path: 'territorio/gestionDomicilios',
+    component: GestionDomicilios,
+  	title: 'Gestion de Domicilios'
   },
   
   {

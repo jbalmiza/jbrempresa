@@ -1,0 +1,28 @@
+
+<button type="button" class="boton" (click)="abrirMapa()"> 🗺 Seleccionar en Mapa </button>
+
+<div class="fondo" [style.display]="mostrarMapa ? 'flex' : 'none'">
+
+    <div class="ventana">
+
+        <div class="cabecera">
+
+            <span>Seleccionar Mapa</span>
+
+            <button type="button" class="boton" (click)="cerrarMapa()"> ✖ </button>
+
+        </div>
+
+        <div id="mapa" class="mapa"></div>
+
+        <div class="pie">
+        
+			<button type="button" class="boton" (click)="aceptarMapa()"> Aceptar </button>
+        
+            <button type="button" class="boton" (click)="cerrarMapa()"> Cancelar </button>
+
+        </div>
+
+    </div>
+
+</div>

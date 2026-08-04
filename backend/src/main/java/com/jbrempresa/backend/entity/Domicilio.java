@@ -4,8 +4,8 @@ package com.jbrempresa.backend.entity;
 
 // Importa las anotaciones JPA.
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 // Entidad JPA
 @Entity
@@ -34,6 +34,10 @@ public class Domicilio {
     @Column(name = "cli_id")
     private Long cliId;
 
+    // CIV
+    @Column(name = "dom_civ")
+    private String domCiv;
+    
     // Tipo de vía
     @Column(name = "dom_tip_via")
     private String domTipVia;
@@ -93,6 +97,18 @@ public class Domicilio {
     // Dirección completa
     @Column(name = "dom_dir")
     private String domDir;
+    
+    // Coordenada X
+    @Column(name = "dom_cox")
+    private Double domCoX;
+    
+    // Coordenada Y
+    @Column(name = "dom_coy")
+    private Double domCoY;
+    
+    // Huso UTM
+    @Column(name = "dom_hus")
+    private Long domHus;
 
     // Activo
     @Column(name = "dom_act")
@@ -101,8 +117,9 @@ public class Domicilio {
     // Usuario de movimiento
     @Column(name = "dom_usu_mov")
     private String domUsuMov;
-
+    
     // Fecha de movimiento
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "dom_fec_mov")
     private LocalDateTime domFecMov;
 
@@ -126,6 +143,16 @@ public class Domicilio {
     // Modifica el cliente
     public void setCliId(Long cliId) {
         this.cliId = cliId;
+    }
+    
+    // Obtiene el CIV
+    public String getDomCiv() {
+        return domCiv;
+    }
+
+    // Modifica el CIV
+    public void setDomCiv(String domCiv) {
+        this.domCiv = domCiv;
     }
 
     // Obtiene el tipo de vía
@@ -274,6 +301,36 @@ public class Domicilio {
     public void setDomDir(String domDir) {
         this.domDir = domDir;
     }
+    
+    // Obtiene la coordenada x
+    public Double getDomCoX() {
+        return domCoX;
+    }
+
+    // Modifica la coordenada x
+    public void setDomCoX(Double domCoX) {
+        this.domCoX = domCoX;
+    }
+    
+    // Obtiene la coordenada y
+    public Double getDomCoY() {
+        return domCoY;
+    }
+
+    // Modifica la coordenada y
+    public void setDomCoY(Double domCoY) {
+        this.domCoY = domCoY;
+    }
+    
+    // Obtiene el huso
+    public Long getDomHus() {
+        return domHus;
+    }
+
+    // Modifica el huso
+    public void setDomHus(Long domHus) {
+        this.domHus = domHus;
+    }
 
     // Obtiene el estado activo
     public Boolean getDomAct() {
@@ -286,7 +343,7 @@ public class Domicilio {
     }
 
     // Obtiene el usuario de movimiento
-    public String getDOmUsuMov() {
+    public String getDomUsuMov() {
         return domUsuMov;
     }
 
@@ -301,7 +358,7 @@ public class Domicilio {
     }
 
     // Modifica la fecha de movimiento
-    public void setDomMov(LocalDateTime domFecMov) {
+    public void setDomFecMov(LocalDateTime domFecMov) {
         this.domFecMov = domFecMov;
     }
 

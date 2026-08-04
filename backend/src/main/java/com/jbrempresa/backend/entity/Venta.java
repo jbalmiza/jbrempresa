@@ -1,11 +1,12 @@
 
 package com.jbrempresa.backend.entity;
 
+//Importa las anotaciones JPA.
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 // Entidad JPA
 @Entity
@@ -99,6 +100,7 @@ public class Venta {
     private String venUsuMov;
 
     // Fecha de movimiento
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "ven_fec_mov")
     private LocalDateTime venFecMov;
 

@@ -12,9 +12,9 @@
 <!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
 <div class="toolbar">
 
+    <button class="boton" (click)="malla()"> Malla </button>
+  
   	<button class="boton" (click)="consultar()"> Consultar </button>
-  	
-  	<button class="boton" (click)="visualizar()"> Ver </button>
 
     <button class="boton"> Baja </button>
     
@@ -27,6 +27,20 @@
   	<button class="boton" (click)="modificar()"> Modificar </button>
     
   	<button class="boton" (click)="volver()"> Volver </button>
+
+</div>
+
+<!-- MAPA DE REGISTROS -->
+<div *ngIf="vistaActiva === 'malla'" class="form-contenedor">
+
+	<mallaRegistros
+	    entidad="PRODUCTOS"
+	    [obtenerRegistros]="obtenerMallas"
+	    campoId="malId"
+	    campoTitulo="malDes"
+	    campoFila="malFil"
+	    campoColumna="malCol">
+	</mallaRegistros>
 
 </div>
 
@@ -203,7 +217,40 @@
   		</div>
 
 	</div>
+	
+	<div class="form-grupo"> 
+	
+	<label class="titulo"> Datos Ubicación </label>
 
+		<div class="form-fila">
+
+  			<div class="form-campo-200"> 
+  				<label class="label"> Ubicación </label> 
+  				<input type="text" maxlength="100" [(ngModel)]="producto.proUbi" name="domUbi"> 
+  			</div>
+  			  
+  			<div class="form-campo"> 
+  				<label class="label"> Fila Malla </label> 
+  				<input type="number" maxlength="100" [(ngModel)]="producto.proFilMal" name="domFilMal" disabled> 
+  			</div>
+  			
+  			<div class="form-campo"> 
+  				<label class="label"> Columna Malla </label> 
+  				<input type="number" maxlength="100" [(ngModel)]="producto.proColMal" name="domColMal" disabled> 
+  			</div>
+  			  
+			<div class="form-campo-200">
+			    <label class="label"> Malla </label>
+				<selectorMalla
+					entidad="PRODUCTOS"
+				    [(fila)]="producto.proFilMal"
+				    [(columna)]="producto.proColMal">
+				</selectorMalla>
+			</div>
+ 	
+ 		</div>
+ 	
+ 	</div>
 
   	<div class="form-grupo"> 
   	
@@ -218,7 +265,7 @@
  			
   			<div class="form-campo-200"> 
   				<label class="label">Fec. Mov.</label> 
-  				<input type="datetime-local" maxlength="10" [(ngModel)]="producto.proFecMov" name="proFecMov" disabled> 
+  				<input type="text" maxlength="10" [(ngModel)]="producto.proFecMov" name="proFecMov" disabled> 
   			</div>
   			
   			<div class="form-campo"> 

@@ -1,110 +1,155 @@
-// Define el paquete donde está ubicado este archivo Java
+// Define el paquete.
 package com.jbrempresa.backend.controller;
 
-//Importa la anotación @Autowired.
-//Sirve para que Spring inyecte automáticamente objetos necesarios.
+// Importa Autowired.
 import org.springframework.beans.factory.annotation.Autowired;
 
-//Importa todas las anotaciones REST de Spring:
-//@RestController
-//@RequestMapping
-//@PostMapping
-//@RequestBody
-//@CrossOrigin
-import org.springframework.web.bind.annotation.*;
+// Importa LocalDateTime.
+import java.time.LocalDateTime;
 
-//Importa la entidad Producto.
-//Esta entidad representa la tabla VENTA de PostgreSQL.
-import com.jbrempresa.backend.entity.Venta;
-
-//Importa VentaRepository.
-//El repository contiene los métodos CRUD automáticos de JPA.
-import com.jbrempresa.backend.repository.VentaRepository;
-
+// Importa List.
 import java.util.List;
 
-//Indica que esta clase es un controlador REST.
-//Un controlador REST recibe peticiones HTTP desde Angular.
+// Importa Authentication.
+import org.springframework.security.core.Authentication;
+
+// Importa SecurityContextHolder.
+import org.springframework.security.core.context.SecurityContextHolder;
+
+// Importa las anotaciones REST.
+import org.springframework.web.bind.annotation.*;
+
+// Importa Venta.
+import com.jbrempresa.backend.entity.Venta;
+
+// Importa VentaRepository.
+import com.jbrempresa.backend.repository.VentaRepository;
+
+// Importa JwtUser.
+import com.jbrempresa.backend.security.JwtUser;
+
+// Define el controlador.
 @RestController
 
-//Define la ruta base del controlador.
-//Todas las URLs empezarán por:
-/*
-http://localhost:8080/ventas
-*/
+// Define la ruta base.
 @RequestMapping("/ventas")
 
-//Permite conexiones desde Angular.
-//Angular normalmente funciona en localhost:4200.
-//Sin esto el navegador bloquearía las peticiones por seguridad CORS.
+// Permite peticiones desde Angular.
 @CrossOrigin(origins = "http://localhost:4200")
-
-//Define la clase PersonaController.
-//Esta clase gestionará las operaciones REST de Venta.
 public class VentaController {
 
-    // @Autowired hace que Spring cree automáticamente
-    // un objeto PersonaRepository y lo inyecte aquí.
+    // Repositorio de ventas.
     @Autowired
-    
-    // Variable que permitirá acceder a base de datos.
     private VentaRepository ventaRepository;
 
-    // @PostMapping indica que este método responderá
-    // a peticiones HTTP POST.
-    //
-    // URL:
-    // POST http://localhost:8080/productos
-    @PostMapping
-    
-    // Método guardar.
-    // Recibe un Producto desde Angular y devuelve el producto guardado.
-    
-    // @RequestBody significa:
-    // convierte automáticamente el JSON recibido
-    // en un objeto Venta Java.
-    public Venta guardar(@RequestBody Venta venta) {
+    // Obtiene el cliente autenticado.
+    private Long obtenerCliente() {
 
-        // save() guarda automáticamente en PostgreSQL.
-        //
-        // Si el ID no existe:
-        // INSERT
-        //
-        // Si el ID existe:
-        // UPDATE
+        // Obtiene la autenticación.
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        // Obtiene el usuario.
+        JwtUser usuario =
+                (JwtUser) authentication.getPrincipal();
+
+        // Devuelve el cliente.
+        return usuario.getClienteId();
+
+    }
+
+    // Guarda una venta.
+    @PostMapping
+    public Venta guardar(
+            @RequestBody Venta venta) {
+
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Asigna el cliente.
+        venta.setCliId(cliId);
+
+        // Si el identificador es 0, se trata de un registro nuevo.
+        if (venta.getVenId() != null && venta.getVenId() == 0) {
+
+            venta.setVenId(null);
+
+        }
+
+        // Asigna la fecha.
+        venta.setVenFecMov(LocalDateTime.now());
+
+        // Guarda el registro.
         return ventaRepository.save(venta);
 
     }
-    
-    // @GetMapping responde a peticiones GET.
-    //
-    // URL:
-    // GET http://localhost:8080/productos
-    @GetMapping
 
-    public List<Venta> obtenerVentas() {
+    // Actualiza una venta.
+    @PutMapping("/{id}")
+    public Venta actualizar(
+            @PathVariable Long id,
+            @RequestBody Venta venta) {
 
-        // findAll() obtiene todos los registros
-        // de la tabla productos.
-        return ventaRepository.findAll();
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Comprueba la venta.
+        ventaRepository.findByCliIdAndVenId(cliId, id)
+                .orElseThrow(() -> new RuntimeException("Venta no encontrada."));
+
+        // Asigna el identificador.
+        venta.setVenId(id);
+
+        // Asigna el cliente.
+        venta.setCliId(cliId);
+
+        // Asigna la fecha.
+        venta.setVenFecMov(LocalDateTime.now());
+
+        // Guarda el registro.
+        return ventaRepository.save(venta);
 
     }
-    
+
+    // Obtiene las ventas.
+    @GetMapping
+    public List<Venta> obtenerVentas() {
+
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Devuelve los registros.
+        return ventaRepository.findByCliId(cliId);
+
+    }
+
+    // Obtiene el siguiente ID.
     @GetMapping("/siguiente-id")
     public Long obtenerSiguienteId() {
 
+        // Devuelve el identificador.
         return ventaRepository.obtenerSiguienteId();
 
     }
-    
-    // Elimina un producto.
-    //
-    // URL:
-    // DELETE http://localhost:8080/productos/1
-    @DeleteMapping("/{id}")
-    public void eliminar(@PathVariable Long id) {
 
-        ventaRepository.deleteById(id);
+    // Elimina una venta.
+    @DeleteMapping("/{id}")
+    public void eliminar(
+            @PathVariable Long id) {
+
+        // Obtiene el cliente.
+        Long cliId = obtenerCliente();
+
+        // Busca la venta.
+        Venta venta =
+                ventaRepository
+                        .findByCliIdAndVenId(cliId, id)
+                        .orElseThrow(() -> new RuntimeException("Venta no encontrada."));
+
+        // Elimina el registro.
+        ventaRepository.delete(venta);
 
     }
 

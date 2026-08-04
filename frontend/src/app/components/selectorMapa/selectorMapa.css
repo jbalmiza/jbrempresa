@@ -1,0 +1,69 @@
+.boton {
+
+    margin: 5px;
+
+    padding: 5px;
+
+    cursor: pointer;
+
+}
+
+.fondo {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 10000;
+}
+
+.ventana {
+
+    width: 900px;
+    height: 650px;
+
+    background: white;
+
+    border-radius: 8px;
+
+    box-shadow: 0 0 20px rgba(0,0,0,.4);
+
+    display: flex;
+    flex-direction: column;
+}
+
+.cabecera {
+
+    padding: 10px 15px;
+
+    border-bottom: 1px solid #DDD;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    font-weight: bold;
+}
+
+.pie {
+
+    padding: 15px;
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    border-top: 1px solid #DDD;
+}
+
+.mapa {
+
+    flex: 1;
+}

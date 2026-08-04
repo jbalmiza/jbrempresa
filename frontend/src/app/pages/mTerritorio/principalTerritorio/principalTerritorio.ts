@@ -2,14 +2,13 @@
 
 // Importa libreria para crear componentes Angular
 import { Component } from '@angular/core';
-
-// Importa Routes para definir las rutas de navegación Angular
 import { Router } from '@angular/router';
 
 // Importa SidebarComponent para ...
 import { Sidebar } from '../../../components/sidebar/sidebar';
-
 import { Supbar } from '../../../components/supbar/supbar';
+
+import { DomicilioService } from '../../../services/domicilio.service';
 
 // Se define la configuración del componente Angular
 @Component({
@@ -17,14 +16,17 @@ import { Supbar } from '../../../components/supbar/supbar';
   standalone: true, // El componente funciona de forma independiente, sin módulos (NgModule).
   imports: [Sidebar, Supbar], // Otros componentes o módulos usados por este componente.
   templateUrl: './principalTerritorio.html', // Archivo HTML que usa este componente.
-  styleUrl: '../../../styles/estiloPrincipal.css'
+  styleUrl: './principalTerritorio.css'
 })
 
 // Definición de la lógica del componente 
 export class PrincipalTerritorio {
 
 	// Angular inyecta el router.
-	constructor(private router: Router) {}
+	constructor(private router: Router) {
+		
+	
+	}
 
 	// Se define el método volver
 	volver() {

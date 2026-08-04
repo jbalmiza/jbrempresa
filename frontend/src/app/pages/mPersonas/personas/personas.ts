@@ -1,39 +1,26 @@
 // La lógica de la pantalla (Framework Angular / Lenguaje TypeScript)
 
-// Importa libreria para crear componentes Angular
 import { Component } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
-
-// Importa Routes para definir las rutas de navegación Angular
 import { Router } from '@angular/router';
 
-
-//Import de interface
-import { Persona } from '../../../models/persona.interface';
-
-import { FormsModule } from '@angular/forms';
-
-
-
-// Import de servicios que comunican a base de datos.
-import { PersonaService } from '../../../services/persona.service';
-import { DomicilioService } from '../../../services/domicilio.service';
-import { PdfService } from '../../../services/pdf.service';
-
-
-import { ViewChild } from '@angular/core';
-
-
-
-import { Domicilio } from '../../../models/domicilio.interface';
-
-//Import de compoentes genéricos que muestra la página.
 import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
 import { Tabla } from '../../../components/tabla/tabla';
 import { SelectorBusqueda } from '../../../components/selectorBusqueda/selectorBusqueda';
-import { Formulario } from '../../../components/formulario/formulario';
+
+import { FechasUtil } from '../../../core/utils/fechas.util';
+
+import { Persona } from '../../../interfaces/persona.interface';
+import { Domicilio } from '../../../interfaces/domicilio.interface';
+
+import { FormsModule } from '@angular/forms';
+
+import { PersonaService } from '../../../services/persona.service';
+import { DomicilioService } from '../../../services/domicilio.service';
+import { PdfService } from '../../../services/pdf.service';
+
+import { ViewChild } from '@angular/core';
 
 // Se define la configuración del componente Angular
 @Component({
@@ -283,8 +270,7 @@ export class Personas {
 
 	    // Elimina el usuario
 	    this.personaService.eliminar(
-	      this.personaSeleccionada.perId!,
-		  this.personaSeleccionada.cliId
+	      this.personaSeleccionada.perId!
 	    ).subscribe({
 
 	      next: () => {
@@ -338,6 +324,31 @@ export class Personas {
 	    );
 
 	}
+	
+	// Comprueba que los campos obligatorios están informados
+	private validarObligatorios(): boolean {
+/*
+		// Comprueba los campos obligatorios
+		if (
+			!this.persona.perTipDoc ||
+			!this.persona.perDoc ||
+			!this.persona.perNom ||
+			!this.persona.perApe1 ||
+			!this.persona.domId 
+		) {
+
+			// Muestra el mensaje
+			alert('Debe rellenar todos los campos obligatorios.');
+
+			// Indica que el formulario no es válido
+			return false;
+
+		}
+*/
+		// Indica que el formulario es válido
+		return true;
+
+	}
 
 	// Este método guarda el contenido del formulario en base de datos
 	guardar() {
@@ -345,45 +356,36 @@ export class Personas {
 		//Interruptor activo para controlar campos obligatorios
 		this.mostrarObligatorios = true;
 
-		//Alerta para determinados campos sin valor (obligatorios)
-		if (
-		  !this.persona.perTipDoc ||
-		  !this.persona.perDoc ||
-		  !this.persona.perNom ||
-		  !this.persona.perApe1 ||
-		  !this.persona.domId 
-		) {
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
-		  alert('Debe rellenar todos los campos obligatorios');
+	  	const persona = {
 
-		  return;
+			cliId: this.persona.cliId,
+			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
+			// El backend interpreta este registro como nuevo e ignora este valor,
+			// dejando que la base de datos asigne automáticamente el identificador definitivo.
+		    perId: 0,
+	
+		    perTipDoc: this.persona.perTipDoc,
+		    perDoc: this.persona.perDoc,
+			perNomCom: this.persona.perNomCom,
+	
+		    perNom: this.persona.perNom,
+		    perApe1: this.persona.perApe1,
+		    perApe2: this.persona.perApe2,
+		    perFecNac: this.persona.perFecNac,
+			
+		    perTel: this.persona.perTel,
+		    perEma: this.persona.perEma,
+	
+		    domId: this.persona.domId,
+	
+		    perUsuMov: this.persona.perUsuMov,
+		    perFecMov: this.persona.perFecMov,
+			perAct: this.persona.perAct
 
-		}
-
-	  const persona = {
-
-		cliId: this.persona.cliId,
-	    perId: null,
-
-	    perTipDoc: this.persona.perTipDoc,
-	    perDoc: this.persona.perDoc,
-		perNomCom: this.persona.perNomCom,
-
-	    perNom: this.persona.perNom,
-	    perApe1: this.persona.perApe1,
-	    perApe2: this.persona.perApe2,
-	    perFecNac: this.persona.perFecNac,
-		
-	    perTel: this.persona.perTel,
-	    perEma: this.persona.perEma,
-
-	    domId: this.persona.domId,
-
-	    usuMov: this.persona.perUsuMov,
-	    fecMov: this.persona.perFecMov,
-		perAct: this.persona.perAct
-
-	  };
+	  	};
 	  
 	  //Datos en consola de la persona que se va a guardar
 	  console.log('GUARDAR DATOS PERSONA:', persona);
@@ -395,6 +397,8 @@ export class Personas {
 	      alert('Persona guardada correctamente.');
 		  
 		  this.limpiarFormulario();
+
+		  this.consultar();
 
 	    },
 
@@ -414,26 +418,12 @@ export class Personas {
 		// Interruptor activo para controlar campos obligatorios
 		this.mostrarObligatorios = true;
 
-		// Alerta para determinados campos sin valor (obligatorios)
-		if (
-			!this.persona.perTipDoc ||
-			!this.persona.perDoc ||
-			!this.persona.perNom ||
-			!this.persona.perApe1 ||
-			!this.persona.domId
-		) {
-
-			alert('Debe rellenar todos los campos obligatorios');
-
-			return;
-
-		}
+		// Comprueba los campos obligatorios
+		if (!this.validarObligatorios()) { return; }
 
 		const persona = {
 
 			cliId: this.persona.cliId,
-
-			// Mantiene el identificador de la persona que se va a modificar
 			perId: this.persona.perId,
 
 			perTipDoc: this.persona.perTipDoc,
@@ -466,6 +456,8 @@ export class Personas {
 				alert('Persona actualizada correctamente.');
 
 				this.limpiarFormulario();
+
+				this.consultar();
 
 			},
 
@@ -510,7 +502,7 @@ export class Personas {
 	  	domId: 0,
 		
 		perUsuMov: localStorage.getItem('usuario') || '',
-	  	perFecMov: new Date().toLocaleString('sv-SE').replace(' ', 'T').substring(0, 16),
+	  	perFecMov: FechasUtil.formatearFechaHora(),
 		perAct: true,
 		
 		};
