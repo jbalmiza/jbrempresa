@@ -2,7 +2,6 @@
 package com.jbrempresa.backend.security;
 
 // Importa Autowired.
-import org.springframework.beans.factory.annotation.Autowired;
 
 // Importa UserDetails.
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,8 +27,11 @@ public class CustomUserDetailsService
         implements UserDetailsService {
 
     // Repositorio de usuarios.
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+
+    public CustomUserDetailsService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
 
     // Carga un usuario.
     @Override
@@ -51,7 +53,7 @@ public class CustomUserDetailsService
                 usuario.getUsuUsu(),
                 usuario.getUsuCon(),
                 usuario.getUsuId(),
-                usuario.getCliId(),
+                usuario.getEmpId(),
                 usuario.getPerId()
 
         );

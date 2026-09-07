@@ -1,0 +1,10 @@
+export type TipoRecursoAgenda='EMPLEADO'|'DOMICILIO';
+export type EstadoReserva='PENDIENTE'|'CONFIRMADA'|'EN_CURSO'|'TERMINADA'|'CANCELADA'|'AUSENCIA';
+export interface RecursoAgenda{ragId:number;ragTip:TipoRecursoAgenda;ragRefId:number;ragNom:string;ragCap:number;ragMarPre:number;ragMarPos:number;ragHorVis:string;}
+export interface RecursoAgendaEntrada{ragTip:TipoRecursoAgenda;ragRefId:number;ragNom:string;ragCap:number;ragMarPre:number;ragMarPos:number;ragHorVis:string;}
+export interface HorarioAgenda{horId?:number;horDia:number;horIni:string;horFin:string;}
+export interface ExcepcionAgenda{exrId?:number;exrFec:string;exrIni:string|null;exrFin:string|null;exrDis:boolean;exrCap:number|null;exrMot:string;}
+export interface TareaReserva{tarId?:number;ragId:number|null;tarOrd:number;tarTit:string;tarDurMin:number;tarEst?:string;}
+export interface ReservaAgenda{resId:number;perId:number|null;dovId:number|null;comId:number|null;resIni:string;resFin:string;resEst:EstadoReserva;resDurMin:number;resTit:string;resObs:string;ragId:number;tareas:TareaReserva[];}
+export interface ReservaAgendaEntrada{perId:number|null;dovId:number|null;comId:number|null;resIni:string;resFin:string;resTit:string;resObs:string;ragId:number;tareas:TareaReserva[];}
+export interface ReprogramacionAgenda{rprId:number;rprIniAnt:string;rprFinAnt:string;rprIniNue:string;rprFinNue:string;rprMot:string;rprUsuMov:string;rprFecMov:string;}

@@ -10,6 +10,8 @@ import { Observable } from 'rxjs';
 // Importa la interfaz Perfil.
 import { Perfil } from '../interfaces/perfil.interface';
 
+import { API_URL } from '../config/api-url.config';
+
 // Define el servicio.
 @Injectable({
   providedIn: 'root'
@@ -19,7 +21,7 @@ import { Perfil } from '../interfaces/perfil.interface';
 export class PerfilService {
 
   // URL del controlador.
-  private apiUrl = 'http://localhost:8080/perfiles';
+  private apiUrl = `${API_URL}/perfiles`;
 
   // Constructor.
   constructor(private http: HttpClient) {}

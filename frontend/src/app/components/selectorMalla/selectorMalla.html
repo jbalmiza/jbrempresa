@@ -12,7 +12,8 @@
 
             <button
                 type="button"
-                class="boton"
+                class="boton cerrar"
+                aria-label="Cerrar selector de malla"
                 (click)="cerrarMalla()">
                 ✖
             </button>
@@ -23,13 +24,17 @@
 
         <div class="pie">
 
+            <span class="posicion">Fila {{ filaSeleccionada }} · Columna {{ columnaSeleccionada }}</span>
+
             <button
+                type="button"
                 class="boton"
                 (click)="aceptarMalla()">
                 Aceptar
             </button>
 
             <button
+                type="button"
                 class="boton"
                 (click)="cerrarMalla()">
                 Cancelar

@@ -10,6 +10,8 @@ import { Observable } from 'rxjs';
 // Importa la interfaz Producto.
 import { Producto } from '../interfaces/producto.interface';
 
+import { API_URL } from '../config/api-url.config';
+
 // Define el servicio.
 @Injectable({
   providedIn: 'root'
@@ -19,16 +21,16 @@ import { Producto } from '../interfaces/producto.interface';
 export class ProductoService {
 
   // URL del controlador.
-  private apiUrl = 'http://localhost:8080/productos';
+  private apiUrl = `${API_URL}/productos`;
 
   // Constructor.
   constructor(private http: HttpClient) {}
 
   // Guarda un producto.
-  guardar(producto: Producto) {
+  guardar(producto: Producto): Observable<Producto> {
 
     // Envía la petición.
-    return this.http.post(
+    return this.http.post<Producto>(
       this.apiUrl,
       producto
     );
@@ -74,6 +76,27 @@ export class ProductoService {
       producto
     );
 
+  }
+
+  baja(id: number): Observable<Producto> {
+    return this.http.post<Producto>(`${this.apiUrl}/${id}/baja`, {});
+  }
+
+  obtenerHistorico(id: number): Observable<Producto[]> {
+    return this.http.get<Producto[]>(`${this.apiUrl}/${id}/historico`);
+  }
+
+  deshacer(id: number): Observable<Producto> {
+    return this.http.post<Producto>(`${this.apiUrl}/${id}/deshacer`, {});
+  }
+
+  subirImagen(id: number, archivo: File): Observable<Producto> {
+    const datos = new FormData(); datos.append('archivo', archivo);
+    return this.http.post<Producto>(`${this.apiUrl}/${id}/imagen`, datos);
+  }
+
+  obtenerImagen(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/imagen`, { responseType: 'blob' });
   }
 
 }

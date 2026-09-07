@@ -1,0 +1,3 @@
+import {CommonModule} from '@angular/common';import {Component,EventEmitter,Input,Output} from '@angular/core';
+export interface ConceptoVendible{clave:string;tipo:'P'|'S';id:number;nombre:string;descripcion:string;categoria:string;subcategoria:string;precio:number;descuento:number;iva:number;duracionMinutos:number}
+@Component({selector:'tarjetaConceptoTactil',standalone:true,imports:[CommonModule],templateUrl:'./tarjetaConceptoTactil.html',styleUrl:'./tarjetaConceptoTactil.css'})export class TarjetaConceptoTactil{@Input({required:true})concepto!:ConceptoVendible;@Input()precio=0;@Input()cantidad=0;@Input()fondo='';@Output()agregar=new EventEmitter<void>();@Output()quitar=new EventEmitter<void>();}

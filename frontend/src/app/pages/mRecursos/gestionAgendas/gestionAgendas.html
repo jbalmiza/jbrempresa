@@ -1,0 +1,103 @@
+<supbar></supbar>
+<div class="menu">
+  <sidebar modulo="recursos"></sidebar>
+  <main class="pagina">
+    <h1 class="titulo-pagina">GESTIÓN DE AGENDAS</h1>
+
+    <div class="toolbar acciones-principales">
+      <button type="button" class="boton boton-accion accion-consultar" [disabled]="panel==='calendario'" (click)="panel='calendario'">Consultar</button>
+      <button type="button" class="boton boton-accion accion-modificar" [disabled]="panel==='configuracion'||!agendas.length" (click)="abrirConfiguracion()">Configurar</button>
+    </div>
+
+    <section *ngIf="panel==='configuracion'" class="planificador configuracion-global" aria-label="Configuración global de agendas">
+      <header><h2>Configuración global</h2><p>Los cambios sustituyen la configuración y el horario semanal de todos los empleados.</p></header>
+      <configuracionAgenda [recursos]="recursosConfiguracion" tipoRecurso="EMPLEADO" (guardado)="configuracionGuardada()" (cancelar)="panel='calendario'"></configuracionAgenda>
+    </section>
+
+    <section *ngIf="panel==='calendario'" class="planificador" aria-label="Agenda global de empleados">
+      <header class="controles">
+        <div class="navegacion-fecha">
+          <button type="button" (click)="cambiarFecha(-1)" aria-label="Día anterior">‹</button>
+          <button type="button" (click)="hoy()">Hoy</button>
+          <button type="button" (click)="cambiarFecha(1)" aria-label="Día siguiente">›</button>
+          <input type="date" [(ngModel)]="fecha" (change)="cargar()" aria-label="Seleccionar fecha">
+        </div>
+        <strong class="fecha-actual">{{ fechaLarga }}</strong>
+        <div class="intervalos">
+          <span>Intervalo</span>
+          <button type="button" [class.activo]="intervalo===5" (click)="cambiarIntervalo(5)">5 min</button>
+          <button type="button" [class.activo]="intervalo===15" (click)="cambiarIntervalo(15)">15 min</button>
+          <button type="button" [class.activo]="intervalo===30" (click)="cambiarIntervalo(30)">30 min</button>
+          <button type="button" [class.activo]="intervalo===60" (click)="cambiarIntervalo(60)">1 hora</button>
+        </div>
+      </header>
+
+      <div class="filtros">
+        <label>
+          <span>Buscar empleado</span>
+          <input [(ngModel)]="buscar" (ngModelChange)="filtrar()" placeholder="Nombre del empleado">
+        </label>
+        <div class="paginacion-empleados">
+          <button type="button" (click)="moverEmpleados(-1)" [disabled]="paginaEmpleados===0">‹ Empleados</button>
+          <span>{{ agendasFiltradas.length ? paginaEmpleados + 1 : 0 }} de {{ totalPaginas }}</span>
+          <button type="button" (click)="moverEmpleados(1)" [disabled]="paginaEmpleados>=totalPaginas-1">Empleados ›</button>
+        </div>
+      </div>
+
+      <div class="leyenda">
+        <span><i class="disponible"></i>Disponible</span>
+        <span><i class="ocupado"></i>Ocupado</span>
+        <span><i class="margen"></i>Preparación / limpieza</span>
+        <span><i class="no-disponible"></i>No disponible</span>
+      </div>
+
+      <p *ngIf="cargando" class="mensaje">Cargando agendas…</p>
+      <p *ngIf="mensaje" class="mensaje error">{{ mensaje }}</p>
+      <p *ngIf="!cargando && !agendas.length" class="vacio">No hay agendas de empleados configuradas.</p>
+      <p *ngIf="!cargando && agendas.length && !agendasFiltradas.length" class="vacio">No hay empleados que coincidan con la búsqueda.</p>
+
+      <div *ngIf="!cargando && agendasVisibles.length" class="rejilla-scroll">
+        <div class="rejilla" [style.--columnas]="agendasVisibles.length">
+          <div class="cabecera-rejilla esquina">Hora</div>
+          <div *ngFor="let agenda of agendasVisibles" class="cabecera-rejilla empleado" [title]="agenda.recurso.ragNom">
+            <strong>{{ agenda.recurso.ragNom }}</strong>
+            <small>{{ agenda.configurada ? (agenda.horarios.length ? 'Agenda configurada' : 'Sin horario') : 'Sin configurar' }}</small>
+          </div>
+
+          <ng-container *ngFor="let tramo of tramos">
+            <time>{{ tramo.etiqueta }}</time>
+            <div *ngFor="let agenda of agendasVisibles"
+              class="tramo"
+              role="button"
+              tabindex="0"
+              [class.disponible]="estado(agenda,tramo.minutos)==='DISPONIBLE'"
+              [class.ocupado]="estado(agenda,tramo.minutos)==='OCUPADO'"
+              [class.margen]="estado(agenda,tramo.minutos)==='PREPARACION'||estado(agenda,tramo.minutos)==='LIMPIEZA'"
+              [class.no-disponible]="estado(agenda,tramo.minutos)==='NO_DISPONIBLE'"
+              [class.seleccionado]="seleccionada(agenda,tramo.minutos)"
+              (click)="seleccionar(agenda,tramo.minutos)"
+              (keydown.enter)="seleccionar(agenda,tramo.minutos)">
+              <span *ngFor="let reserva of reservasTramo(agenda,tramo.minutos)" [hidden]="!mostrarReserva(reserva,tramo.minutos)" class="reserva" [title]="reserva.resTit">
+                {{ horaReserva(reserva) }} · {{ reserva.resTit || 'Reserva' }}
+              </span>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <aside *ngIf="seleccion" class="detalle">
+        <div>
+          <strong>{{ seleccion.empleado.recurso.ragNom }} · {{ etiquetaEstado(seleccion.estado) }}</strong>
+          <span>{{ fechaLarga }} · {{ hora(seleccion.inicio) }}–{{ hora(seleccion.fin) }}</span>
+          <p>{{ seleccion.detalle }}</p>
+          <article *ngFor="let reserva of seleccion.reservas">
+            <b>{{ horaReserva(reserva) }} · {{ reserva.resTit || 'Reserva' }}</b>
+            <span>Estado: {{ reserva.resEst }}</span>
+            <p *ngIf="reserva.resObs">{{ reserva.resObs }}</p>
+          </article>
+        </div>
+        <button type="button" (click)="seleccion=null">Cerrar</button>
+      </aside>
+    </section>
+  </main>
+</div>

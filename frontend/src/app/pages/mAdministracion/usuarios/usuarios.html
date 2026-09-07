@@ -10,21 +10,17 @@
 <label class="titulo"> REGISTRO DE USUARIOS </label>
 	
 <!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
-<div class="toolbar">
+<div barraAcciones class="toolbar">
 
-  <button class="boton" (click)="consultar()"> Consultar </button>
+<button class="boton boton-accion accion-consultar" (click)="consultar()"> Consultar </button>
 
-  <button class="boton" (click)="insertar()"> Insertar </button>
+<button class="boton boton-accion accion-insertar" (click)="insertar()"> Insertar </button>
 
-  <button class="boton" (click)="modificar()"> Modificar </button>
+<button class="boton boton-accion accion-modificar" (click)="modificar()"> Modificar </button>
 
-  <button class="boton" (click)="eliminar()"> Eliminar </button>
+<button class="boton boton-accion accion-eliminar" (click)="eliminar()"> Eliminar </button>
 
-  <button class="boton"> Importar </button>
-
-  <button class="boton" (click)="exportar()"> Exportar </button>
-    
-  <button class="boton" (click)="volver()"> Volver </button>
+<button class="boton boton-accion accion-volver" (click)="volver()"> Volver </button>
 
 </div>
 
@@ -33,25 +29,7 @@
 <!-- FORMULARIO DE REGISTRO -->
 <div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
 
-  	<div class="form-grupo"> 
-  	
-  	<label class="titulo"> Datos Identificación </label>
-
-		<div class="form-fila">
-			
-			<div class="form-campo"> 
-  				<label class="label">Id Cliente</label> 
-  				<input type="number" [(ngModel)]="usuario.cliId" name="cliId" disabled>
-  			</div>
-			
-  			<div class="form-campo"> 
-  				<label class="label">Id Usuario</label> 
-  				<input type="number" [(ngModel)]="usuario.usuId" name="usuId" disabled>
-  			</div>
-  			
-  		</div>
-  		
-  	</div>
+  	<datosIdentificacion [campos]="[{etiqueta:'Id Empresa',valor:usuario.empId},{etiqueta:'Id Usuario',valor:usuario.usuId}]"></datosIdentificacion>
   	
   	<div class="form-grupo"> 
   			
@@ -66,9 +44,9 @@
   			</div>
 
   			<div class="form-campo-200"> 
-  				<label class="label">Contraseña <span class="obligatorio">*</span> </label> 
-  				<input type="text" maxlength="255" [(ngModel)]="usuario.usuCon" name="usuCon"> 
-  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !usuario.usuCon"> Valor Obligatorio </div>
+				<label class="label">Contraseña <span class="obligatorio" *ngIf="modoFormulario === 'insertar'">*</span> </label>
+				<input type="password" maxlength="255" [(ngModel)]="usuario.usuCon" name="usuCon">
+				<div class="mensaje-obligatorio" *ngIf="modoFormulario === 'insertar' && mostrarObligatorios && !usuario.usuCon"> Valor Obligatorio </div>
   			</div>
   			
   		</div>
@@ -79,60 +57,57 @@
   				<label class="label">Id Perfil <span class="obligatorio">*</span> </label> 
   				<select [(ngModel)]="usuario.perId" name="perId"> 
   					<option [ngValue]="0" hidden>Seleccione...</option>
-					<option *ngFor="let u of usuariosLista" [ngValue]="u.usuId"> {{ u.usuId }} </option>
+					<option *ngFor="let perfil of perfilesLista" [ngValue]="perfil.perId"> {{ perfil.perNom }} </option>
 				</select>
 				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !usuario.perId"> Valor Obligatorio </div>
 			</div>
-  			
-  			<div class="form-campo-200"> 
-  				<label class="label">Nombre <span class="obligatorio">*</span> </label> 
-  				<input type="text" maxlength="100" [(ngModel)]="usuario.usuNom" name="usuNom"> 
-				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !usuario.usuNom"> Valor Obligatorio </div>
-  			</div>
-  			
-  			<div class="form-campo-200"> 
-  				<label class="label">Email <span class="obligatorio">*</span> </label> 
-  				<input type="email" maxlength="100" [(ngModel)]="usuario.usuEma" name="usuEma"> 
-				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !usuario.usuEma"> Valor Obligatorio </div>
-  			</div>
 
-  		</div>
+		</div>
   		
-  	</div>
-  
-  	<div class="form-grupo"> 
-  	
-  	<label class="titulo"> Datos Movimiento </label>
+	</div>
+
+	<div class="form-grupo">
+
+		<label class="titulo">Datos Persona</label>
 
 		<div class="form-fila">
+			<div class="form-campo-500">
+				<datosPersonaRelacion [personas]="personasLista" [personaId]="usuario.usuPerId" etiqueta="Persona relacionada *" (personaIdChange)="seleccionarPersona($event)"></datosPersonaRelacion>
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !usuario.usuPerId">Valor Obligatorio</div>
+			</div>
+		</div>
 
-  			<div class="form-campo-200"> 
-  				<label class="label">Usuario Movimiento</label> 
-  				<input type="text" maxlength="50" [(ngModel)]="usuario.usuUsuMov" name="usuUsuMov" disabled> 
-  			</div>
- 			
-  			<div class="form-campo-200"> 
-  				<label class="label">Fecha Movimiento</label> 
-  				<input type="text" maxlength="100" [(ngModel)]="usuario.usuFecMov" name="usuFecMov" disabled> 
-  			</div>
-  			
-  			<div class="form-campo"> 
-  				<label class="label">Activo</label> 
-  				<input type="checkbox" maxlength="50" [(ngModel)]="usuario.usuAct" name="usuAct" disabled> 
-  			</div>
-  			
- 		</div>
- 	
- 	</div>
+	</div>
+
+	<div class="form-grupo">
+
+		<label class="titulo">Datos Contacto</label>
+
+		<div class="form-fila">
+			<div class="form-campo-200">
+				<label class="label">Teléfono</label>
+				<input type="tel" maxlength="30" [(ngModel)]="usuario.usuTel" name="usuTel">
+			</div>
+
+			<div class="form-campo-500">
+				<label class="label">Correo electrónico <span class="obligatorio">*</span></label>
+				<input type="email" maxlength="150" [(ngModel)]="usuario.usuEma" name="usuEma">
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !usuario.usuEma">Valor Obligatorio</div>
+			</div>
+		</div>
+
+	</div>
+  
+  	<datosMovimiento [mostrarTipo]="false" [mostrarCausa]="false" [usuario]="usuario.usuUsuMov||''" [fecha]="usuario.usuFecMov" [activo]="usuario.usuAct"></datosMovimiento>
  
-	<div class="toolbar"> 
+	<div barraAcciones class="toolbar"> 
 	
-		<button *ngIf="modoFormulario === 'insertar'" class="boton" (click)="guardar()"> Guardar </button>
+<button *ngIf="modoFormulario === 'insertar'" class="boton boton-accion accion-guardar" (click)="guardar()"> Guardar </button>
 		
-		<button *ngIf="modoFormulario === 'modificar'" class="boton" (click)="actualizar()"> Actualizar </button>
+<button *ngIf="modoFormulario === 'modificar'" class="boton boton-accion accion-actualizar" (click)="actualizar()"> Actualizar </button>
 		
 		<!-- Botón Cancelar tiene misma lógica que insertar -->
-		<button class="boton" (click)="insertar()"> Cancelar </button>
+<button class="boton boton-accion accion-cancelar" (click)="insertar()"> Cancelar </button>
 		
 	</div>
 
@@ -141,13 +116,20 @@
 <!-- TABLA DE RESULTADOS-->
 <div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
 
-  	<label class="titulo"> TABLA DE USUARIOS </label>
-    
   	<tabla 
   	
+		titulo="TABLA DE USUARIOS"
+		[permitirImportar]="true"
+		[permitirExportar]="true"
+		(exportarSolicitado)="exportar()"
   		[columnas]="columnas" 
   		[titulosColumnas]="titulosColumnas"
-  		[datos]="datos" 
+		[datos]="datos"
+		[consultaRemota]="true"
+		[cargando]="cargando"
+		[totalRegistrosRemotos]="totalUsuarios"
+		[paginaRemota]="paginaUsuarios"
+		(consultaSolicitada)="consultarPagina($event.pagina, $event.tamanio)"
 		(filaSeleccionada)="usuarioSeleccionado = $event"> 
   		
   	</tabla>

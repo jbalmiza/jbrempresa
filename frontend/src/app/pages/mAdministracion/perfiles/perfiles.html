@@ -10,21 +10,17 @@
 <label class="titulo"> REGISTRO DE PERFILES </label>
 	
 <!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
-<div class="toolbar">
+<div barraAcciones class="toolbar">
 
-  <button class="boton" (click)="consultar()"> Consultar </button>
+<button class="boton boton-accion accion-consultar" (click)="consultar()"> Consultar </button>
 
-  <button class="boton" (click)="insertar()"> Insertar </button>
+<button class="boton boton-accion accion-insertar" (click)="insertar()"> Insertar </button>
 
-  <button class="boton" (click)="modificar()"> Modificar </button>
+<button class="boton boton-accion accion-modificar" (click)="modificar()"> Modificar </button>
 
-  <button class="boton" (click)="eliminar()"> Eliminar </button>
+<button class="boton boton-accion accion-eliminar" (click)="eliminar()"> Eliminar </button>
 
-  <button class="boton"> Importar </button>
-
-  <button class="boton" (click)="exportar()"> Exportar </button>
-    
-  <button class="boton" (click)="volver()"> Volver </button>
+<button class="boton boton-accion accion-volver" (click)="volver()"> Volver </button>
 
 </div>
 
@@ -33,25 +29,7 @@
 <!-- FORMULARIO DE REGISTRO -->
 <div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
 
-  	<div class="form-grupo"> 
-  	
-  	<label class="titulo"> Datos Identificación </label>
-
-		<div class="form-fila">
-			
-			<div class="form-campo"> 
-  				<label class="label">Id Cliente</label> 
-  				<input type="number" [(ngModel)]="perfil.cliId" name="cliId" disabled>
-  			</div>
-			
-  			<div class="form-campo"> 
-  				<label class="label">Id Perfil</label> 
-  				<input type="number" [(ngModel)]="perfil.perId" name="perId" disabled>
-  			</div>
-  			
-  		</div>
-  		
-  	</div>
+  	<datosIdentificacion [campos]="[{etiqueta:'Id Empresa',valor:perfil.empId},{etiqueta:'Id Perfil',valor:perfil.perId}]"></datosIdentificacion>
   	
   	<div class="form-grupo"> 
   			
@@ -115,39 +93,16 @@
   		
   	</div>
   
-  	<div class="form-grupo"> 
-  	
-  	<label class="titulo"> Datos Movimiento </label>
-
-		<div class="form-fila">
-
-  			<div class="form-campo-200"> 
-  				<label class="label">Usuario Movimiento</label> 
-  				<input type="text" maxlength="50" [(ngModel)]="perfil.perUsuMov" name="perUsuMov" disabled> 
-  			</div>
- 			
-  			<div class="form-campo-200"> 
-  				<label class="label">Fecha Movimiento</label> 
-  				<input type="text" maxlength="100" [(ngModel)]="perfil.perFecMov" name="perFecMov" disabled> 
-  			</div>
-  			
-  			<div class="form-campo"> 
-  				<label class="label">Activo</label> 
-  				<input type="checkbox" maxlength="50" [(ngModel)]="perfil.perAct" name="perAct" disabled> 
-  			</div>
-  			
- 		</div>
- 	
- 	</div>
+  	<datosMovimiento [mostrarTipo]="false" [mostrarCausa]="false" [usuario]="perfil.perUsuMov||''" [fecha]="perfil.perFecMov" [activo]="perfil.perAct"></datosMovimiento>
  
-	<div class="toolbar"> 
+	<div barraAcciones class="toolbar"> 
 	
-		<button *ngIf="modoFormulario === 'insertar'" class="boton" (click)="guardar()"> Guardar </button>
+<button *ngIf="modoFormulario === 'insertar'" class="boton boton-accion accion-guardar" (click)="guardar()"> Guardar </button>
 		
-		<button *ngIf="modoFormulario === 'modificar'" class="boton" (click)="actualizar()"> Actualizar </button>
+<button *ngIf="modoFormulario === 'modificar'" class="boton boton-accion accion-actualizar" (click)="actualizar()"> Actualizar </button>
 		
 		<!-- Botón Cancelar tiene misma lógica que insertar -->
-		<button class="boton" (click)="insertar()"> Cancelar </button>
+<button class="boton boton-accion accion-cancelar" (click)="insertar()"> Cancelar </button>
 		
 	</div>
 
@@ -156,10 +111,12 @@
 <!-- TABLA DE RESULTADOS-->
 <div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
 
-  	<label class="titulo"> TABLA DE PERFILES </label>
-    
   	<tabla 
   	
+		titulo="TABLA DE PERFILES"
+		[permitirImportar]="true"
+		[permitirExportar]="true"
+		(exportarSolicitado)="exportar()"
   		[columnas]="columnas" 
   		[titulosColumnas]="titulosColumnas"
   		[datos]="datos" 

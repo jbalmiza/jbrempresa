@@ -1,0 +1,1 @@
+export interface PersonalArea { peaId:number; empId:number; areId:number; perId:number; personaNomCom?:string; peaCar:string; peaRes:boolean; peaPri:boolean; peaFecDes:string; peaFecHas:string; peaUsuMov:string; peaFecMov:string; peaAct:boolean; }

@@ -1,27 +1,17 @@
-<!-- Barra superior -->
-
-<div class="barra-superior">
-
-  <div class="barra-izquierda">
-
-    Cliente: {{ usuarioCliente }}
-
-    &nbsp;&nbsp;|&nbsp;&nbsp;
-
-    Usuario: {{ usuarioUsuario }}
-
-    &nbsp;&nbsp;|&nbsp;&nbsp;
-
-    Perfil: {{ usuarioPerfil }}
-
+<header class="barra-superior">
+  <img *ngIf="imagenEmpresaUrl" class="imagen-empresa" [src]="imagenEmpresaUrl" alt="Imagen de la empresa">
+  <div class="contexto-sesion" aria-label="Contexto de la sesión">
+    <span><small>Empresa</small><strong>{{ usuarioEmpresa }}</strong></span>
+    <i aria-hidden="true"></i>
+    <span><small>Usuario</small><strong>{{ usuarioUsuario }}</strong></span>
+    <i aria-hidden="true"></i>
+    <span><small>Perfil</small><strong>{{ usuarioPerfil }}</strong></span>
   </div>
 
-  <div class="barra-derecha">
+  <div class="fecha-actual"><span>Hoy: <strong>{{diaSemana}}</strong></span><small>{{fechaActual}}</small></div>
 
-    <!-- <button class="boton" (click)="modulos()"> Módulos </button> -->
-
-    <button class="boton" (click)="salir()"> Salir </button>
-
+  <div class="barra-acciones">
+    <button *ngIf="mostrarBotonModulos" type="button" class="boton-modulos" (click)="modulos()">Módulos</button>
+    <button type="button" class="boton-salir" (click)="salir()">Salir</button>
   </div>
-
-</div>
+</header>

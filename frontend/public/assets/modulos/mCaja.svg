@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Caja">
+  <g stroke="#24364b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="#dceafb" d="M18 35h84v62H18z"/>
+    <path fill="#6fa4da" d="M18 35h84v18H18z"/>
+    <path fill="#f3c46e" d="M31 65h27v19H31z"/>
+    <circle cx="83" cy="75" r="20" fill="#fff"/>
+    <path fill="none" d="M90 64c-12-7-21 1-21 11s9 18 21 11M66 72h20M66 79h18"/>
+    <path fill="#8ab5df" d="M47 22h26v13H47z"/>
+    <path fill="none" d="M27 44h9m7 0h9m7 0h9"/>
+  </g>
+</svg>

@@ -1,0 +1,3 @@
+export interface Representante {repId:number;empId:number;perId:number;repPerId:number;repTip:string;repFecDes:string|null;repFecHas:string|null;repPri:boolean;repObs:string;repUsuMov:string;repFecMov:string;repAct:boolean;}
+export interface DomicilioNotificacion {donId:number;empId:number;perId:number;domId:number;donTip:string;donFecDes:string|null;donFecHas:string|null;donPri:boolean;donObs:string;donUsuMov:string;donFecMov:string;donAct:boolean;}
+export interface DomiciliacionBancaria {dobId:number;empId:number;perId:number;dobTip:'CARGO'|'ABONO';dobTit:string;dobIban:string;dobBic:string;dobRefMan:string;dobFecMan:string|null;dobPri:boolean;dobEst:'ACTIVA'|'INACTIVA';dobUsuMov:string;dobFecMov:string;dobAct:boolean;}

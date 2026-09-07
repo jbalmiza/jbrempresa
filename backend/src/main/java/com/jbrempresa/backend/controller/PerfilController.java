@@ -2,7 +2,6 @@
 package com.jbrempresa.backend.controller;
 
 // Importa Autowired.
-import org.springframework.beans.factory.annotation.Autowired;
 
 // Importa LocalDateTime.
 import java.time.LocalDateTime;
@@ -39,11 +38,14 @@ import com.jbrempresa.backend.security.JwtUser;
 public class PerfilController {
 
     // Repositorio de perfiles.
-    @Autowired
-    private PerfilRepository perfilRepository;
+    private final PerfilRepository perfilRepository;
+
+    public PerfilController(PerfilRepository perfilRepository) {
+        this.perfilRepository = perfilRepository;
+    }
 
     // Obtiene el cliente autenticado.
-    private Long obtenerCliente() {
+    private Long obtenerEmpresa() {
 
         // Obtiene la autenticación.
         Authentication authentication =
@@ -56,7 +58,22 @@ public class PerfilController {
                 (JwtUser) authentication.getPrincipal();
 
         // Devuelve el cliente.
-        return usuario.getClienteId();
+        return usuario.getEmpresaId();
+
+    }
+
+    // Obtiene el usuario autenticado.
+    private String obtenerUsuario() {
+
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        JwtUser usuario =
+                (JwtUser) authentication.getPrincipal();
+
+        return usuario.getUsername();
 
     }
 
@@ -66,10 +83,13 @@ public class PerfilController {
             @RequestBody Perfil perfil) {
 
         // Obtiene el cliente.
-        Long cliId = obtenerCliente();
+        Long empId = obtenerEmpresa();
 
         // Asigna el cliente.
-        perfil.setCliId(cliId);
+        perfil.setEmpId(empId);
+
+        // Asigna el usuario de modificacion.
+        perfil.setPerUsuMov(obtenerUsuario());
 
         // Si el identificador es 0, se trata de un registro nuevo.
         if (perfil.getPerId() != null && perfil.getPerId() == 0) {
@@ -93,17 +113,20 @@ public class PerfilController {
             @RequestBody Perfil perfil) {
 
         // Obtiene el cliente.
-        Long cliId = obtenerCliente();
+        Long empId = obtenerEmpresa();
 
         // Comprueba el perfil.
-        perfilRepository.findByCliIdAndPerId(cliId, id)
+        perfilRepository.findByEmpIdAndPerId(empId, id)
                 .orElseThrow(() -> new RuntimeException("Perfil no encontrado."));
 
         // Asigna el identificador.
         perfil.setPerId(id);
 
         // Asigna el cliente.
-        perfil.setCliId(cliId);
+        perfil.setEmpId(empId);
+
+        // Asigna el usuario de modificacion.
+        perfil.setPerUsuMov(obtenerUsuario());
 
         // Asigna la fecha.
         perfil.setPerFecMov(LocalDateTime.now());
@@ -118,10 +141,10 @@ public class PerfilController {
     public List<Perfil> obtenerPerfiles() {
 
         // Obtiene el cliente.
-        Long cliId = obtenerCliente();
+        Long empId = obtenerEmpresa();
 
         // Devuelve los registros.
-        return perfilRepository.findByCliId(cliId);
+        return perfilRepository.findByEmpId(empId);
 
     }
 
@@ -130,7 +153,7 @@ public class PerfilController {
     public Long obtenerSiguienteId() {
 
         // Devuelve el identificador.
-        return perfilRepository.obtenerSiguienteId();
+        return perfilRepository.obtenerSiguienteId(obtenerEmpresa());
 
     }
 
@@ -140,12 +163,12 @@ public class PerfilController {
             @PathVariable Long id) {
 
         // Obtiene el cliente.
-        Long cliId = obtenerCliente();
+        Long empId = obtenerEmpresa();
 
         // Busca el perfil.
         Perfil perfil =
                 perfilRepository
-                        .findByCliIdAndPerId(cliId, id)
+                        .findByEmpIdAndPerId(empId, id)
                         .orElseThrow(() -> new RuntimeException("Perfil no encontrado."));
 
         // Elimina el registro.

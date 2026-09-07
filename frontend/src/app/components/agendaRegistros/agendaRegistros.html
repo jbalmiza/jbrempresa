@@ -1,0 +1,220 @@
+<section class="agenda">
+  <header class="agenda-cabecera">
+    <div>
+      <strong>{{ titulo }}</strong
+      ><span *ngIf="recurso"
+        >{{ recurso.ragTip === 'EMPLEADO' ? 'Empleado' : 'Domicilio' }} · Capacidad
+        {{ recurso.ragCap }}</span
+      >
+    </div>
+    <div class="acciones">
+      <button (click)="panel = 'calendario'" [class.activo]="panel === 'calendario'">
+        Calendario</button
+      ><button (click)="panel = 'reserva'" [class.activo]="panel === 'reserva'">
+        Nueva reserva</button
+      ><button (click)="panel = 'configuracion'" [class.activo]="panel === 'configuracion'">
+        Configurar
+      </button>
+    </div>
+  </header>
+  <p *ngIf="mensaje" class="mensaje" (click)="mensaje = ''">{{ mensaje }}</p>
+  <p *ngIf="cargando" class="mensaje">Cargando agenda…</p>
+  <ng-container *ngIf="panel === 'calendario'">
+    <nav class="agenda-navegacion">
+      <div class="botones-periodo">
+        <button (click)="mover(-1)">‹</button><button (click)="hoy()">Hoy</button
+        ><button (click)="mover(1)">›</button>
+      </div>
+      <h3>{{ tituloPeriodo }}</h3>
+      <div class="controles-calendario">
+        <div *ngIf="vista !== 'mes'" class="selector-zoom">
+          <span>Intervalo</span
+          ><button [class.activo]="zoomMinutos === 5" (click)="zoomMinutos = 5">5 min</button
+          ><button [class.activo]="zoomMinutos === 15" (click)="zoomMinutos = 15">15 min</button
+          ><button [class.activo]="zoomMinutos === 30" (click)="zoomMinutos = 30">30 min</button
+          ><button [class.activo]="zoomMinutos === 60" (click)="zoomMinutos = 60">1 hora</button>
+        </div>
+        <div class="selector-vista">
+          <button [class.activo]="vista === 'dia'" (click)="seleccionarVista('dia')">Día</button
+          ><button [class.activo]="vista === 'semana'" (click)="seleccionarVista('semana')">
+            Semana</button
+          ><button [class.activo]="vista === 'mes'" (click)="seleccionarVista('mes')">Mes</button>
+        </div>
+      </div>
+    </nav>
+    <div *ngIf="vista !== 'mes'" class="leyenda-tiempo">
+      <span class="muestra disponible"></span>Disponible
+      <span class="muestra ocupado"></span>Ocupado <span class="muestra margen"></span>Preparación /
+      limpieza <span class="muestra no-disponible"></span>No disponible
+    </div>
+    <div *ngIf="vista === 'dia'" class="agenda-tiempo agenda-tiempo-dia">
+      <div class="cabecera-tiempo">
+        <span></span><strong>{{ etiquetaDia(fechaActual) }}</strong>
+      </div>
+      <div *ngFor="let t of tramosDia" class="fila-tiempo">
+        <time>{{ t.etiqueta }}</time>
+        <div
+          class="tramo"
+          role="button"
+          tabindex="0"
+          [class.disponible]="tramoDisponible(fechaActual, t.minutos)"
+          [class.no-disponible]="!tramoDisponible(fechaActual, t.minutos)"
+          [class.margen]="
+            tramoPreparacion(fechaActual, t.minutos) || tramoLimpieza(fechaActual, t.minutos)
+          "
+          [class.ocupado]="tramoOcupado(fechaActual, t.minutos)"
+          [class.seleccionado]="celdaActiva(fechaActual, t.minutos)"
+          (click)="seleccionarCelda(fechaActual, t.minutos)"
+          (keydown.enter)="seleccionarCelda(fechaActual, t.minutos)"
+          (keydown.space)="seleccionarCelda(fechaActual, t.minutos); $event.preventDefault()"
+        >
+          <button
+            *ngFor="let r of reservasTramo(fechaActual, t.minutos)"
+            [hidden]="!mostrarReservaEnTramo(r, t.minutos)"
+            class="reserva-tramo"
+            (click)="$event.stopPropagation(); seleccionarCelda(fechaActual, t.minutos)"
+          >
+            {{ hora(r) }} · {{ r.resTit }}
+          </button>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="vista === 'semana'" class="agenda-tiempo agenda-tiempo-semana">
+      <div class="cabecera-tiempo">
+        <span></span
+        ><strong *ngFor="let d of diasSemana" [class.hoy]="esHoy(d)">{{ etiquetaDia(d) }}</strong>
+      </div>
+      <div *ngFor="let t of tramosDia" class="fila-tiempo">
+        <time>{{ t.etiqueta }}</time>
+        <div
+          *ngFor="let d of diasSemana"
+          class="tramo"
+          role="button"
+          tabindex="0"
+          [class.disponible]="tramoDisponible(d, t.minutos)"
+          [class.no-disponible]="!tramoDisponible(d, t.minutos)"
+          [class.margen]="tramoPreparacion(d, t.minutos) || tramoLimpieza(d, t.minutos)"
+          [class.ocupado]="tramoOcupado(d, t.minutos)"
+          [class.seleccionado]="celdaActiva(d, t.minutos)"
+          (click)="seleccionarCelda(d, t.minutos)"
+          (keydown.enter)="seleccionarCelda(d, t.minutos)"
+          (keydown.space)="seleccionarCelda(d, t.minutos); $event.preventDefault()"
+        >
+          <button
+            *ngFor="let r of reservasTramo(d, t.minutos)"
+            [hidden]="!mostrarReservaEnTramo(r, t.minutos)"
+            class="reserva-tramo"
+            (click)="$event.stopPropagation(); seleccionarCelda(d, t.minutos)"
+          >
+            {{ r.resTit }}
+          </button>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="vista === 'mes'" class="calendario-mes">
+      <div class="dias-cabecera">
+        <span *ngFor="let n of ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']">{{ n }}</span>
+      </div>
+      <div class="dias-mes">
+        <div
+          *ngFor="let d of diasMes"
+          [class.otro-mes]="!d.perteneceAlMes"
+          [class.hoy]="esHoy(d.fecha)"
+        >
+          <b>{{ numeroDia(d.fecha) }}</b
+          ><small class="horario-mes" [class.cerrado]="!franjasDia(d.fecha).length">{{
+            horarioDia(d.fecha)
+          }}</small
+          ><button *ngFor="let r of eventosDia(d.fecha)" (click)="seleccionada = r">
+            {{ r.resIni.slice(11, 16) }} {{ r.resTit }}
+          </button>
+        </div>
+      </div>
+    </div>
+    <aside *ngIf="celdaSeleccionada" class="detalle-celda">
+      <div class="detalle-celda-cabecera">
+        <div>
+          <strong>{{ etiquetaEstado(celdaSeleccionada.estado) }}</strong
+          ><span
+            >{{ etiquetaFechaCelda(celdaSeleccionada.fecha) }} ·
+            {{ etiquetaMinutos(celdaSeleccionada.inicio) }}–{{
+              etiquetaMinutos(celdaSeleccionada.fin)
+            }}</span
+          >
+        </div>
+        <button (click)="celdaSeleccionada = null; seleccionada = null">Cerrar</button>
+      </div>
+      <p>{{ celdaSeleccionada.detalle }}</p>
+      <article *ngFor="let r of celdaSeleccionada.reservas" class="ocupacion-detalle">
+        <strong>{{ r.resTit }}</strong
+        ><span>{{ hora(r) }} · {{ r.resEst }} · {{ r.resDurMin }} min</span>
+        <p *ngIf="r.resObs">{{ r.resObs }}</p>
+        <ul *ngIf="r.tareas.length">
+          <li *ngFor="let t of r.tareas">
+            {{ t.tarTit }} · {{ t.tarDurMin }} min <small>{{ t.tarEst }}</small>
+          </li>
+        </ul>
+        <div class="acciones-reserva">
+          <button (click)="reprogramar(r)">Reprogramar</button
+          ><button *ngIf="r.resEst === 'PENDIENTE'" (click)="cambiarEstado(r, 'CONFIRMADA')">
+            Confirmar</button
+          ><button *ngIf="r.resEst === 'CONFIRMADA'" (click)="cambiarEstado(r, 'EN_CURSO')">
+            Iniciar</button
+          ><button *ngIf="r.resEst === 'EN_CURSO'" (click)="cambiarEstado(r, 'TERMINADA')">
+            Terminar</button
+          ><button
+            *ngIf="r.resEst === 'PENDIENTE' || r.resEst === 'CONFIRMADA' || r.resEst === 'EN_CURSO'"
+            class="peligro"
+            (click)="cambiarEstado(r, 'CANCELADA')"
+          >
+            Cancelar
+          </button>
+        </div>
+      </article>
+    </aside>
+  </ng-container>
+  <form *ngIf="panel === 'reserva'" class="panel-form" (ngSubmit)="crearReserva()">
+    <h3>Nueva reserva</h3>
+    <div class="rejilla-form">
+      <label>Fecha<input type="date" name="fecha" [(ngModel)]="nueva.fecha" required /></label
+      ><label>Inicio<input type="time" name="inicio" [(ngModel)]="nueva.inicio" required /></label
+      ><label>Fin<input type="time" name="fin" [(ngModel)]="nueva.fin" required /></label
+      ><label class="ancho"
+        >Título<input name="titulo" maxlength="200" [(ngModel)]="nueva.titulo" required /></label
+      ><label class="ancho"
+        >Observaciones<textarea
+          name="obs"
+          maxlength="500"
+          [(ngModel)]="nueva.observaciones"
+        ></textarea>
+      </label>
+    </div>
+    <button class="principal" type="submit">Registrar reserva</button>
+  </form>
+  <div *ngIf="panel === 'configuracion' && recurso" class="panel-config">
+    <h3>Configuración del recurso</h3>
+    <configuracionAgenda [recursos]="[recurso]" [tipoRecurso]="tipoRecurso" (guardado)="configuracionGuardada()" (cancelar)="panel='calendario'"></configuracionAgenda>
+    <div class="excepcion-form">
+      <input type="date" [(ngModel)]="excepcion.exrFec" /><select [(ngModel)]="excepcion.exrDis">
+        <option [ngValue]="false">No disponible</option>
+        <option [ngValue]="true">Apertura especial</option></select
+      ><input type="time" [(ngModel)]="excepcion.exrIni" /><input
+        type="time"
+        [(ngModel)]="excepcion.exrFin"
+      /><input placeholder="Motivo" [(ngModel)]="excepcion.exrMot" /><button
+        (click)="guardarExcepcion()"
+      >
+        Añadir
+      </button>
+    </div>
+    <div class="lista-excepciones">
+      <article *ngFor="let e of excepciones">
+        <span
+          >{{ e.exrFec }} · {{ e.exrDis ? 'Disponible' : 'No disponible' }}
+          {{ e.exrIni ? e.exrIni.slice(0, 5) + '–' + e.exrFin?.slice(0, 5) : 'todo el día' }}</span
+        ><small>{{ e.exrMot }}</small
+        ><button (click)="eliminarExcepcion(e)">Eliminar</button>
+      </article>
+    </div>
+  </div>
+</section>

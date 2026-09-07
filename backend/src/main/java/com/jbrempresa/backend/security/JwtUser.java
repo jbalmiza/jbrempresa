@@ -26,7 +26,7 @@ public class JwtUser implements UserDetails {
     private Long usuarioId;
 
     // Identificador del cliente.
-    private Long clienteId;
+    private Long empresaId;
 
     // Identificador del perfil.
     private Long perfilId;
@@ -36,13 +36,13 @@ public class JwtUser implements UserDetails {
             String usuario,
             String contrasena,
             Long usuarioId,
-            Long clienteId,
+            Long empresaId,
             Long perfilId) {
 
         this.usuario = usuario;
         this.contrasena = contrasena;
         this.usuarioId = usuarioId;
-        this.clienteId = clienteId;
+        this.empresaId = empresaId;
         this.perfilId = perfilId;
 
     }
@@ -55,9 +55,9 @@ public class JwtUser implements UserDetails {
     }
 
     // Obtiene el identificador del cliente.
-    public Long getClienteId() {
+    public Long getEmpresaId() {
 
-        return clienteId;
+        return empresaId;
 
     }
 

@@ -1,8 +1,0 @@
-La carpeta entity contiene las clases Java que representan las tablas de PostgreSQL dentro de Spring Boot. 
-
-Su objetivo es mapear la estructura de la base de datos a objetos Java mediante JPA/Hibernate, 
-permitiendo trabajar con registros SQL como objetos normales del programa. Cada archivo entity define 
-la tabla asociada, sus columnas, la clave primaria y los métodos getter y setter necesarios para leer y modificar los datos. 
-
-Estas entidades son utilizadas por los repositories para realizar operaciones CRUD automáticas y por los controllers 
-para intercambiar información entre el backend y el frontend Angular mediante APIs REST.

@@ -10,46 +10,30 @@
 	<label class="titulo"> REGISTRO DE PRODUCTOS </label>
 
 <!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
-<div class="toolbar">
+<div barraAcciones *ngIf="vistaActiva !== 'historico'" class="toolbar">
 
-  <button class="boton" (click)="consultar()"> Consultar </button>
+<button class="boton boton-accion accion-consultar" (click)="consultar()"> Consultar </button>
 
-  <button class="boton" (click)="insertar()"> Insertar </button>
+<button class="boton boton-accion accion-insertar" (click)="insertar()"> Insertar </button>
 
-  <button class="boton" (click)="modificar()"> Modificar </button>
+<button *ngIf="vistaActiva === 'tabla' && productoSeleccionado && productoSeleccionado.proTipMov !== 'B'" class="boton boton-accion accion-modificar" (click)="modificar()"> Modificar </button>
 
-  <button class="boton" (click)="eliminar()"> Eliminar </button>
 
-  <button class="boton"> Importar </button>
 
-  <button class="boton" (click)="exportar()"> Exportar </button>
-    
-  <button class="boton" (click)="volver()"> Volver </button>
+  <button *ngIf="vistaActiva === 'tabla' && productoSeleccionado" class="boton boton-accion accion-eliminar" (click)="eliminar()"> Eliminar </button>
+
+  <button *ngIf="vistaActiva === 'tabla' && productoSeleccionado" class="boton boton-accion accion-adjuntos" (click)="adjuntos()"> Adjuntos </button>
+
+
+
+<button class="boton boton-accion accion-volver" (click)="volver()"> Volver </button>
 
 </div>
 
 <!-- FORMULARIO DE REGISTRO -->
 <div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
 
-  	<div class="form-grupo"> 
-  	
-  	<label class="titulo"> Datos Identificación </label>
-
-		<div class="form-fila">
-
-  			<div class="form-campo"> 
-  				<label class="label">Id Cliente</label> 
-  				<input type="number" maxlength="10" [(ngModel)]="producto.cliId" name="cliId" disabled> 
-  			</div>
-
-  			<div class="form-campo"> 
-  				<label class="label">Id Producto</label> 
-  				<input type="number" maxlength="10" [(ngModel)]="producto.proId" name="proId" disabled> 
-  			</div>
-  			
-  		</div>
-  		
-  	</div>
+  	<datosIdentificacion [campos]="[{etiqueta:'Id Empresa',valor:producto.empId},{etiqueta:'Id Producto',valor:producto.proId}]"></datosIdentificacion>
 
   	<div class="form-grupo"> 
   	
@@ -59,7 +43,7 @@
 		
   			<div class="form-campo-200"> 
   				<label class="label"> Tipo Producto <span class="obligatorio">*</span> </label> 
-  				<input type="text" maxlength="30" [(ngModel)]="producto.proTipPro" name="proTipPro">
+				<select [(ngModel)]="producto.proTipPro" name="proTipPro"><option value="">Seleccione</option><option *ngFor="let tipo of tiposProducto" [value]="tipo.nombre">{{tipo.nombre}}</option></select>
   				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proTipPro"> Valor Obligatorio </div>
   			</div>
 
@@ -193,10 +177,12 @@
 
 		<div class="form-fila">
 		
-  			<div class="form-campo-500"> 
-  				<label class="label"> Observaciones </label> 
-  				<input type="text" maxlength="200" [(ngModel)]="producto.proObs" name="proObs">
-  			</div>
+			<div class="form-campo-500"> 
+				<label class="label"> Observaciones </label> 
+				<input type="text" maxlength="200" [(ngModel)]="producto.proObs" name="proObs">
+			</div>
+			<div class="form-campo-200"><label class="label">Duración (minutos)</label><input type="number" min="0" step="5" [(ngModel)]="producto.proDurMin" name="proDurMin"></div>
+			<div class="form-campo-200"><label class="label">Visible en catálogo</label><input type="checkbox" [(ngModel)]="producto.proVisCat" name="proVisCat"></div>
   			
   		</div>
 
@@ -236,51 +222,49 @@
  	
  	</div>
 
-  	<div class="form-grupo"> 
-  	
-  	<label class="titulo"> Datos Movimiento </label>
-
-		<div class="form-fila">
-
-  			<div class="form-campo-200"> 
-  				<label class="label">Usurio Movimiento</label> 
-  				<input type="text" maxlength="50" [(ngModel)]="producto.proUsuMov" name="proUsuMov" disabled> 
-  			</div>
- 			
-  			<div class="form-campo-200"> 
-  				<label class="label">Fecha Movimiento</label> 
-  				<input type="text" maxlength="10" [(ngModel)]="producto.proFecMov" name="proFecMov" disabled> 
-  			</div>
-  			
-  			<div class="form-campo"> 
-  				<label class="label">Activo</label> 
-  				<input type="checkbox" maxlength="10" [(ngModel)]="producto.proAct" name="proAct" disabled> 
-  			</div>
-  			
- 		</div>
- 	
- 	</div>
+	<datosMovimiento [mostrarTipo]="false" [mostrarCausa]="false" [usuario]="producto.proUsuMov||''" [fecha]="producto.proFecMov" [activo]="producto.proAct"></datosMovimiento>
  
-	<div class="toolbar"> 
+	<div barraAcciones class="toolbar"> 
 	
-		<button *ngIf="modoFormulario === 'insertar'" class="boton" (click)="guardar()"> Guardar </button>
+<button *ngIf="modoFormulario === 'insertar'" class="boton boton-accion accion-guardar" (click)="guardar()"> Guardar </button>
 		
-		<button *ngIf="modoFormulario === 'modificar'" class="boton" (click)="actualizar()"> Actualizar </button>
+<button *ngIf="modoFormulario === 'modificar'" class="boton boton-accion accion-actualizar" (click)="actualizar()"> Actualizar </button>
 		
 		<!-- Botón Cancelar tiene misma lógica que consultar -->
-		<button class="boton" (click)="consultar()"> Cancelar </button>
+<button class="boton boton-accion accion-cancelar" (click)="consultar()"> Cancelar </button>
 		
 	</div>
 
 </div>
 
+<div *ngIf="vistaActiva === 'adjuntos'" class="form-contenedor">
+	<div class="form-grupo">
+		<label class="titulo">Documentación Adjunta · {{ productoSeleccionado?.proNom }}</label>
+		<documentacionAdjunta [modulo]="'PRODUCTOS'" [tipoRegistro]="'PRODUCTO'"
+			[registroId]="productoSeleccionado?.proId || 0" [codigoRuta]="'RUTA_DOCUMENTOS_PRODUCTOS'" [permitirImagenPrincipal]="true">
+		</documentacionAdjunta>
+	</div>
+<div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="volverAConsulta()">Volver a consulta</button></div>
+</div>
+
+<div *ngIf="vistaActiva === 'historico'" class="tabla-contenedor">
+	<label class="titulo">HISTÓRICO DE PRODUCTO · {{ productoSeleccionado?.proNom }}</label>
+	<div barraAcciones class="toolbar">
+<button class="boton boton-accion accion-volver" (click)="volverAConsulta()">Volver</button>
+<button *ngIf="(productoSeleccionado?.proIdHis || 1) > 1" class="boton boton-accion accion-deshacer" (click)="deshacer()">Deshacer</button>
+	</div>
+	<tabla [columnas]="columnas" [titulosColumnas]="titulosColumnas" [incluirBajas]="true" [datos]="datosHistorico"></tabla>
+</div>
+
 <!-- TABLA DE RESULTADOS-->
 <div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
 
-  	<label class="titulo"> TABLA DE PRODUCTOS </label>
-  
   	<tabla 
   	
+		titulo="TABLA DE PRODUCTOS"
+		[permitirImportar]="true"
+		[permitirExportar]="true"
+		(exportarSolicitado)="exportar()"
   		[columnas]="columnas" 
   		[titulosColumnas]="titulosColumnas"
   		[datos]="datos" 

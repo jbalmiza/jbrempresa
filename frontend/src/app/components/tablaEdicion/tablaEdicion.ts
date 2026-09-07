@@ -38,6 +38,9 @@ import { Output, EventEmitter } from '@angular/core';
 // Definición de la lógica del componente.
 export class TablaEdicion {
 
+  @Input()
+  titulo = 'Detalle';
+
   // Títulos mostrados en la cabecera de la tabla.
   @Input()
   titulosColumnas: { [key: string]: string } = {};

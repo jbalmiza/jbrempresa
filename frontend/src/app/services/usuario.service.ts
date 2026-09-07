@@ -3,12 +3,23 @@ import { Injectable } from '@angular/core';
 
 // Importa HttpClient.
 import { HttpClient } from '@angular/common/http';
+import { HttpParams } from '@angular/common/http';
 
 // Importa Observable.
 import { Observable } from 'rxjs';
 
 // Importa la interfaz Usuario.
 import { Usuario } from '../interfaces/usuario.interface';
+
+import { API_URL } from '../config/api-url.config';
+
+export interface PaginaUsuarios {
+  content: Usuario[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
 
 // Define el servicio.
 @Injectable({
@@ -19,7 +30,7 @@ import { Usuario } from '../interfaces/usuario.interface';
 export class UsuarioService {
 
   // URL del controlador.
-  private apiUrl = 'http://localhost:8080/usuarios';
+  private apiUrl = `${API_URL}/usuarios`;
 
   // Constructor.
   constructor(private http: HttpClient) {}
@@ -42,6 +53,20 @@ export class UsuarioService {
     return this.http.get<Usuario[]>(
       this.apiUrl
     );
+
+  }
+
+  // Consulta una página de usuarios con los filtros indicados.
+  consultar(filtros: Record<string, string>, pagina: number, tamanio: number) {
+    let params = new HttpParams().set('pagina', pagina).set('tamanio', tamanio);
+
+    Object.entries(filtros).forEach(([campo, valor]) => {
+      if (valor?.trim()) {
+        params = params.set(campo, valor.trim());
+      }
+    });
+
+    return this.http.get<PaginaUsuarios>(`${this.apiUrl}/consulta`, { params });
 
   }
 
@@ -93,6 +118,24 @@ export class UsuarioService {
       datosLogin
     );
 
+  }
+
+  solicitarRecuperacion(usuario: string, correo: string) {
+    return this.http.post<{ mensaje: string; tokenDesarrollo?: string }>(
+      `${API_URL}/auth/password/solicitar`,
+      { usuario, correo }
+    );
+  }
+
+  confirmarRecuperacion(
+    token: string,
+    contrasena: string,
+    confirmacion: string
+  ) {
+    return this.http.post<void>(
+      `${API_URL}/auth/password/confirmar`,
+      { token, contrasena, confirmacion }
+    );
   }
 
 }

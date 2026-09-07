@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Productos">
+  <g stroke="#24364b" stroke-width="3" stroke-linejoin="round">
+    <path fill="#dceafb" d="m18 38 42-21 42 21-42 22z"/><path fill="#8ab5df" d="M18 38v47l42 22V60z"/><path fill="#5b8fd5" d="M102 38v47l-42 22V60z"/>
+    <path fill="#f3c46e" d="m44 25 42 21-12 7-42-21z"/><path fill="none" d="M60 60v47"/>
+    <path fill="#fff" d="M75 76h15v11H75z"/>
+  </g>
+</svg>

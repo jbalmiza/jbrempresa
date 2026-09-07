@@ -1,0 +1,2 @@
+package com.jbrempresa.backend.repository;import java.time.LocalDate;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;import com.jbrempresa.backend.entity.ExcepcionRecurso;
+public interface ExcepcionRecursoRepository extends JpaRepository<ExcepcionRecurso,Long>{List<ExcepcionRecurso> findByEmpIdAndRagIdAndExrFecBetweenAndExrActTrueOrderByExrFecAscExrIniAsc(Long empId,Long ragId,LocalDate desde,LocalDate hasta);Optional<ExcepcionRecurso> findByEmpIdAndExrIdAndExrActTrue(Long empId,Long id);}

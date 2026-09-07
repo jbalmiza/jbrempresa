@@ -1,62 +1,18 @@
 <supbar></supbar>
+<main class="inicio">
+  <section class="resumen" aria-label="Resumen de actividad">
+    <article><span class="indicador azul"></span><div><strong>Bandeja</strong><span>Mensajes recibidos por clasificar</span></div><button type="button" (click)="abrirModulo('comunicaciones/bandeja')">Abrir</button></article>
+    <article><span class="indicador ambar"></span><div><strong>Revisión</strong><span>Conversaciones que requieren atención</span></div><button type="button" (click)="abrirModulo('comunicaciones/pendientes')">Revisar</button></article>
+    <article><span class="indicador verde"></span><div><strong>{{modulos.length}}</strong><span>Módulos disponibles</span></div></article>
+  </section>
 
-<h1>&nbsp;&nbsp; Productos Contratados</h1>
-
-<!-- Información de módulos -->
-<div class="modules-container">
-
-  	<!-- Módulo Administración -->
-  	<div class="module-card" (click)="abrirModulo('administracion')">
-
-    	<img src="assets/modulos/mAdministracion.png" class="module-image">
-
-    	<div class="module-text"> Administración </div>
-
-  	</div>
-
-  	<!-- Módulo Territorio -->
-  	<div class="module-card" (click)="abrirModulo('territorio')">
-
-    	<img src="assets/modulos/mTerritorio.png" class="module-image">
-
-    	<div class="module-text"> Territorio </div>
-
-  	</div>
-
-  <!-- Módulo Personas -->
-  	<div class="module-card" (click)="abrirModulo('personas')">
-
-    	<img src="assets/modulos/mPersonas.png" class="module-image">
-
-    	<div class="module-text"> Personas </div>
-
-  	</div>
-
-  	<!-- Módulo Productos -->
-  	<div class="module-card" (click)="abrirModulo('productos')">
-
-    	<img src="assets/modulos/mProductos.png" class="module-image">
-
-    	<div class="module-text"> Productos </div>
-
-  	</div>
-
-  	<!-- Módulo Ventas -->
-  	<div class="module-card" (click)="abrirModulo('ventas')">
-
-    	<img src="assets/modulos/mVentas.png" class="module-image">
-
-    	<div class="module-text"> Ventas </div>
-
-  	</div>
-
-  <!-- Módulo Compras -->
-	<div class="module-card" (click)="abrirModulo('compras')">
-
-		<img src="assets/modulos/mCompras.png" class="module-image">
-
-    	<div class="module-text"> Compras </div>
-
-  	</div>
-
-</div>
+  <section class="modulos-seccion">
+    <div class="seccion-cabecera"><div><h2>Productos contratados</h2><p>Accede a las áreas de gestión disponibles para tu usuario.</p></div></div>
+    <div class="modules-container">
+      <button *ngFor="let modulo of modulos" type="button" class="module-card" (click)="abrirModulo(modulo.ruta)">
+        <span class="icono-contenedor"><img [src]="modulo.icono" class="module-image" [alt]="modulo.nombre"></span>
+        <span class="module-content"><strong>{{modulo.nombre}}</strong><small>{{modulo.descripcion}}</small><span class="acceso">Acceder <b>→</b></span></span>
+      </button>
+    </div>
+  </section>
+</main>

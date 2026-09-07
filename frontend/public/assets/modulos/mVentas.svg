@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Ventas">
+  <g stroke="#24364b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="none" d="M12 25h13l10 49h55l12-35H30"/><path fill="#dceafb" d="M34 39h68L90 74H41z"/>
+    <path fill="#6fa4da" d="M38 48h59l-4 12H41z"/><circle cx="47" cy="91" r="7" fill="#f3c46e"/><circle cx="84" cy="91" r="7" fill="#f3c46e"/>
+    <circle cx="84" cy="28" r="18" fill="#fff"/><path fill="none" d="M89 20c-9-5-15 1-15 8s6 13 15 8M72 26h14M72 31h13"/>
+  </g>
+</svg>

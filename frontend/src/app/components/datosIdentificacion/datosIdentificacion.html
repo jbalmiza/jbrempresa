@@ -1,0 +1,9 @@
+<div class="form-grupo">
+  <label class="titulo">Datos Identificación</label>
+  <div class="form-fila">
+    <div *ngFor="let campo of camposPresentados" class="form-campo">
+      <label class="label">{{ campo.etiqueta }}</label>
+      <input [value]="campo.valor ?? ''" disabled>
+    </div>
+  </div>
+</div>

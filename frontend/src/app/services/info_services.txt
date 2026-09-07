@@ -1,7 +1,0 @@
-La carpeta services del frontend Angular contiene las clases encargadas de comunicar la aplicación 
-con el backend Spring Boot mediante peticiones HTTP. 
-
-Su función es centralizar operaciones como consultar, guardar, modificar o eliminar datos 
-sin que los componentes tengan que acceder directamente al servidor. Esto permite mantener 
-el código más ordenado, reutilizable y separado entre la lógica visual de las pantallas 
-y la lógica de comunicación con las APIs REST.

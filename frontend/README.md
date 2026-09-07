@@ -1,5 +1,7 @@
 # Frontend
 
+La documentación funcional y técnica se encuentra en [`docs/`](docs/README.md).
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.11.
 
 ## Development server

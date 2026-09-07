@@ -1,0 +1,2 @@
+export interface Recurso { reoId:number|null; reoIdHis:number; empId?:number; reoNom:string; reoTip:'EMPLEADO'|'MAQUINARIA'; perId:number|null; personaNomCom?:string; reoDes:string; reoTipMov:'A'|'M'|'B'; reoCauMov:string; reoOpe:boolean; reoAct:boolean; reoUsuMov?:string; reoFecMov?:string; }
+export interface RecursoCapacidad { recId?:number; empId?:number; reoId?:number; recOri:'PRODUCTO'|'SERVICIO'; recTip:string; recAct:boolean; }

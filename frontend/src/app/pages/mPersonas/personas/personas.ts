@@ -1,15 +1,22 @@
+import {BarraAcciones} from '../../../directives/barraAcciones/barraAcciones';
+import {avisarAplicacion,confirmarAplicacion} from '../../../core/interaccion/dialogos.service';
+import { DatosMovimiento } from '../../../components/datosMovimiento/datosMovimiento';
+import { DatosIdentificacion } from '../../../components/datosIdentificacion/datosIdentificacion';
 // La lógica de la pantalla (Framework Angular / Lenguaje TypeScript)
 
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
 import { Tabla } from '../../../components/tabla/tabla';
 import { SelectorBusqueda } from '../../../components/selectorBusqueda/selectorBusqueda';
+import { DocumentacionAdjunta } from '../../../components/documentacionAdjunta/documentacionAdjunta';
+import { SelectorMapa } from '../../../components/selectorMapa/selectorMapa';
+import { MapaRegistros } from '../../../components/mapaRegistros/mapaRegistros';
 
-import { FechasUtil } from '../../../core/utils/fechas.util';
+import { FechasUtil } from '../../../shared/utils/fechas.util';
 
 import { Persona } from '../../../interfaces/persona.interface';
 import { Domicilio } from '../../../interfaces/domicilio.interface';
@@ -26,7 +33,7 @@ import { ViewChild } from '@angular/core';
 @Component({
   selector: 'Personas',
   standalone: true,
-  imports: [CommonModule, FormsModule, Sidebar, Supbar,  Tabla, SelectorBusqueda],
+  imports:[CommonModule, FormsModule, Sidebar, Supbar, Tabla, SelectorBusqueda, DocumentacionAdjunta, SelectorMapa, MapaRegistros,DatosIdentificacion,DatosMovimiento,BarraAcciones],
   templateUrl: './personas.html',
   styleUrl: '../../../styles/estiloGeneral.css'
 })
@@ -36,6 +43,8 @@ export class Personas {
 	
 	//Esto se ejecuta al iniciar la clase y está iniciado para cualquier acción: insertar, modificar, etc.
 	ngOnInit() {
+		this.modoGestion = this.route.snapshot.data['modoGestion'] === true;
+		if (this.modoGestion) this.vistaActiva = 'mapa';
 
 		//Se obtiene la lista de domicilios para disponible en insertar y modificar
 		this.domicilioService.obtenerDomicilios().subscribe({
@@ -58,14 +67,16 @@ export class Personas {
 	
 	//Busca el componente tabla en el html y guarda en una variable tabla por la cual se podrá acceder a variables y métodos dentro de tabla
 	// por ejemplo a 'this.tabla.datosFiltrados' que devolverá los registros que se están mostrando en pantalla después de aplicar los filtros.
-	//Sin ViewChild, clientes.ts no sabe nada de lo que ocurre dentro de tabla.ts.
+	//Sin ViewChild, empresas.ts no sabe nada de lo que ocurre dentro de tabla.ts.
 	// Permitirá acceder a los datos filtrados para exportarlos posteriormente a PDF.
 	@ViewChild(Tabla)
 	tabla!: Tabla;
 
 	//Variables de la clase
-	vistaActiva: 'registro' | 'tabla' = 'tabla';
-	modoFormulario: 'insertar' | 'modificar' = 'insertar';
+	vistaActiva: 'registro' | 'tabla' | 'mapa' | 'adjuntos' | 'historico' = 'tabla';
+	modoGestion = false;
+	obtenerPersonas = () => this.personaService.obtenerPersonas();
+	modoFormulario: 'insertar' | 'modificar' | 'ver' = 'insertar';
 	mostrarObligatorios = false;
 	
 	// Se crea un objeto persona con datos vacíos
@@ -73,8 +84,14 @@ export class Personas {
 	
 	// Títulos de las columnas de la tabla
 	titulosColumnas: { [key: string]: string } = {
-	    cliId: 'Cliente',
+	    empId: 'Empresa',
 	    perId: 'Persona',
+		perIdHis: 'Id Histórico',
+		perTipMov: 'Tipo Movimiento',
+		perCauMov: 'Causa Movimiento',
+		perTipPer: 'Tipo Persona',
+		perRazSocCor: 'Razón Social Corta',
+		perRazSocLar: 'Razón Social Larga',
 	    perTipDoc: 'Tipo Documento',
 	    perDoc: 'Documento',
 		perNomCom: 'Nombre Completo',
@@ -85,22 +102,27 @@ export class Personas {
 	    perTel: 'Teléfono',
 	    perEma: 'Correo Electrónico',
 	    domId: 'Domicilio',
+		perCoX: 'Coordenada X',
+		perCoY: 'Coordenada Y',
+		perHus: 'Huso UTM',
 	    perUsuMov: 'Usuario Mod.',
 	    perFecMov: 'Fecha Mod.',
 		perAct: 'Activo',
 	};
 	
 	// Campos mostrados en la tabla
-	columnas: string[] = [ 'cliId', 'perId', 
+	columnas: string[] = [ 'empId', 'perId', 'perIdHis', 'perTipMov', 'perCauMov', 'perTipPer',
+		'perRazSocCor', 'perRazSocLar',
 		'perTipDoc', 'perDoc', 'perNomCom',
 		'perNom', 'perApe1', 'perApe2', 'perFecNac', 
-		'perTel', 'perEma', 'domId', 
+		'perTel', 'perEma', 'domId', 'perCoX', 'perCoY', 'perHus',
 		'perUsuMov', 'perFecMov', 'perAct'
 
 	];
 	
 	// Datos de la tabla
 	datos: any[] = [];
+	datosHistorico: Persona[] = [];
 	
 	// Lista para el selector de domicilios
 	domiciliosLista: Domicilio[] = [];
@@ -112,16 +134,33 @@ export class Personas {
 	constructor (
 		
 	  private readonly router: Router,
+	  private readonly route: ActivatedRoute,
 	  private personaService: PersonaService,
 	  private domicilioService: DomicilioService,
 	  private pdfService: PdfService
 	  
 	) {}
 
+	mapa() { this.vistaActiva = 'mapa'; }
+
+	abrirPersonaDesdeMapa(persona: Persona): void {
+		this.personaSeleccionada = persona;
+	}
+
+	seleccionarDomicilio(domId: number) {
+		this.persona.domId = domId;
+		const domicilio = this.domiciliosLista.find(d => d.domId === domId);
+		if (!domicilio) return;
+		this.persona.perCoX = domicilio.domCoX;
+		this.persona.perCoY = domicilio.domCoY;
+		this.persona.perHus = domicilio.domHus;
+	}
+
 	// Este método muestra la tabla de datos
 	consultar() {
 
 		this.vistaActiva = 'tabla';
+		this.personaSeleccionada = null;
 
 		this.personaService.obtenerPersonas().subscribe({
 
@@ -137,10 +176,83 @@ export class Personas {
 
 				console.error(error);
 
-				alert('Error al obtener personas');
+				avisarAplicacion('Error al obtener personas');
 
 			}
 
+		});
+
+	}
+
+	// Muestra la documentación de la persona seleccionada.
+	adjuntos() {
+
+		if (!this.personaSeleccionada?.perId) {
+
+			avisarAplicacion('Debe seleccionar un registro.');
+
+			return;
+
+		}
+
+		this.vistaActiva = 'adjuntos';
+
+	}
+
+	ver(): void {
+		if (!this.personaSeleccionada) return;
+		if (this.vistaActiva === 'mapa') this.vistaActiva = 'tabla';
+		this.modificar();
+		if (this.vistaActiva === 'registro') {
+			this.modoFormulario = 'ver';
+			this.persona.perTipMov = this.personaSeleccionada.perTipMov;
+			this.persona.perCauMov = this.personaSeleccionada.perCauMov;
+		}
+	}
+
+	// Regresa a la tabla conservando la persona seleccionada.
+	volverAConsulta() {
+
+		this.vistaActiva = 'tabla';
+
+	}
+
+	historico() {
+
+		if (!this.personaSeleccionada?.perId) {
+			avisarAplicacion('Debe seleccionar un registro.');
+			return;
+		}
+
+		this.personaService.obtenerHistorico(this.personaSeleccionada.perId).subscribe({
+			next: respuesta => {
+				this.datosHistorico = respuesta;
+				this.personaSeleccionada = respuesta.find(persona => persona.perAct) || this.personaSeleccionada;
+				this.vistaActiva = 'historico';
+			},
+			error: error => {
+				console.error(error);
+				avisarAplicacion('Error al obtener el histórico de la persona.');
+			}
+		});
+
+	}
+
+	async deshacer() {
+
+		if (!this.personaSeleccionada || this.personaSeleccionada.perIdHis <= 1) return;
+		if (!await confirmarAplicacion('¿Desea deshacer el último movimiento de la persona?')) return;
+
+		this.personaService.deshacer(this.personaSeleccionada.perId).subscribe({
+			next: persona => {
+				this.personaSeleccionada = persona;
+				avisarAplicacion('Movimiento deshecho correctamente.');
+				this.historico();
+			},
+			error: error => {
+				console.error(error);
+				avisarAplicacion('Error al deshacer el movimiento.');
+			}
 		});
 
 	}
@@ -175,6 +287,8 @@ export class Personas {
 	
 	// Este método modifica	
 	modificar() {
+	  this.modoFormulario = 'modificar';
+	  if (this.vistaActiva === 'mapa') this.vistaActiva = 'tabla';
 
 	  // Si estamos en la pestaña registro
 	  if (this.vistaActiva === 'registro') {
@@ -185,14 +299,19 @@ export class Personas {
 	    return;
 	  }
 
-	  // Si estamos en la pestaña tabla
+	  // La selección puede proceder de la tabla o del mapa.
 	  if (this.vistaActiva === 'tabla') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.personaSeleccionada) {
 
-	      alert('Debe seleccionar un registro');
+	      avisarAplicacion('Debe seleccionar un registro');
 
+	      return;
+	    }
+
+	    if (this.personaSeleccionada.perTipMov === 'B') {
+	      avisarAplicacion('Una persona dada de baja no se puede modificar. Deshaga primero la baja.');
 	      return;
 	    }
 
@@ -204,8 +323,14 @@ export class Personas {
 		// Convierte formtato backend per_id a formato frontend idPersona
 		this.persona = {
 
-			cliId: this.personaSeleccionada.cliId,			
+			empId: this.personaSeleccionada.empId,			
 			perId: this.personaSeleccionada.perId,
+			perIdHis: this.personaSeleccionada.perIdHis,
+			perTipMov: 'M',
+			perCauMov: 'Modificación del registro',
+			perTipPer: this.personaSeleccionada.perTipPer || 'FISICA',
+			perRazSocCor: this.personaSeleccionada.perRazSocCor || '',
+			perRazSocLar: this.personaSeleccionada.perRazSocLar || '',
 
 		  	perTipDoc: this.personaSeleccionada.perTipDoc,
 		  	perDoc: this.personaSeleccionada.perDoc,
@@ -220,6 +345,9 @@ export class Personas {
 			perEma: this.personaSeleccionada.perEma,
 
 		  	domId: this.personaSeleccionada.domId,
+			perCoX: this.personaSeleccionada.perCoX,
+			perCoY: this.personaSeleccionada.perCoY,
+			perHus: this.personaSeleccionada.perHus,
 
 			perUsuMov: this.personaSeleccionada.perUsuMov,
 		  	perFecMov: this.personaSeleccionada.perFecMov,
@@ -230,9 +358,31 @@ export class Personas {
 	  }
 
 	}
+
+	async baja() {
+	  if (!this.personaSeleccionada?.perId || this.personaSeleccionada.perTipMov === 'B') return;
+	  if (!await confirmarAplicacion('¿Desea dar de baja la persona seleccionada? El movimiento quedará registrado en el histórico.',true)) return;
+	  this.personaService.baja(this.personaSeleccionada.perId).subscribe({
+		next: persona => {
+		  this.personaSeleccionada = persona;
+		  avisarAplicacion('Persona dada de baja correctamente.');
+		  this.consultar();
+		},
+		error: error => {
+		  console.error(error);
+		  avisarAplicacion(error?.error?.mensaje || error?.error?.message || 'No se pudo dar de baja la persona.');
+		}
+	  });
+	}
+
+	async reactivar() {
+	  if (!this.personaSeleccionada || this.personaSeleccionada.perTipMov !== 'B') return;
+	  if (!await confirmarAplicacion('¿Desea reactivar la persona seleccionada?')) return;
+	  this.personaService.deshacer(this.personaSeleccionada.perId).subscribe({next:()=>this.consultar(),error:e=>{console.error(e);avisarAplicacion(e?.error?.mensaje||'No se pudo reactivar la persona.');}});
+	}
 	
 	// Este método elimina
-	eliminar() {
+	async eliminar() {
 
 	  // Si estamos en la pestaña registro
 	  if (this.vistaActiva === 'registro') {
@@ -245,21 +395,21 @@ export class Personas {
 	  }
 
 	  // Si estamos en la pestaña tabla
-	  if (this.vistaActiva === 'tabla') {
+	  if (this.vistaActiva === 'tabla' || this.vistaActiva === 'mapa') {
 
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.personaSeleccionada) {
 
-	      alert('Debe seleccionar un registro');
+	      avisarAplicacion('Debe seleccionar un registro');
 
 	      return;
 
 	    }
 
 	    // Solicita confirmación
-	    const confirmado = confirm(
-	      '¿Desea eliminar la persona seleccionada?'
-	    );
+	    const confirmado = await confirmarAplicacion(
+	      '¿Desea eliminar definitivamente la persona y todos sus movimientos históricos?'
+	    ,true);
 
 	    // Si cancela
 	    if (!confirmado) {
@@ -275,7 +425,7 @@ export class Personas {
 
 	      next: () => {
 
-	        alert('Persona eliminada correctamente');
+	        avisarAplicacion('Persona e histórico eliminados correctamente');
 
 	        // Limpia selección
 	        this.personaSeleccionada = null;
@@ -289,7 +439,7 @@ export class Personas {
 
 	        console.error(error);
 
-	        alert('Error al eliminar persona');
+	        avisarAplicacion('Error al eliminar persona');
 
 	      }
 
@@ -338,7 +488,7 @@ export class Personas {
 		) {
 
 			// Muestra el mensaje
-			alert('Debe rellenar todos los campos obligatorios.');
+			avisarAplicacion('Debe rellenar todos los campos obligatorios.');
 
 			// Indica que el formulario no es válido
 			return false;
@@ -361,11 +511,17 @@ export class Personas {
 
 	  	const persona = {
 
-			cliId: this.persona.cliId,
+			empId: this.persona.empId,
 			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
 			// El backend interpreta este registro como nuevo e ignora este valor,
 			// dejando que la base de datos asigne automáticamente el identificador definitivo.
 		    perId: 0,
+			perIdHis: 1,
+			perTipMov: 'A' as const,
+			perCauMov: this.persona.perCauMov || 'Alta del registro',
+			perTipPer: this.persona.perTipPer,
+			perRazSocCor: this.persona.perRazSocCor,
+			perRazSocLar: this.persona.perRazSocLar,
 	
 		    perTipDoc: this.persona.perTipDoc,
 		    perDoc: this.persona.perDoc,
@@ -380,6 +536,9 @@ export class Personas {
 		    perEma: this.persona.perEma,
 	
 		    domId: this.persona.domId,
+			perCoX: this.persona.perCoX,
+			perCoY: this.persona.perCoY,
+			perHus: this.persona.perHus,
 	
 		    perUsuMov: this.persona.perUsuMov,
 		    perFecMov: this.persona.perFecMov,
@@ -394,7 +553,7 @@ export class Personas {
 
 	    next: () => {
 
-	      alert('Persona guardada correctamente.');
+	      avisarAplicacion('Persona guardada correctamente.');
 		  
 		  this.limpiarFormulario();
 
@@ -423,8 +582,14 @@ export class Personas {
 
 		const persona = {
 
-			cliId: this.persona.cliId,
+			empId: this.persona.empId,
 			perId: this.persona.perId,
+			perIdHis: this.persona.perIdHis,
+			perTipMov: 'M' as const,
+			perCauMov: this.persona.perCauMov || 'Modificación del registro',
+			perTipPer: this.persona.perTipPer,
+			perRazSocCor: this.persona.perRazSocCor,
+			perRazSocLar: this.persona.perRazSocLar,
 
 			perTipDoc: this.persona.perTipDoc,
 			perDoc: this.persona.perDoc,
@@ -439,6 +604,9 @@ export class Personas {
 			perEma: this.persona.perEma,
 
 			domId: this.persona.domId,
+			perCoX: this.persona.perCoX,
+			perCoY: this.persona.perCoY,
+			perHus: this.persona.perHus,
 
 			perUsuMov: this.persona.perUsuMov,
 			perFecMov: this.persona.perFecMov,
@@ -453,7 +621,7 @@ export class Personas {
 
 			next: () => {
 
-				alert('Persona actualizada correctamente.');
+				avisarAplicacion('Persona actualizada correctamente.');
 
 				this.limpiarFormulario();
 
@@ -465,7 +633,7 @@ export class Personas {
 
 				console.error(error);
 
-				alert('Error al actualizar persona.');
+				avisarAplicacion('Error al actualizar persona.');
 
 			}
 
@@ -485,10 +653,16 @@ export class Personas {
 
 		return {
 
-		cliId: Number(localStorage.getItem('clienteId')) || 0,	
+		empId: Number(localStorage.getItem('empresaId')) || 0,	
 	  	perId: 0,
+		perIdHis: 1,
+		perTipMov: 'A',
+		perCauMov: 'Alta del registro',
+		perTipPer: 'FISICA',
+		perRazSocCor: '',
+		perRazSocLar: '',
 		
-	  	perTipDoc: '',
+	  	perTipDoc: 'D.N.I.',
 	  	perDoc: '',
 		perNomCom: '',
 	  	perNom: '',
@@ -500,6 +674,9 @@ export class Personas {
 	  	perEma: '',
 		
 	  	domId: 0,
+		perCoX: 0,
+		perCoY: 0,
+		perHus: 25830,
 		
 		perUsuMov: localStorage.getItem('usuario') || '',
 	  	perFecMov: FechasUtil.formatearFechaHora(),
@@ -517,6 +694,11 @@ export class Personas {
 	
 	// Actualiza la dirección completa.
 	actualizarNombreCompleto() {
+	  if (this.persona.perTipPer === 'JURIDICA') {
+		const partes = [this.persona.perDoc, this.persona.perRazSocLar].filter(Boolean);
+		this.persona.perNomCom = partes.join(' - ');
+		return;
+	  }
 
 	  const partes: string[] = [];
 
@@ -535,6 +717,20 @@ export class Personas {
 	  // Construye el nombre completo.
 	  this.persona.perNomCom = partes.join(' ');
 
+	}
+
+	cambiarTipoPersona() {
+	  if (this.persona.perTipPer === 'JURIDICA') {
+		this.persona.perTipDoc = 'C.I.F.';
+		this.persona.perNom = '';
+		this.persona.perApe1 = '';
+		this.persona.perApe2 = '';
+	  } else {
+		this.persona.perTipDoc = 'D.N.I.';
+		this.persona.perRazSocCor = '';
+		this.persona.perRazSocLar = '';
+	  }
+	  this.actualizarNombreCompleto();
 	}
 	
 }

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Territorio">
+  <g stroke="#24364b" stroke-width="3" stroke-linejoin="round">
+    <path fill="#dceafb" d="m15 92 12-53 30 8 28-13 20 9-10 54-35-9-27 12z"/>
+    <path fill="none" stroke="#679bd3" stroke-dasharray="5 5" d="M29 81c15-18 35 9 55-27"/>
+    <path fill="#e9b65c" d="M61 71c-11-14-17-22-17-31a17 17 0 1 1 34 0c0 9-6 17-17 31z"/><circle cx="61" cy="40" r="6" fill="#fff"/>
+    <path fill="none" d="m33 42-5 49m32-44v41m25-53-8 58"/>
+  </g>
+</svg>

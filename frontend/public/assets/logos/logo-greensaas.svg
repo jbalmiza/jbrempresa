@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 120" role="img" aria-labelledby="title">
+  <title id="title">GreenSaaS</title>
+  <defs>
+    <linearGradient id="cloud" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b8f43b"/><stop offset="1" stop-color="#43a934"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c78df"/><stop offset="1" stop-color="#0753b4"/>
+    </linearGradient>
+  </defs>
+  <path d="M42 100C18 100 6 84 6 66c0-19 15-35 35-36C49 10 67 2 87 5c17 2 31 12 39 27 28-4 49 14 49 38 0 18-14 30-35 30z" fill="url(#cloud)" stroke="#16892c" stroke-width="4"/>
+  <path d="M70 105c24-40 48-55 92-59-15 31-38 51-72 53 15-13 29-24 49-36-29 10-48 25-69 42z" fill="#fff" stroke="#12872b" stroke-width="3" stroke-linejoin="round"/>
+  <text x="190" y="88" font-family="Arial, Helvetica, sans-serif" font-size="65" font-weight="700" fill="#16a425">Green</text>
+  <text x="376" y="88" font-family="Arial, Helvetica, sans-serif" font-size="65" font-weight="700" fill="url(#blue)">SaaS</text>
+</svg>

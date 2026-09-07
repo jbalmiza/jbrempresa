@@ -1,0 +1,2 @@
+package com.jbrempresa.backend.repository; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; import com.jbrempresa.backend.entity.CodigoPostal;
+public interface CodigoPostalRepository extends JpaRepository<CodigoPostal,Long>{List<CodigoPostal> findByEmpIdOrderByCopCod(Long c);Optional<CodigoPostal> findByEmpIdAndCopId(Long c,Long id);boolean existsByEmpIdAndCopCodIgnoreCase(Long c,String cod);boolean existsByEmpIdAndCopCodIgnoreCaseAndCopIdNot(Long c,String cod,Long id);boolean existsByEmpIdAndMunId(Long c,Long id);}

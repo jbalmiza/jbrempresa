@@ -1,0 +1,2 @@
+package com.jbrempresa.backend.repository;import com.jbrempresa.backend.entity.DocumentoVentaDetalle;import org.springframework.data.jpa.repository.JpaRepository;import java.util.List;
+public interface DocumentoVentaDetalleRepository extends JpaRepository<DocumentoVentaDetalle,Long>{List<DocumentoVentaDetalle> findByEmpIdAndDovIdOrderByDvdId(Long empId,Long id);void deleteByEmpIdAndDovId(Long empId,Long id);}

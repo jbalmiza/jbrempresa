@@ -1,6 +1,12 @@
 // Define el paquete.
 package com.jbrempresa.backend.security;
 
+// Importa StandardCharsets.
+import java.nio.charset.StandardCharsets;
+
+// Importa Value.
+import org.springframework.beans.factory.annotation.Value;
+
 // Importa Service.
 import org.springframework.stereotype.Service;
 
@@ -19,19 +25,49 @@ import java.util.Date;
 // Importa SecretKey.
 import javax.crypto.SecretKey;
 
+// Importa PostConstruct.
+import jakarta.annotation.PostConstruct;
+
 // Define el servicio.
 @Service
 public class JwtService {
 
-    // Clave secreta.
-    private static final String CLAVE_SECRETA =
-            "MiClaveSecretaSuperLargaParaGreenSaaS2026";
+    // Duración del token en milisegundos.
+    private static final long DURACION_TOKEN =
+            1000 * 60 * 30;
+
+    // Tiempo restante para renovar el token en milisegundos.
+    private static final long VENTANA_RENOVACION =
+            1000 * 60 * 5;
+
+    // Clave secreta obtenida desde la configuracion externa.
+    @Value("${JWT_SECRET}")
+    private String claveSecreta;
+
+    // Valida la clave al arrancar la aplicacion.
+    @PostConstruct
+    private void validarClaveSecreta() {
+
+        obtenerClave();
+
+    }
 
     // Obtiene la clave.
     private SecretKey obtenerClave() {
 
+        // Comprueba que se ha configurado una clave segura.
+        if (claveSecreta == null ||
+                claveSecreta.isBlank() ||
+                claveSecreta.getBytes(StandardCharsets.UTF_8).length < 32) {
+
+            throw new IllegalStateException(
+                    "JWT_SECRET debe tener al menos 32 bytes.");
+
+        }
+
         return Keys.hmacShaKeyFor(
-                CLAVE_SECRETA.getBytes());
+                claveSecreta.getBytes(
+                        StandardCharsets.UTF_8));
 
     }
 
@@ -39,7 +75,7 @@ public class JwtService {
     public String generarToken(
             String usuario,
             Long usuarioId,
-            Long clienteId,
+            Long empresaId,
             Long perfilId) {
 
         return Jwts.builder()
@@ -51,7 +87,7 @@ public class JwtService {
                 .claim("usuarioId", usuarioId)
 
                 // Identificador del cliente.
-                .claim("clienteId", clienteId)
+                .claim("empresaId", empresaId)
 
                 // Identificador del perfil.
                 .claim("perfilId", perfilId)
@@ -63,7 +99,7 @@ public class JwtService {
                 .expiration(
                         new Date(
                                 System.currentTimeMillis()
-                                + 1000 * 60 * 60 * 24))
+                                + DURACION_TOKEN))
 
                 // Firma el token.
                 .signWith(obtenerClave())
@@ -104,11 +140,11 @@ public class JwtService {
     }
 
     // Obtiene el identificador del cliente.
-    public Long obtenerCliente(
+    public Long obtenerEmpresa(
             String token) {
 
         return obtenerClaims(token)
-                .get("clienteId", Long.class);
+                .get("empresaId", Long.class);
 
     }
 
@@ -118,6 +154,24 @@ public class JwtService {
 
         return obtenerClaims(token)
                 .get("perfilId", Long.class);
+
+    }
+
+    // Comprueba si el token debe renovarse.
+    public boolean debeRenovarse(
+            String token) {
+
+        // Obtiene la fecha de expiración.
+        Date expiracion = obtenerClaims(token)
+                .getExpiration();
+
+        // Calcula el tiempo restante.
+        long tiempoRestante =
+                expiracion.getTime()
+                - System.currentTimeMillis();
+
+        // Renueva solo cuando quedan cinco minutos o menos.
+        return tiempoRestante <= VENTANA_RENOVACION;
 
     }
 

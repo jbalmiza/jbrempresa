@@ -1,0 +1,47 @@
+<section class="arbol-contenedor" role="tree" aria-label="Jerarquía de registros">
+  <header class="arbol-cabecera">
+    <span>Jerarquía</span>
+    <div class="acciones-arbol">
+      <button type="button" (click)="expandirTodo()">Expandir</button>
+      <button type="button" (click)="contraerTodo()">Contraer</button>
+    </div>
+  </header>
+
+  <p *ngIf="!nodos.length" class="arbol-vacio">{{ mensajeVacio }}</p>
+
+  <div class="lista-arbol">
+    <div
+      *ngFor="let nodo of nodosVisibles; trackBy: identificador"
+      class="nodo-arbol"
+      [class.nodo-seleccionado]="seleccionado(nodo.id)"
+      [class.nodo-hoja]="nodo.tipo === 'hoja'"
+      [class.nodo-raiz]="nodo.nivel === 0"
+      [class.nodo-deshabilitado]="nodo.deshabilitado"
+      [style.--nivel]="nodo.nivel"
+      role="treeitem"
+      [attr.aria-level]="nodo.nivel + 1"
+      [attr.aria-expanded]="nodo.tieneHijos ? expandido(nodo.id) : null"
+      [attr.aria-selected]="seleccionado(nodo.id)"
+      tabindex="0"
+      (click)="seleccionar(nodo)"
+      (keydown.enter)="seleccionar(nodo)">
+
+      <span class="guia-nodo" aria-hidden="true"></span>
+      <button
+        *ngIf="nodo.tieneHijos; else espacioAlternador"
+        type="button"
+        class="alternador"
+        [attr.aria-label]="expandido(nodo.id) ? 'Contraer rama' : 'Expandir rama'"
+        (click)="alternar(nodo, $event)">
+        {{ expandido(nodo.id) ? '−' : '+' }}
+      </button>
+      <ng-template #espacioAlternador><span class="alternador-vacio"></span></ng-template>
+
+      <span class="icono-nodo" aria-hidden="true">{{ nodo.icono || (nodo.tipo === 'hoja' ? '●' : '▣') }}</span>
+      <span class="contenido-nodo">
+        <strong>{{ nodo.etiqueta }}</strong>
+        <small *ngIf="nodo.detalle">{{ nodo.detalle }}</small>
+      </span>
+    </div>
+  </div>
+</section>

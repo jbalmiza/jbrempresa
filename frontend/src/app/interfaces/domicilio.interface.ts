@@ -1,11 +1,15 @@
 export interface Domicilio {
 
-	cliId: number;	
+	empId: number;	
   	domId: number;
+	domIdHis?: number;
+	domTipMov?: string;
+	domCauMov?: string;
 
 	domCiv: string;
   	domTipVia: string;
   	domVia: string;
+	domViaId?: number | null;
   	domNum: string;
   
   	domKm: string;

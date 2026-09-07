@@ -1,0 +1,58 @@
+:host {
+  --color-principal: #2563eb;
+  --color-texto: #172033;
+  --color-secundario: #64748b;
+  --color-fondo-suave: #f8fafc;
+  display: block;
+  width: 100%;
+  font-family: Calibri, "Segoe UI", sans-serif;
+}
+
+.form-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.form-campo-200,
+.form-campo-500 {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-campo-200 { width: 200px; }
+.form-campo-500 { width: 500px; }
+
+.label {
+  margin: 0;
+  color: #344258;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 38px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  background: var(--color-fondo-suave);
+  color: var(--color-secundario);
+  font: 14px Calibri, "Segoe UI", sans-serif;
+  cursor: not-allowed;
+}
+
+.datos-persona-seleccionada { margin-top: 12px; }
+
+@media (max-width: 900px) {
+  .form-campo-200,
+  .form-campo-500 {
+    width: 100%;
+    max-width: 100%;
+  }
+}

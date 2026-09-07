@@ -1,3 +1,7 @@
+import {BarraAcciones} from '../../../directives/barraAcciones/barraAcciones';
+import {avisarAplicacion,confirmarAplicacion} from '../../../core/interaccion/dialogos.service';
+import { DatosMovimiento } from '../../../components/datosMovimiento/datosMovimiento';
+import { DatosIdentificacion } from '../../../components/datosIdentificacion/datosIdentificacion';
 // La lógica de la pantalla (Framework Angular / Lenguaje TypeScript)
 
 // Importa libreria para crear componentes Angular
@@ -9,9 +13,10 @@ import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
 import { Tabla } from '../../../components/tabla/tabla';
 import { SelectorBusqueda } from '../../../components/selectorBusqueda/selectorBusqueda';
+import { DatosPersonaRelacion } from '../../../components/datosPersonaRelacion/datosPersonaRelacion';
 import { TablaEdicion } from '../../../components/tablaEdicion/tablaEdicion';
 
-import { FechasUtil } from '../../../core/utils/fechas.util';
+import { FechasUtil } from '../../../shared/utils/fechas.util';
 
 import { FormsModule } from '@angular/forms';
 
@@ -36,7 +41,7 @@ import { TablaColumna } from '../../../directives/tablaColumna/tablaColumna';
 @Component({
   selector: 'Compras',
   standalone: true,
-  imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla, SelectorBusqueda, TablaEdicion, TablaColumna],
+  imports:[CommonModule, FormsModule, Sidebar, Supbar, Tabla, SelectorBusqueda, DatosPersonaRelacion, TablaEdicion, TablaColumna,DatosIdentificacion,DatosMovimiento,BarraAcciones],
   templateUrl: './compras.html',
   styleUrl: '../../../styles/estiloGeneral.css'
 })
@@ -53,6 +58,7 @@ export class Compras {
 		  next: (respuesta) => {
 
 		    this.personasLista = respuesta;
+		    this.enriquecerCompras();
 
 		  },
 
@@ -84,7 +90,7 @@ export class Compras {
 	
 	//Busca el componente tabla en el html y guarda en una variable tabla por la cual se podrá acceder a variables y métodos dentro de tabla
 	// por ejemplo a 'this.tabla.datosFiltrados' que devolverá los registros que se están mostrando en pantalla después de aplicar los filtros.
-	//Sin ViewChild, clientes.ts no sabe nada de lo que ocurre dentro de tabla.ts.
+	//Sin ViewChild, empresas.ts no sabe nada de lo que ocurre dentro de tabla.ts.
 	// Permitirá acceder a los datos filtrados para exportarlos posteriormente a PDF.
 	@ViewChild(Tabla)
 	tabla!: Tabla;
@@ -99,11 +105,11 @@ export class Compras {
 	
 	// Títulos de las columnas de la tabla
 	titulosColumnas = {
-	    cliId: 'Id Cliente',
+	    empId: 'Id Empresa',
 	    comId: 'Id Compra',
 		
-	    perIdCom: 'Id Comprador',
-		perIdVen: 'Id Vendedor',		
+	    compradorNomCom: 'Comprador',
+		vendedorNomCom: 'Vendedor',		
 
 		comImpSub: 'Importe Subtotal',
 		comImpDes: 'Importe Descuento',
@@ -124,8 +130,8 @@ export class Compras {
 	};	
 	
 	// Campos mostrados en la tabla
-	columnas: string[] = [ 'cliId', 'comId', 
-		'perIdCom', 'perIdVen', 
+	columnas: string[] = [ 'empId', 'comId', 
+		'compradorNomCom', 'vendedorNomCom', 
 		'proId', 
 		'comImpSub', 'comImpDes', 'comImpIva', 'comImpTot', 'comImpCob', 'comImpPen', 
 		'comFecPre', 'comFecPed', 'comFecAlb', 'comFecFac', 'comFecCob', 
@@ -188,6 +194,14 @@ export class Compras {
 	) {}
 
 	// Este método muestra la tabla de datos
+	private enriquecerCompras() {
+		this.datos = this.datos.map(compra => ({
+			...compra,
+			compradorNomCom: this.personasLista.find(persona => Number(persona.perId) === Number(compra.perIdCom))?.perNomCom || '',
+			vendedorNomCom: this.personasLista.find(persona => Number(persona.perId) === Number(compra.perIdVen))?.perNomCom || ''
+		}));
+	}
+
 	consultar() {
 
 		this.vistaActiva = 'tabla';
@@ -197,6 +211,7 @@ export class Compras {
 			next: (respuesta) => {
 
 				this.datos = respuesta;
+				this.enriquecerCompras();
 
 			},
 
@@ -204,7 +219,7 @@ export class Compras {
 
 				console.error(error);
 
-				alert('Error al obtener compras');
+				avisarAplicacion('Error al obtener compras');
 
 			}
 
@@ -281,7 +296,7 @@ export class Compras {
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.compraSeleccionada) {
 
-	      alert('Debe seleccionar un registro');
+	      avisarAplicacion('Debe seleccionar un registro');
 
 	      return;
 	    }
@@ -294,7 +309,7 @@ export class Compras {
 		// Convierte formtato backend ven_id a formato frontend idVenta
 		this.compra = {
 
-			cliId: this.compraSeleccionada.cliId,
+			empId: this.compraSeleccionada.empId,
 		  	comId: this.compraSeleccionada.comId,
 
 			perIdCom: this.compraSeleccionada.perIdCom,
@@ -325,7 +340,7 @@ export class Compras {
 	}
 	
 	// Este método elimina
-	eliminar() {
+	async eliminar() {
 
 	  // Si estamos en la pestaña registro
 	  if (this.vistaActiva === 'registro') {
@@ -343,16 +358,16 @@ export class Compras {
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.compraSeleccionada) {
 
-	      alert('Debe seleccionar un registro');
+	      avisarAplicacion('Debe seleccionar un registro');
 
 	      return;
 
 	    }
 
 	    // Solicita confirmación
-	    const confirmado = confirm(
+	    const confirmado = await confirmarAplicacion(
 	      '¿Desea eliminar la compra seleccionada?'
-	    );
+	    ,true);
 
 	    // Si cancela
 	    if (!confirmado) {
@@ -368,7 +383,7 @@ export class Compras {
 
 	      next: () => {
 
-	        alert('Compra eliminada correctamente');
+	        avisarAplicacion('Compra eliminada correctamente');
 
 	        // Limpia selección
 	        this.compraSeleccionada = null;
@@ -382,7 +397,7 @@ export class Compras {
 
 	        console.error(error);
 
-	        alert('Error al eliminar compra');
+	        avisarAplicacion('Error al eliminar compra');
 
 	      }
 
@@ -428,7 +443,7 @@ export class Compras {
 		) {
 
 			// Muestra el mensaje
-			alert('Debe rellenar todos los campos obligatorios.');
+			avisarAplicacion('Debe rellenar todos los campos obligatorios.');
 
 			// Indica que el formulario no es válido
 			return false;
@@ -451,7 +466,7 @@ export class Compras {
 
 	  	const compra = {
 		
-			cliId: this.compra.cliId,
+			empId: this.compra.empId,
 			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
 			// El backend interpreta este registro como nuevo e ignora este valor,
 			// dejando que la base de datos asigne automáticamente el identificador definitivo.
@@ -483,7 +498,7 @@ export class Compras {
 
 	    next: () => {
 
-	      alert('Compra guardada correctamente.');
+	      avisarAplicacion('Compra guardada correctamente.');
 		  
 		  this.limpiarFormulario();
 
@@ -493,7 +508,7 @@ export class Compras {
 
 	      console.error(error);
 		  
-		  alert('Error al guardar compra.');
+		  avisarAplicacion('Error al guardar compra.');
 
 	    }
 
@@ -512,7 +527,7 @@ export class Compras {
 
 	    const compra = {
 
-	        cliId: this.compra.cliId,
+	        empId: this.compra.empId,
 	        comId: this.compra.comId,
 
 	        perIdCom: this.compra.perIdCom,
@@ -541,7 +556,7 @@ export class Compras {
 
 	        next: () => {
 
-	            alert('Compra actualizada correctamente.');
+	            avisarAplicacion('Compra actualizada correctamente.');
 
 	            this.consultar();
 
@@ -551,7 +566,7 @@ export class Compras {
 
 	            console.error(error);
 				
-				alert('Error al actualizar compra.');
+				avisarAplicacion('Error al actualizar compra.');
 
 	        }
 
@@ -571,7 +586,7 @@ export class Compras {
 
 		return {
 
-		cliId: Number(localStorage.getItem('clienteId')) || 0,
+		empId: Number(localStorage.getItem('empresaId')) || 0,
 	  	comId: 0,
 		
 	  	perIdCom: 0,

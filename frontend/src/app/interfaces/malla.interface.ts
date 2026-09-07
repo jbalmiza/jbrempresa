@@ -3,8 +3,8 @@ export interface Malla {
     // Identificador
     malId: number;
 
-    // Cliente
-    cliId: number;
+    // Empresa
+    empId: number;
 
     // Entidad de malla (PRODUCTOS, USUARIOS, etc.)
     malEnt: string;
@@ -31,6 +31,6 @@ export interface Malla {
     malUsuMov: string;
 
     // Fecha de modificación
-    malFecMov: string;
+    malFecMov: string | null;
 
 }

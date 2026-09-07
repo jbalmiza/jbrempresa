@@ -1,0 +1,49 @@
+<supbar></supbar>
+<div class="menu">
+  <sidebar modulo="administracion"></sidebar>
+  <div class="pagina">
+    <label class="titulo">ÁREAS ORGANIZATIVAS</label>
+
+    <div barraAcciones class="toolbar">
+      <button class="boton" (click)="arbol()">Árbol</button>
+<button class="boton boton-accion accion-consultar" (click)="consultar()">Consultar</button>
+<button class="boton boton-accion accion-insertar" (click)="insertar()">Insertar</button>
+<button *ngIf="seleccionada" class="boton boton-accion accion-modificar" (click)="modificar()">Modificar</button>
+<button *ngIf="seleccionada" class="boton boton-accion accion-eliminar" (click)="eliminar()">Eliminar</button>
+<button class="boton boton-accion accion-volver" (click)="volver()">Volver</button>
+    </div>
+
+    <div *ngIf="vistaActiva === 'arbol'" class="form-contenedor">
+      <arbolRegistros
+        [nodos]="nodosArbol"
+        [idSeleccionado]="nodoSeleccionadoId"
+        mensajeVacio="Todavía no hay áreas organizativas registradas."
+        (nodoSeleccionado)="seleccionarNodo($event)">
+      </arbolRegistros>
+    </div>
+
+    <div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
+      <datosIdentificacion [campos]="[{etiqueta:'Empresa',valor:area.empId},{etiqueta:'Id Área',valor:area.areId}]"></datosIdentificacion>
+      <div class="form-grupo">
+        <label class="titulo">Datos Área</label>
+        <div class="form-fila">
+          <div class="form-campo-200"><label class="label">Código *</label><input maxlength="30" [(ngModel)]="area.areCod"></div>
+          <div class="form-campo-500"><label class="label">Nombre *</label><input maxlength="100" [(ngModel)]="area.areNom"></div>
+          <div class="form-campo-500">
+            <label class="label">Área superior</label>
+            <select [(ngModel)]="area.areIdPad">
+              <option [ngValue]="null">Sin área superior</option>
+              <option *ngFor="let candidata of areas" [ngValue]="candidata.areId" [disabled]="candidata.areId === area.areId">{{ candidata.areNom }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <datosMovimiento [mostrarTipo]="false" [mostrarCausa]="false" [usuario]="area.areUsuMov||''" [fecha]="area.areFecMov" [activo]="area.areAct"></datosMovimiento>
+<div barraAcciones class="toolbar"><button class="boton boton-accion accion-guardar" (click)="guardar()">Guardar</button><button class="boton boton-accion accion-cancelar" (click)="cancelar()">Cancelar</button></div>
+    </div>
+
+    <div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
+      <tabla [columnas]="columnas" [titulosColumnas]="titulosColumnas" [datos]="datos" (filaSeleccionada)="seleccionarFila($event)"></tabla>
+    </div>
+  </div>
+</div>

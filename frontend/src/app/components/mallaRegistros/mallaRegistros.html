@@ -3,32 +3,47 @@
 <div class="barraColores">
 
     <button
+        type="button"
         class="color blanco"
+        [class.seleccionado]="colorSeleccionado === 'BLANCO'"
+        title="Borrar posición"
+        aria-label="Borrar posición"
         (click)="seleccionarColor('BLANCO')">
     </button>
 
     <button
+        type="button"
         class="color negro"
+        [class.seleccionado]="colorSeleccionado === 'NEGRO'"
+        title="Pintar en negro"
+        aria-label="Pintar en negro"
         (click)="seleccionarColor('NEGRO')">
     </button>
 
     <button
+        type="button"
         class="color verde"
+        [class.seleccionado]="colorSeleccionado === 'VERDE'"
+        title="Pintar en verde"
+        aria-label="Pintar en verde"
         (click)="seleccionarColor('VERDE')">
     </button>
 
     <button
-        class="color azul"
-        (click)="seleccionarColor('AZUL')">
-    </button>
-
-    <button
+        type="button"
         class="color rojo"
+        [class.seleccionado]="colorSeleccionado === 'ROJO'"
+        title="Pintar en rojo"
+        aria-label="Pintar en rojo"
         (click)="seleccionarColor('ROJO')">
     </button>
 
     <button
+        type="button"
         class="color amarillo"
+        [class.seleccionado]="colorSeleccionado === 'AMARILLO'"
+        title="Pintar en amarillo"
+        aria-label="Pintar en amarillo"
         (click)="seleccionarColor('AMARILLO')">
     </button>
 
@@ -39,4 +54,22 @@
 <div
     #contenedor
     class="malla">
+</div>
+
+<div *ngIf="vistaPreviaVisible" class="vista-previa-malla" [style.left.px]="vistaPreviaX" [style.top.px]="vistaPreviaY">
+    <img *ngIf="vistaPreviaImagen" [src]="vistaPreviaImagen" [alt]="vistaPreviaNombre">
+    <strong>{{ vistaPreviaNombre }}</strong>
+    <span *ngFor="let linea of vistaPreviaInformacion">{{ linea }}</span>
+</div>
+
+<div *ngIf="registrosPendientes.length" class="selector-registros" (click)="cerrarSelector()">
+    <div class="selector-registros-dialogo" role="dialog" aria-modal="true" aria-labelledby="titulo-selector-registros" (click)="$event.stopPropagation()">
+        <div class="selector-registros-cabecera">
+            <div><strong id="titulo-selector-registros">Registros en la posición</strong><span>{{ posicionPendiente }}</span></div>
+            <button type="button" class="cerrar-selector" title="Cerrar" aria-label="Cerrar" (click)="cerrarSelector()">×</button>
+        </div>
+        <button *ngFor="let item of registrosPendientes" type="button" class="registro-posicion" (click)="seleccionarRegistro(item.registro)">
+            {{ item.etiqueta }}
+        </button>
+    </div>
 </div>

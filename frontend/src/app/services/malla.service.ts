@@ -10,6 +10,8 @@ import { Observable } from 'rxjs';
 // Importa la interfaz Malla.
 import { Malla } from '../interfaces/malla.interface';
 
+import { API_URL } from '../config/api-url.config';
+
 // Define el servicio.
 @Injectable({
   providedIn: 'root'
@@ -19,7 +21,7 @@ import { Malla } from '../interfaces/malla.interface';
 export class MallaService {
 
   // URL del controlador.
-  private apiUrl = 'http://localhost:8080/mallas';
+  private apiUrl = `${API_URL}/mallas`;
 
   // Constructor.
   constructor(private http: HttpClient) {}

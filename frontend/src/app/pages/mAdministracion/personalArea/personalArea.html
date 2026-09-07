@@ -1,0 +1,52 @@
+<supbar></supbar>
+<div class="menu">
+  <sidebar modulo="administracion"></sidebar>
+  <div class="pagina">
+    <label class="titulo">PERSONAL DE ÁREA</label>
+
+    <div barraAcciones class="toolbar">
+      <button class="boton" (click)="arbol()">Árbol</button>
+<button class="boton boton-accion accion-consultar" (click)="consultar()">Consultar</button>
+<button class="boton boton-accion accion-insertar" (click)="insertar()" [disabled]="vistaActiva === 'arbol' && !areaSeleccionada" title="Seleccione un área para insertar personal">Insertar</button>
+<button *ngIf="seleccionada" class="boton boton-accion accion-modificar" (click)="modificar()">Modificar</button>
+<button *ngIf="seleccionada" class="boton boton-accion accion-eliminar" (click)="eliminar()">Eliminar</button>
+<button class="boton boton-accion accion-volver" (click)="volver()">Volver</button>
+    </div>
+
+    <div *ngIf="vistaActiva === 'arbol'" class="form-contenedor">
+      <arbolRegistros
+        [nodos]="nodosArbol"
+        [idSeleccionado]="nodoSeleccionadoId"
+        mensajeVacio="Todavía no hay áreas ni personal asignado."
+        (nodoSeleccionado)="seleccionarNodo($event)">
+      </arbolRegistros>
+    </div>
+
+    <div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
+      <datosIdentificacion [campos]="[{etiqueta:'Empresa',valor:asignacion.empId},{etiqueta:'Id Asignación',valor:asignacion.peaId}]"></datosIdentificacion>
+      <div class="form-grupo">
+        <label class="titulo">Datos Asignación</label>
+        <div class="form-fila">
+          <div class="form-campo-500">
+            <label class="label">Área *</label>
+            <select [(ngModel)]="asignacion.areId"><option [ngValue]="0" hidden>Seleccione...</option><option *ngFor="let area of areas" [ngValue]="area.areId">{{ area.areNom }}</option></select>
+          </div>
+          <div class="form-campo-200"><label class="label">Cargo</label><input maxlength="100" [(ngModel)]="asignacion.peaCar"></div>
+        </div>
+        <div class="form-fila">
+          <div class="form-campo"><label class="label">Responsable</label><input type="checkbox" [(ngModel)]="asignacion.peaRes"></div>
+          <div class="form-campo"><label class="label">Área principal</label><input type="checkbox" [(ngModel)]="asignacion.peaPri"></div>
+          <div class="form-campo-200"><label class="label">Desde</label><input type="date" [(ngModel)]="asignacion.peaFecDes"></div>
+          <div class="form-campo-200"><label class="label">Hasta</label><input type="date" [(ngModel)]="asignacion.peaFecHas"></div>
+        </div>
+      </div>
+      <div class="form-grupo"><label class="titulo">Datos Persona</label><datosPersonaRelacion [personas]="personas" [personaId]="asignacion.perId" (personaIdChange)="asignacion.perId=$event"></datosPersonaRelacion></div>
+      <datosMovimiento [mostrarTipo]="false" [mostrarCausa]="false" [usuario]="asignacion.peaUsuMov||''" [fecha]="asignacion.peaFecMov" [activo]="asignacion.peaAct"></datosMovimiento>
+<div barraAcciones class="toolbar"><button class="boton boton-accion accion-guardar" (click)="guardar()">Guardar</button><button class="boton boton-accion accion-cancelar" (click)="cancelar()">Cancelar</button></div>
+    </div>
+
+    <div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
+      <tabla [columnas]="columnas" [titulosColumnas]="titulosColumnas" [datos]="datos" (filaSeleccionada)="seleccionarFila($event)"></tabla>
+    </div>
+  </div>
+</div>

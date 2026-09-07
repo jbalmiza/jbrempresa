@@ -1,3 +1,7 @@
+import {BarraAcciones} from '../../../directives/barraAcciones/barraAcciones';
+import {avisarAplicacion,confirmarAplicacion} from '../../../core/interaccion/dialogos.service';
+import { DatosMovimiento } from '../../../components/datosMovimiento/datosMovimiento';
+import { DatosIdentificacion } from '../../../components/datosIdentificacion/datosIdentificacion';
 // La lógica de la pantalla (Framework Angular / Lenguaje TypeScript)
 
 // Importa libreria para crear componentes Angular
@@ -9,16 +13,18 @@ import { Router } from '@angular/router';
 import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
 import { Tabla } from '../../../components/tabla/tabla';
+import { DocumentacionAdjunta } from '../../../components/documentacionAdjunta/documentacionAdjunta';
 
 import { SelectorMapa } from '../../../components/selectorMapa/selectorMapa';
-import { MapaRegistros } from '../../../components/mapaRegistros/mapaRegistros';
 
-import { FechasUtil } from '../../../core/utils/fechas.util';
+import { FechasUtil } from '../../../shared/utils/fechas.util';
 
 import { Domicilio } from '../../../interfaces/domicilio.interface';
 
 import { DomicilioService } from '../../../services/domicilio.service';
 import { PdfService } from '../../../services/pdf.service';
+import { CatalogoTerritorialService } from '../../../services/catalogo-territorial.service';
+import { Via, CodigoPostal, Municipio, Provincia } from '../../../interfaces/catalogo-territorial.interface';
 
 import { ViewChild } from '@angular/core';
 
@@ -26,23 +32,26 @@ import { ViewChild } from '@angular/core';
 @Component({
   selector: 'Domicilios',
   standalone: true,
-  imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla, SelectorMapa, MapaRegistros],
+  imports:[CommonModule, FormsModule, Sidebar, Supbar, Tabla, SelectorMapa, DocumentacionAdjunta,DatosIdentificacion,DatosMovimiento,BarraAcciones],
   templateUrl: './domicilios.html',
   styleUrl: '../../../styles/estiloGeneral.css'
 })
 
 // Definición de la lógica del componente 
 export class Domicilios {
+
+	readonly opcionesCinco: string[] = ['1', '2', '3', '4', '5'];
+	vias: Via[] = []; codigosPostales: CodigoPostal[] = []; municipios: Municipio[] = []; provincias: Provincia[] = [];
 	
 	//Busca el componente tabla en el html y guarda en una variable tabla por la cual se podrá acceder a variables y métodos dentro de tabla
 	// por ejemplo a 'this.tabla.datosFiltrados' que devolverá los registros que se están mostrando en pantalla después de aplicar los filtros.
-	//Sin ViewChild, clientes.ts no sabe nada de lo que ocurre dentro de tabla.ts.
+	//Sin ViewChild, empresas.ts no sabe nada de lo que ocurre dentro de tabla.ts.
 	// Permitirá acceder a los datos filtrados para exportarlos posteriormente a PDF.
 	@ViewChild(Tabla)
 	tabla!: Tabla;
 
 	//Variables de la clase
-	vistaActiva: 'mapa' | 'registro' | 'tabla' = 'tabla';
+	vistaActiva: 'mapa' | 'registro' | 'tabla' | 'adjuntos' | 'historico' = 'tabla';
 	modoFormulario: 'insertar' | 'modificar' = 'insertar';
 	mostrarObligatorios = false;
 	
@@ -51,8 +60,11 @@ export class Domicilios {
 
 	// Títulos de las columnas de la tabla
 	titulosColumnas = {
-	    cliId: 'Id Cliente',
+	    empId: 'Id Empresa',
 	    domId: 'Id Domicilio',
+		domIdHis: 'Id Histórico',
+		domTipMov: 'Tipo Movimiento',
+		domCauMov: 'Causa Movimiento',
 		domCiv: 'C.I.V.',
 	    domTipVia: 'Tipo Vía',
 	    domVia: 'Vía',
@@ -78,7 +90,7 @@ export class Domicilios {
 	};	
 	
 	// Campos mostrados en la tabla
-	columnas: string[] = [ 'cliId', 'domId', 
+	columnas: string[] = [ 'empId', 'domId', 'domIdHis', 'domTipMov', 'domCauMov',
 		'domCiv',
 		'domTipVia', 'domVia', 'domNum', 
 		'domKm', 'domEdi', 'domBlo', 'domPor', 'domEsc', 'domPla', 'domPue', 
@@ -91,6 +103,7 @@ export class Domicilios {
 
 	// Datos de la tabla
 	datos: any[] = [];
+	datosHistorico: Domicilio[] = [];
 	
 	// Guarda el registro seleccionado de la tabla
 	domicilioSeleccionado: Domicilio | null = null;
@@ -100,9 +113,23 @@ export class Domicilios {
 		
 		private readonly router: Router, 
 		private domicilioService: DomicilioService,
-		private pdfService: PdfService
+		private pdfService: PdfService,
+		private catalogoTerritorial: CatalogoTerritorialService
 	
-	) {}
+	) { this.cargarCatalogosTerritoriales(); }
+
+	private cargarCatalogosTerritoriales() {
+		this.catalogoTerritorial.vias().subscribe(v => this.vias = v.filter(x => x.viaAct));
+		this.catalogoTerritorial.codigos().subscribe(v => this.codigosPostales = v.filter(x => x.copAct));
+		this.catalogoTerritorial.municipios().subscribe(v => this.municipios = v.filter(x => x.munAct));
+		this.catalogoTerritorial.provincias().subscribe(v => this.provincias = v.filter(x => x.prvAct));
+	}
+
+	seleccionarVia() {
+		const via = this.vias.find(v => v.viaId === Number(this.domicilio.domViaId)); if (!via) return;
+		const cp = this.codigosPostales.find(v => v.copId === via.copId); const municipio = this.municipios.find(v => v.munId === cp?.munId); const provincia = this.provincias.find(v => v.prvId === municipio?.prvId);
+		this.domicilio.domTipVia=via.viaTip; this.domicilio.domVia=via.viaNom; this.domicilio.domCp=cp?.copCod||''; this.domicilio.domMun=municipio?.munNom||''; this.domicilio.domPro=provincia?.prvNom||''; this.actualizarDireccion();
+	}
 	
 	// Este método muestra el mapa de datos
 	mapa() {
@@ -115,6 +142,7 @@ export class Domicilios {
 	 consultar() {
 		
 	 	this.vistaActiva = 'tabla';
+		this.domicilioSeleccionado = null;
 
 	 	this.domicilioService.obtenerDomicilios().subscribe({
 
@@ -128,13 +156,37 @@ export class Domicilios {
 
 	 			console.error(error);
 
-	 			alert('Error al obtener domicilios');
+	 			avisarAplicacion('Error al obtener domicilios');
 
 	 		}
 
 	 	});
 
 	 }
+
+	adjuntos() {
+		if (!this.domicilioSeleccionado?.domId) return;
+		this.vistaActiva = 'adjuntos';
+	}
+
+	volverAConsulta() { this.vistaActiva = 'tabla'; }
+
+	historico() {
+		if (!this.domicilioSeleccionado?.domId) return;
+		this.domicilioService.obtenerHistorico(this.domicilioSeleccionado.domId).subscribe({
+			next: datos => { this.datosHistorico = datos; this.domicilioSeleccionado = datos.find(d => d.domAct) || this.domicilioSeleccionado; this.vistaActiva = 'historico'; },
+			error: error => { console.error(error); avisarAplicacion('Error al obtener el histórico del domicilio.'); }
+		});
+	}
+
+	async deshacer() {
+		if (!this.domicilioSeleccionado || (this.domicilioSeleccionado.domIdHis || 1) <= 1) return;
+		if (!await confirmarAplicacion('¿Desea deshacer el último movimiento del domicilio?')) return;
+		this.domicilioService.deshacer(this.domicilioSeleccionado.domId).subscribe({
+			next: domicilio => { this.domicilioSeleccionado = domicilio; avisarAplicacion('Movimiento deshecho correctamente.'); this.historico(); },
+			error: error => { console.error(error); avisarAplicacion('Error al deshacer el movimiento.'); }
+		});
+	}
 
 	 // Este método muestra el formulario de registro y limpia los campos del formulario	
 	insertar() {
@@ -167,6 +219,7 @@ export class Domicilios {
 	
 	// Este método modifica	
 	modificar() {
+	  this.modoFormulario = 'modificar';
 
 	  // Si estamos en la pestaña registro
 	  if (this.vistaActiva === 'registro') {
@@ -183,7 +236,7 @@ export class Domicilios {
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.domicilioSeleccionado) {
 
-	      alert('Debe seleccionar un registro');
+	      avisarAplicacion('Debe seleccionar un registro');
 
 	      return;
 	    }
@@ -196,15 +249,19 @@ export class Domicilios {
 		// Convierte formtato backend usu_id a formato frontend idUsuario
 		this.domicilio = {
 
-			cliId: this.domicilioSeleccionado.cliId,	
+			empId: this.domicilioSeleccionado.empId,	
 			
 		 	domId: this.domicilioSeleccionado.domId,
+			domIdHis: this.domicilioSeleccionado.domIdHis,
+			domTipMov: 'M',
+			domCauMov: 'Modificación del registro',
 			
 			domCiv: this.domicilioSeleccionado.domCiv,
 
 		  	domTipVia: this.domicilioSeleccionado.domTipVia,
 
 		  	domVia: this.domicilioSeleccionado.domVia,
+			domViaId: this.domicilioSeleccionado.domViaId,
 
 			domNum: this.domicilioSeleccionado.domNum,
 
@@ -250,9 +307,20 @@ export class Domicilios {
 
 	}
 
-	// Este método elimina
-	// Este método elimina
-	eliminar() {
+	async baja() {
+	  if (!this.domicilioSeleccionado || this.domicilioSeleccionado.domTipMov === 'B') return;
+	  if (!await confirmarAplicacion('¿Desea dar de baja el domicilio seleccionado? El movimiento quedará en el histórico.',true)) return;
+	  this.domicilioService.baja(this.domicilioSeleccionado.domId).subscribe({next:()=>this.consultar(),error:e=>{console.error(e);avisarAplicacion(e?.error?.mensaje||'No se pudo dar de baja el domicilio.');}});
+	}
+
+	async reactivar() {
+	  if (!this.domicilioSeleccionado || this.domicilioSeleccionado.domTipMov !== 'B') return;
+	  if (!await confirmarAplicacion('¿Desea reactivar el domicilio seleccionado?')) return;
+	  this.domicilioService.deshacer(this.domicilioSeleccionado.domId).subscribe({next:()=>this.consultar(),error:e=>{console.error(e);avisarAplicacion(e?.error?.mensaje||'No se pudo reactivar el domicilio.');}});
+	}
+
+	// Elimina el registro completo y todas sus versiones.
+	async eliminar() {
 
 	  // Si estamos en la pestaña registro
 	  if (this.vistaActiva === 'registro') {
@@ -270,16 +338,16 @@ export class Domicilios {
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.domicilioSeleccionado) {
 
-	      alert('Debe seleccionar un registro');
+	      avisarAplicacion('Debe seleccionar un registro');
 
 	      return;
 
 	    }
 
 	    // Solicita confirmación
-	    const confirmado = confirm(
-	      '¿Desea eliminar el domicilio seleccionado?'
-	    );
+	    const confirmado = await confirmarAplicacion(
+	      '¿Desea eliminar definitivamente el domicilio y todos sus movimientos históricos?'
+	    ,true);
 
 	    // Si cancela
 	    if (!confirmado) {
@@ -295,7 +363,7 @@ export class Domicilios {
 
 	      next: () => {
 
-	        alert('Domicilio eliminado correctamente.');
+	        avisarAplicacion('Domicilio e histórico eliminados correctamente.');
 
 	        // Limpia selección
 	        this.domicilioSeleccionado = null;
@@ -309,7 +377,7 @@ export class Domicilios {
 
 	        console.error(error);
 
-	        alert('Error al eliminar domicilio.');
+	        avisarAplicacion('Error al eliminar domicilio.');
 
 	      }
 
@@ -360,7 +428,7 @@ export class Domicilios {
 		) {
 
 			// Muestra el mensaje
-			alert('Debe rellenar todos los campos obligatorios.');
+			avisarAplicacion('Debe rellenar todos los campos obligatorios.');
 
 			// Indica que el formulario no es válido
 			return false;
@@ -383,15 +451,19 @@ export class Domicilios {
 
 	  	const domicilio = {
 
-			cliId: this.domicilio.cliId,
+			empId: this.domicilio.empId,
 			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
 			// El backend interpreta este registro como nuevo e ignora este valor,
 			// dejando que la base de datos asigne automáticamente el identificador definitivo.
 		    domId: 0,
+			domIdHis: 1,
+			domTipMov: 'A',
+			domCauMov: this.domicilio.domCauMov || 'Alta del registro',
 			
 			domCiv: this.domicilio.domCiv,
 		    domTipVia: this.domicilio.domTipVia,
 		    domVia: this.domicilio.domVia,
+			domViaId: this.domicilio.domViaId,
 		    domNum: this.domicilio.domNum,
 	
 		    domKm: this.domicilio.domKm,
@@ -425,7 +497,7 @@ export class Domicilios {
 
 		next: () => {
 			
-			alert('Domicilio guardado correctamente.');
+			avisarAplicacion('Domicilio guardado correctamente.');
 		
 		  	this.limpiarFormulario();
 
@@ -437,7 +509,7 @@ export class Domicilios {
 
 	      console.error(error);
 
-	      alert('Error al guardar domicilio.');
+	      avisarAplicacion('Error al guardar domicilio.');
 
 	    }
 
@@ -456,16 +528,20 @@ export class Domicilios {
 
 		const domicilio = {
 
-			cliId: this.domicilio.cliId,
+			empId: this.domicilio.empId,
 
 		    // Mantiene el identificador del domicilio que se va a modificar
 		    domId: this.domicilio.domId,
+			domIdHis: this.domicilio.domIdHis,
+			domTipMov: 'M',
+			domCauMov: this.domicilio.domCauMov || 'Modificación del registro',
 			
 			domCiv: this.domicilio.domCiv,
 
 		    domTipVia: this.domicilio.domTipVia,
 
 		    domVia: this.domicilio.domVia,
+			domViaId: this.domicilio.domViaId,
 
 		    domNum: this.domicilio.domNum,
 
@@ -513,7 +589,7 @@ export class Domicilios {
 
 			next: () => {
 
-				alert('Domicilio actualizado correctamente.');
+				avisarAplicacion('Domicilio actualizado correctamente.');
 
 				this.limpiarFormulario();
 
@@ -525,7 +601,7 @@ export class Domicilios {
 
 				console.error(error);
 
-				alert('Error al actualizar domicilio.');
+				avisarAplicacion('Error al actualizar domicilio.');
 
 			}
 
@@ -545,11 +621,14 @@ export class Domicilios {
 
 	  return {
 
-		cliId: Number(localStorage.getItem('clienteId')) || 0,
+		empId: Number(localStorage.getItem('empresaId')) || 0,
 		domId: 0,
+		domIdHis: 1,
+		domTipMov: 'A',
+		domCauMov: 'Alta del registro',
 		
 		domCiv: '',
-	    domTipVia: '', domVia: '', domNum: '',
+	    domTipVia: '', domVia: '', domViaId: null, domNum: '',
 	    domKm: '', domEdi: '', domBlo: '', domPor: '', domEsc: '', domPla: '', domPue: '',
 		domCp: '', domMun: '', domPro: '', domObs: '', domDir: '',
 		
@@ -599,7 +678,7 @@ export class Domicilios {
 	   if (this.domicilio.domEsc) { partes.push('Esc. ' + this.domicilio.domEsc); }
 
 	   // Planta.
-	   if (this.domicilio.domPla) { partes.push('Planta ' + this.domicilio.domEsc); }
+	   if (this.domicilio.domPla) { partes.push('Planta ' + this.domicilio.domPla); }
 
 	   // Puerta.
 	   if (this.domicilio.domPue) { partes.push('Pta. ' + this.domicilio.domPue); }

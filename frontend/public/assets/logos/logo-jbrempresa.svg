@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 110" role="img" aria-labelledby="title">
+  <title id="title">JBREMPRESA</title>
+  <defs>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#087cf1"/><stop offset="1" stop-color="#034bb8"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="10" width="92" height="92" rx="2" fill="url(#brand)"/>
+  <text x="118" y="82" font-family="Arial, Helvetica, sans-serif" font-size="63" font-weight="700" fill="#55555c">JBR</text>
+  <text x="235" y="82" font-family="Arial, Helvetica, sans-serif" font-size="63" font-weight="700" fill="url(#brand)">EMPRESA</text>
+</svg>

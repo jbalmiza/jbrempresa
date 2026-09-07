@@ -9,6 +9,8 @@ import { HttpClient } from '@angular/common/http';
 // Importa libreria para esperar la respuesta tras una petición al backend.
 import { Observable } from 'rxjs';
 
+import { API_URL } from '../config/api-url.config';
+
 // Angular establece que este servicio existe en toda la aplicación.
 @Injectable({
 	
@@ -19,8 +21,8 @@ import { Observable } from 'rxjs';
 // Angular permite usar la clase desde otros archivos
 export class ApiService {
 
-// Angular guarda la URL base del backend, así evitas repetir 'http://localhost:8080/api'
-  private apiUrl = 'http://localhost:8080/api';
+// Angular toma la URL base del backend desde la configuración compartida.
+  private apiUrl = `${API_URL}/api`;
 
 // Angular crea e inyecta automáticamente HttpClient
   constructor(private http: HttpClient) {}

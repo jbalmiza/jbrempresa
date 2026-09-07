@@ -1,0 +1,11 @@
+ALTER TABLE productos ADD COLUMN IF NOT EXISTS pro_dur_min INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE venta_detalle ADD COLUMN IF NOT EXISTS ser_id BIGINT;
+ALTER TABLE venta_detalle ADD COLUMN IF NOT EXISTS ven_det_tip_lin VARCHAR(1);
+ALTER TABLE venta_detalle ADD COLUMN IF NOT EXISTS ven_det_nom VARCHAR(200);
+ALTER TABLE venta_detalle ADD COLUMN IF NOT EXISTS ven_det_dur_uni INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE venta_detalle ADD COLUMN IF NOT EXISTS ven_det_dur_tot INTEGER NOT NULL DEFAULT 0;
+UPDATE venta_detalle SET ven_det_tip_lin='P' WHERE ven_det_tip_lin IS NULL;
+UPDATE venta_detalle d SET ven_det_nom=COALESCE((SELECT p.pro_nom FROM productos p WHERE p.pro_id=d.pro_id ORDER BY p.pro_id_his DESC LIMIT 1),'Producto '||d.pro_id::text) WHERE d.ven_det_nom IS NULL;
+ALTER TABLE venta_detalle ALTER COLUMN ven_det_tip_lin SET NOT NULL;
+ALTER TABLE venta_detalle ALTER COLUMN ven_det_nom SET NOT NULL;
+ALTER TABLE venta_detalle ADD CONSTRAINT ck_venta_detalle_tipo CHECK ((ven_det_tip_lin='P' AND pro_id IS NOT NULL AND ser_id IS NULL) OR (ven_det_tip_lin='S' AND ser_id IS NOT NULL AND pro_id IS NULL));

@@ -1,3 +1,7 @@
+import {BarraAcciones} from '../../../directives/barraAcciones/barraAcciones';
+import {avisarAplicacion,confirmarAplicacion} from '../../../core/interaccion/dialogos.service';
+import { DatosMovimiento } from '../../../components/datosMovimiento/datosMovimiento';
+import { DatosIdentificacion } from '../../../components/datosIdentificacion/datosIdentificacion';
 // La lógica de la pantalla (Framework Angular / Lenguaje TypeScript)
 
 // Importa libreria para crear componentes Angular
@@ -9,7 +13,7 @@ import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
 import { Tabla } from '../../../components/tabla/tabla';
 
-import { FechasUtil } from '../../../core/utils/fechas.util';
+import { FechasUtil } from '../../../shared/utils/fechas.util';
 
 import { Perfil } from '../../../interfaces/perfil.interface';
 
@@ -24,7 +28,7 @@ import { ViewChild } from '@angular/core';
 @Component({
   selector: 'Perfiles',
   standalone: true,
-  imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla],
+  imports:[CommonModule, FormsModule, Sidebar, Supbar, Tabla,DatosIdentificacion,DatosMovimiento,BarraAcciones],
   templateUrl: './perfiles.html',
   styleUrl: '../../../styles/estiloGeneral.css'
 })
@@ -34,7 +38,7 @@ export class Perfiles {
 	
 	//Busca el componente tabla en el html y guarda en una variable tabla por la cual se podrá acceder a variables y métodos dentro de tabla
 	// por ejemplo a 'this.tabla.datosFiltrados' que devolverá los registros que se están mostrando en pantalla después de aplicar los filtros.
-	//Sin ViewChild, clientes.ts no sabe nada de lo que ocurre dentro de tabla.ts.
+	//Sin ViewChild, empresas.ts no sabe nada de lo que ocurre dentro de tabla.ts.
 	// Permitirá acceder a los datos filtrados para exportarlos posteriormente a PDF.
 	@ViewChild(Tabla)
 	tabla!: Tabla;
@@ -49,7 +53,7 @@ export class Perfiles {
 	
 	// Títulos de las columnas de la tabla
 	titulosColumnas = {
-	    cliId: 'Id Cliente',
+	    empId: 'Id Empresa',
 	    perId: 'Id Persona',
 	    perNom: 'Nombre',
 	    perTipPer: 'Tipo Perfil',
@@ -64,7 +68,7 @@ export class Perfiles {
 	};
 	
 	// Campos mostrados en la tabla
-	columnas: string[] = [ 'cliId', 'perId', 
+	columnas: string[] = [ 'empId', 'perId', 
 		'perNom', 'perTipPer',
 		'perModAdm', 'perModTer', 'perModPer', 'perModPro', 'perModVen',
 		'perUsuMov', 'perFecMov','perAct'
@@ -108,7 +112,7 @@ export class Perfiles {
 
 				console.error(error);
 
-				alert('Error al obtener perfiles');  
+				avisarAplicacion('Error al obtener perfiles');  
 
 			}
 
@@ -163,7 +167,7 @@ export class Perfiles {
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.perfilSeleccionado) {
 
-	      alert('Debe seleccionar un registro');
+	      avisarAplicacion('Debe seleccionar un registro');
 
 	      return;
 	    }
@@ -176,7 +180,7 @@ export class Perfiles {
 		// Convierte formtato backend usu_id a formato frontend idUsuario
 		this.perfil = {
 
-			cliId: this.perfilSeleccionado.cliId,			
+			empId: this.perfilSeleccionado.empId,			
 			
 			perId: this.perfilSeleccionado.perId,
 			
@@ -207,7 +211,7 @@ export class Perfiles {
 	}
 	
 	// Este método elimina
-	eliminar() {
+	async eliminar() {
 
 	  // Si estamos en la pestaña registro
 	  if (this.vistaActiva === 'registro') {
@@ -225,16 +229,16 @@ export class Perfiles {
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.perfilSeleccionado) {
 
-	      alert('Debe seleccionar un registro');
+	      avisarAplicacion('Debe seleccionar un registro');
 
 	      return;
 
 	    }
 
 	    // Solicita confirmación
-	    const confirmado = confirm(
+	    const confirmado = await confirmarAplicacion(
 	      '¿Desea eliminar el perfil seleccionado?'
-	    );
+	    ,true);
 
 	    // Si cancela
 	    if (!confirmado) {
@@ -256,7 +260,7 @@ export class Perfiles {
 	        // Recarga la tabla
 	        this.consultar();
 			
-			alert('Perfil eliminado correctamente');
+			avisarAplicacion('Perfil eliminado correctamente');
 			
 	      },
 
@@ -264,7 +268,7 @@ export class Perfiles {
 
 	        console.error(error);
 
-	        alert('Error al eliminar perfil');
+	        avisarAplicacion('Error al eliminar perfil');
 
 	      }
 
@@ -310,7 +314,7 @@ export class Perfiles {
 		) {
 
 			// Muestra el mensaje
-			alert('Debe rellenar todos los campos obligatorios.');
+			avisarAplicacion('Debe rellenar todos los campos obligatorios.');
 
 			// Indica que el formulario no es válido
 			return false;
@@ -334,7 +338,7 @@ export class Perfiles {
 
 	  	const perfil = {
 
-			cliId: this.perfil.cliId,		
+			empId: this.perfil.empId,		
 			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
 			// El backend interpreta este registro como nuevo e ignora este valor,
 			// dejando que la base de datos asigne automáticamente el identificador definitivo.
@@ -368,7 +372,7 @@ export class Perfiles {
 
 	    next: () => {
 
-	      alert('Perfil guardado correctamente.');
+	      avisarAplicacion('Perfil guardado correctamente.');
 		  
 		  this.limpiarFormulario();
 
@@ -380,7 +384,7 @@ export class Perfiles {
 
 	      console.error(error);
 
-	      alert('Error al guardar perfil');
+	      avisarAplicacion('Error al guardar perfil');
 
 	    }
 
@@ -399,7 +403,7 @@ export class Perfiles {
 
 		const perfil = {
 
-			cliId: this.perfil.cliId,
+			empId: this.perfil.empId,
 		    perId: this.perfil.perId,
 
 		    perNom: this.perfil.perNom,
@@ -430,7 +434,7 @@ export class Perfiles {
 
 			next: () => {
 
-				alert('Perfil actualizado correctamente.');
+				avisarAplicacion('Perfil actualizado correctamente.');
 
 				this.limpiarFormulario();
 
@@ -442,7 +446,7 @@ export class Perfiles {
 
 				console.error(error);
 
-				alert('Error al actualizar perfil.');
+				avisarAplicacion('Error al actualizar perfil.');
 
 			}
 
@@ -462,7 +466,7 @@ export class Perfiles {
 
 		return {
 
-		cliId: Number(localStorage.getItem('clienteId')) || 0,
+		empId: Number(localStorage.getItem('empresaId')) || 0,
 	  	perId: 0,
 		
 	  	perNom: '',

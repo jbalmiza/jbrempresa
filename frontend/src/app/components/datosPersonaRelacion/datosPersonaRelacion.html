@@ -1,0 +1,13 @@
+<div class="form-fila">
+  <div class="form-campo-500">
+    <label class="label">{{ etiqueta }}</label>
+    <selectorBusqueda [datos]="personas" [idSeleccionado]="personaId || 0" campoDescripcion="perNomCom" campoId="perId" (valorSeleccionado)="seleccionar($event)"></selectorBusqueda>
+  </div>
+</div>
+<div *ngIf="persona" class="form-fila datos-persona-seleccionada">
+  <div class="form-campo-500"><label class="label">Dirección completa</label><input [value]="direccion" disabled></div>
+</div>
+<div *ngIf="persona" class="form-fila">
+  <div class="form-campo-200"><label class="label">Teléfono</label><input [value]="persona.perTel || ''" disabled></div>
+  <div class="form-campo-200"><label class="label">Correo</label><input [value]="persona.perEma || ''" disabled></div>
+</div>

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 // Entidad JPA
 @Entity
+@IdClass(ProductoId.class)
 
 // Tabla productos
 @Table(name = "productos")
@@ -26,14 +27,22 @@ public class Producto {
     @Id
 
     // Genera automáticamente el ID
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     @Column(name = "pro_id")
     private Long proId;
 
-    // Cliente
-    @Column(name = "cli_id")
-    private Long cliId;
+    @Id
+    @Column(name = "pro_id_his")
+    private Long proIdHis;
+
+    @Column(name = "pro_tip_mov")
+    private String proTipMov;
+
+    @Column(name = "pro_cau_mov", length = 500)
+    private String proCauMov;
+
+    // Empresa
+    @Column(name = "emp_id")
+    private Long empId;
 
     // Tipo de producto
     @Column(name = "pro_tip_pro")
@@ -106,6 +115,15 @@ public class Producto {
     // Observaciones
     @Column(name = "pro_obs")
     private String proObs;
+
+    @Column(name = "pro_dur_min")
+    private Integer proDurMin;
+
+    @Column(name = "pro_vis_cat")
+    private Boolean proVisCat = true;
+
+    @Column(name = "pro_ima", length = 500)
+    private String proIma = "producto-predeterminado.png";
     
     // Ubicación
     @Column(name = "pro_ubi")
@@ -144,14 +162,21 @@ public class Producto {
         this.proId = proId;
     }
 
-    // Obtiene el cliente
-    public Long getCliId() {
-        return cliId;
+    public Long getProIdHis() { return proIdHis; }
+    public void setProIdHis(Long proIdHis) { this.proIdHis = proIdHis; }
+    public String getProTipMov() { return proTipMov; }
+    public void setProTipMov(String proTipMov) { this.proTipMov = proTipMov; }
+    public String getProCauMov() { return proCauMov; }
+    public void setProCauMov(String proCauMov) { this.proCauMov = proCauMov; }
+
+    // Obtiene el empresa
+    public Long getEmpId() {
+        return empId;
     }
 
-    // Modifica el cliente
-    public void setCliId(Long cliId) {
-        this.cliId = cliId;
+    // Modifica el empresa
+    public void setEmpId(Long empId) {
+        this.empId = empId;
     }
 
     // Obtiene el tipo de producto
@@ -317,6 +342,13 @@ public class Producto {
     public void setProObs(String proObs) {
         this.proObs = proObs;
     }
+
+    public Integer getProDurMin() { return proDurMin; }
+    public void setProDurMin(Integer proDurMin) { this.proDurMin = proDurMin; }
+    public Boolean getProVisCat() { return proVisCat; }
+    public void setProVisCat(Boolean proVisCat) { this.proVisCat = proVisCat; }
+    public String getProIma() { return proIma; }
+    public void setProIma(String proIma) { this.proIma = proIma; }
     
     public String getProUbi() {
         return proUbi;

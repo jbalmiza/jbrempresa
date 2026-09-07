@@ -6,11 +6,11 @@ public class LoginResponse {
     private String token;
     
     private Long usuarioId;
-    private Long clienteId;
+    private Long empresaId;
     private Long perfilId;
     
     private String usuario;
-    private String cliente;
+    private String empresa;
     private String perfil;
     
     // Constructor vacío
@@ -26,8 +26,8 @@ public class LoginResponse {
             Long usuarioId,
             String usuario,
 
-            Long clienteId,
-            String cliente,
+            Long empresaId,
+            String empresa,
 
             Long perfilId,
             String perfil) {
@@ -37,8 +37,8 @@ public class LoginResponse {
         this.usuarioId = usuarioId;
         this.usuario = usuario;
 
-        this.clienteId = clienteId;
-        this.cliente = cliente;
+        this.empresaId = empresaId;
+        this.empresa = empresa;
 
         this.perfilId = perfilId;
         this.perfil = perfil;
@@ -63,13 +63,13 @@ public class LoginResponse {
         this.usuarioId = usuarioId;
     }
 
-    // Cliente Id
-    public Long getClienteId() {
-        return clienteId;
+    // Empresa Id
+    public Long getEmpresaId() {
+        return empresaId;
     }
 
-    public void setClienteId(Long clienteId) {
-        this.clienteId = clienteId;
+    public void setEmpresaId(Long empresaId) {
+        this.empresaId = empresaId;
     }
 
     // Perfil Id
@@ -90,13 +90,13 @@ public class LoginResponse {
         this.usuario = usuario;
     }
     
-    // Cliente
-    public String getCliente() {
-        return cliente;
+    // Empresa
+    public String getEmpresa() {
+        return empresa;
     }
 
-    public void setCliente(String cliente) {
-        this.cliente = cliente;
+    public void setEmpresa(String empresa) {
+        this.empresa = empresa;
     }
 
     // Perfil

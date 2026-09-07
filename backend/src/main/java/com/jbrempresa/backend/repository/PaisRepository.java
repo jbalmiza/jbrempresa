@@ -1,0 +1,2 @@
+package com.jbrempresa.backend.repository; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; import com.jbrempresa.backend.entity.Pais;
+public interface PaisRepository extends JpaRepository<Pais,Long>{List<Pais> findByEmpIdOrderByPaiNom(Long c);Optional<Pais> findByEmpIdAndPaiId(Long c,Long id);boolean existsByEmpIdAndPaiCodIgnoreCase(Long c,String cod);boolean existsByEmpIdAndPaiCodIgnoreCaseAndPaiIdNot(Long c,String cod,Long id);}

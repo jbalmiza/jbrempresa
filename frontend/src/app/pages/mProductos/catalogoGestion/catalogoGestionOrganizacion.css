@@ -1,0 +1,17 @@
+.encabezado {
+  justify-content: flex-start;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.tabs.toolbar {
+  gap: 10px;
+  margin: 24px 0;
+  padding: 0;
+  border-bottom: 0;
+}
+
+.catalogo-admin { max-width: none; }
+.tabs .accion-volver { order: 2; }
+.tabs .opcion-catalogo { order: 3; }
+.tabs .opcion-catalogo.activa { color:#fff; border-color:#315f9c; background:#315f9c; }

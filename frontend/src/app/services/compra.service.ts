@@ -10,6 +10,8 @@ import { Observable } from 'rxjs';
 // Importa la interfaz Compra.
 import { Compra } from '../interfaces/compra.interface';
 
+import { API_URL } from '../config/api-url.config';
+
 // Define el servicio.
 @Injectable({
   providedIn: 'root'
@@ -19,7 +21,7 @@ import { Compra } from '../interfaces/compra.interface';
 export class CompraService {
 
   // URL del controlador.
-  private apiUrl = 'http://localhost:8080/compras';
+  private apiUrl = `${API_URL}/compras`;
 
   // Constructor.
   constructor(private http: HttpClient) {}

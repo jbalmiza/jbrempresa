@@ -2,13 +2,14 @@
 
 // Importa libreria Component para crear componentes Angular
 // Importa libreria Input para recibir datos que son las opciones de menú
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 
 // Importa funcionalidades comunes de Angular.
 import { CommonModule } from '@angular/common';
 
 // Importa Router para navegar entre páginas.
 import { Router } from '@angular/router';
+import { MENUS_MODULOS } from '../../config/menu-modulos.config';
 
 // Se define la configuración del componente Angular
 @Component({
@@ -20,7 +21,8 @@ import { Router } from '@angular/router';
 })
 
 // Definición de la lógica del componente
-export class Sidebar {
+export class Sidebar implements OnChanges {
+  readonly menus=MENUS_MODULOS;
 
   // Nombre del usuario conectado.
   usuarioNombre: string = '';
@@ -30,9 +32,24 @@ export class Sidebar {
 
   // Recibe el módulo actual desde el componente padre.
   @Input() modulo: string = '';
+  get menuActual(){return this.menus[this.modulo];}
+  ngOnChanges(){
+    const grupos = this.menuActual?.grupos ?? [];
+
+    // Al entrar en cualquier módulo se abre su bloque de Gestión (menu2).
+    // En una opción concreta se muestra el bloque que contiene la ruta activa.
+    this.menuAbierto = grupos.find(grupo => grupo.id === 'menu2')?.id ?? grupos[0]?.id ?? '';
+
+    const ruta = this.router.url.split('?')[0].split('#')[0].split('/').filter(Boolean)[1];
+    if (!ruta) return;
+
+    const grupoActivo = grupos.find(grupo => grupo.opciones.some(opcion => opcion.ruta === ruta));
+    if (grupoActivo) this.menuAbierto = grupoActivo.id;
+  }
 
   // Menú actualmente abierto.
-  menuAbierto: string = '';
+  // La segunda sección corresponde a la gestión principal en todos los módulos.
+  menuAbierto: string = 'menu2';
   
   // Indica si el sidebar está abierto en móvil.
   menuMovilAbierto: boolean = false;
@@ -43,10 +60,10 @@ export class Sidebar {
   constructor(private router: Router) {
 
     // Obtiene el nombre del usuario almacenado.
-    this.usuarioNombre = localStorage.getItem('usuarioNombre') || '';
+    this.usuarioNombre = localStorage.getItem('usuario') || '';
 
     // Obtiene el perfil almacenado.
-    this.usuarioPerfil = localStorage.getItem('usuarioPerfil') || '';
+    this.usuarioPerfil = localStorage.getItem('perfil') || '';
 
   }
 
@@ -79,9 +96,20 @@ export class Sidebar {
   abrirPagina(submenu: string) {
 
     // Navega a la página seleccionada.
-    this.router.navigate(['/' + this.modulo + '/' + submenu]);
+    const destino = '/' + this.modulo + '/' + submenu;
+    const rutaActual = this.router.url.split('?')[0].split('#')[0].replace(/\/$/, '');
+
+    // Al repetir la pantalla actual se reinicia su estado interno.
+    if (rutaActual === destino) {
+      window.location.reload();
+      return;
+    }
+
+    this.router.navigate([destino]);
 
   }
+
+  esActiva(submenu?:string):boolean{return !!submenu&&this.router.url.split('?')[0].split('#')[0].replace(/\/$/,'')===`/${this.modulo}/${submenu}`;}
 
   // Se define el método volver.
   modulos() {
@@ -94,11 +122,10 @@ export class Sidebar {
   // Se define el método volver.
   salir() {
 
-	// Elimina el nombre del usuario.
-	localStorage.removeItem('usuarioNombre');
-
-	// Elimina el perfil del usuario.
-	localStorage.removeItem('usuarioPerfil');
+	// Elimina todos los datos de sesiÃ³n.
+	const usuarioRecordado = localStorage.getItem('login.usuarioRecordado');
+	localStorage.clear();
+	if (usuarioRecordado) localStorage.setItem('login.usuarioRecordado', usuarioRecordado);
 
 	// Vuelve a la pantalla de login.
 	this.router.navigate(['/accesoLogin']);

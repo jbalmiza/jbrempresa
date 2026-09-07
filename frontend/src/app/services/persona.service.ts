@@ -10,6 +10,8 @@ import { Observable } from 'rxjs';
 // Importa la interfaz Persona.
 import { Persona } from '../interfaces/persona.interface';
 
+import { API_URL } from '../config/api-url.config';
+
 // Define el servicio.
 @Injectable({
   providedIn: 'root'
@@ -19,7 +21,7 @@ import { Persona } from '../interfaces/persona.interface';
 export class PersonaService {
 
   // URL del controlador.
-  private apiUrl = 'http://localhost:8080/personas';
+  private apiUrl = `${API_URL}/personas`;
 
   // Constructor.
   constructor(private http: HttpClient) {}
@@ -74,6 +76,23 @@ export class PersonaService {
       persona
     );
 
+  }
+
+  // Maestro único de Personas utilizado por los selectores de todos los módulos.
+  obtenerPersonasSelector() {
+    return this.http.get<Persona[]>(`${this.apiUrl}/selector`);
+  }
+
+  baja(id: number): Observable<Persona> {
+    return this.http.post<Persona>(`${this.apiUrl}/${id}/baja`, {});
+  }
+
+  obtenerHistorico(id: number): Observable<Persona[]> {
+    return this.http.get<Persona[]>(`${this.apiUrl}/${id}/historico`);
+  }
+
+  deshacer(id: number): Observable<Persona> {
+    return this.http.post<Persona>(`${this.apiUrl}/${id}/deshacer`, {});
   }
 
 }

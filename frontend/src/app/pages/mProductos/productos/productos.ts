@@ -1,3 +1,7 @@
+import {BarraAcciones} from '../../../directives/barraAcciones/barraAcciones';
+import {avisarAplicacion,confirmarAplicacion} from '../../../core/interaccion/dialogos.service';
+import { DatosMovimiento } from '../../../components/datosMovimiento/datosMovimiento';
+import { DatosIdentificacion } from '../../../components/datosIdentificacion/datosIdentificacion';
 // La lógica de la pantalla (Framework Angular / Lenguaje TypeScript)
 
 // Importa libreria para crear componentes Angular
@@ -8,17 +12,18 @@ import { Router } from '@angular/router';
 import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
 import { Tabla } from '../../../components/tabla/tabla';
+import { DocumentacionAdjunta } from '../../../components/documentacionAdjunta/documentacionAdjunta';
 
 import { SelectorMalla } from '../../../components/selectorMalla/selectorMalla';
-import { MallaRegistros } from '../../../components/mallaRegistros/mallaRegistros';
 
-import { FechasUtil } from '../../../core/utils/fechas.util';
+import { FechasUtil } from '../../../shared/utils/fechas.util';
 
 import { Producto } from '../../../interfaces/producto.interface';
 
 import { FormsModule } from '@angular/forms';
 
 import { ProductoService } from '../../../services/producto.service';
+import { TipoArticulo, TipoArticuloService } from '../../../services/tipo-articulo.service';
 import { PdfService } from '../../../services/pdf.service';
 
 import { ViewChild } from '@angular/core';
@@ -27,7 +32,7 @@ import { ViewChild } from '@angular/core';
 @Component({
   selector: 'Productos',
   standalone: true,
-  imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla, SelectorMalla, MallaRegistros],
+  imports:[CommonModule, FormsModule, Sidebar, Supbar, Tabla, SelectorMalla, DocumentacionAdjunta,DatosIdentificacion,DatosMovimiento,BarraAcciones],
   templateUrl: './productos.html',
   styleUrl: '../../../styles/estiloGeneral.css'
 })
@@ -37,13 +42,13 @@ export class Productos {
 	
 	//Busca el componente tabla en el html y guarda en una variable tabla por la cual se podrá acceder a variables y métodos dentro de tabla
 	// por ejemplo a 'this.tabla.datosFiltrados' que devolverá los registros que se están mostrando en pantalla después de aplicar los filtros.
-	//Sin ViewChild, clientes.ts no sabe nada de lo que ocurre dentro de tabla.ts.
+	//Sin ViewChild, empresas.ts no sabe nada de lo que ocurre dentro de tabla.ts.
 	// Permitirá acceder a los datos filtrados para exportarlos posteriormente a PDF.
 	@ViewChild(Tabla)
 	tabla!: Tabla;
 
 	//Variables de la clase
-	vistaActiva: 'malla' | 'registro' | 'tabla' = 'tabla';
+	vistaActiva: 'malla' | 'registro' | 'tabla' | 'adjuntos' | 'historico' = 'tabla';
 	modoFormulario: 'insertar' | 'modificar' = 'insertar';
 	mostrarObligatorios = false;
 	
@@ -52,8 +57,11 @@ export class Productos {
 	
 	// Títulos de las columnas de la tabla
 	titulosColumnas = {
-	    cliId: 'Id Cliente',
+	    empId: 'Id Empresa',
 	    proId: 'Id Producto',
+		proIdHis: 'Id Histórico',
+		proTipMov: 'Tipo Movimiento',
+		proCauMov: 'Causa Movimiento',
 	    proTipPro: 'Tipo Producto',
 	    proNom: 'Nombre',
 		proDes: 'Descripción',
@@ -72,6 +80,7 @@ export class Productos {
 		proUniMed: 'Unidad Medida',
 		proConSto: 'Control Stock',
 		proObs: 'Observaciones',
+		proDurMin: 'Duración (min)',
 		proUbi: 'Ubicación',
 		proFilMal: 'Fila Malla',
 		proColMal: 'Columna Malla',
@@ -81,12 +90,12 @@ export class Productos {
 	};	
 
 	// Campos mostrados en la tabla
-	columnas: string[] = [ 'cliId', 'proId', 
+	columnas: string[] = [ 'empId', 'proId', 'proIdHis', 'proTipMov', 'proCauMov',
 		'proTipPro', 'proNom', 'proDes',
 		'proCat', 'proSubCat', 'proMar', 'proMod', 'proPro',
 		'proPreCom', 'proPreVen', 'proPreDes', 'proPreIva', 'proPreFin', 
 		'proStoAct', 'proStoMin', 'proUniMed', 'proConSto',
-		'proObs',
+		'proObs', 'proDurMin',
 		'proUbi', 'proFilMal', 'proColMal',
 		'proUsuMov', 'proFecMov','proAct'
 
@@ -94,6 +103,8 @@ export class Productos {
 
 	// Datos de la tabla
 	datos: any[] = [];
+	datosHistorico: Producto[] = [];
+	tiposProducto: TipoArticulo[] = [];
 	
 	// Guarda el registro seleccionado de la tabla
 	productoSeleccionado: Producto | null = null;
@@ -103,9 +114,10 @@ export class Productos {
 		
 	  private readonly router: Router,
 	  private productoService: ProductoService,
-	  private pdfService: PdfService
+	  private pdfService: PdfService,
+	  private tipoArticuloService: TipoArticuloService
 	  
-	) {}
+	) { this.tipoArticuloService.listar('PRODUCTO').subscribe({next: tipos => this.tiposProducto = tipos, error: () => avisarAplicacion('No se pudieron cargar los tipos de producto.')}); }
 	
 	// Este método muestra el mapa de datos
 	malla() {
@@ -118,6 +130,7 @@ export class Productos {
 	consultar() {
 
 		this.vistaActiva = 'tabla';
+		this.productoSeleccionado = null;
 
 		this.productoService.obtenerProductos().subscribe({
 
@@ -131,12 +144,30 @@ export class Productos {
 
 				console.error(error);
 
-				alert('Error al obtener productos.');
+				avisarAplicacion('Error al obtener productos.');
 
 			}
 
 		});
 
+	}
+
+	adjuntos() { if (this.productoSeleccionado?.proId) this.vistaActiva = 'adjuntos'; }
+	volverAConsulta() { this.vistaActiva = 'tabla'; }
+	historico() {
+		if (!this.productoSeleccionado?.proId) return;
+		this.productoService.obtenerHistorico(this.productoSeleccionado.proId).subscribe({
+			next: datos => { this.datosHistorico = datos; this.productoSeleccionado = datos.find(p => p.proAct) || this.productoSeleccionado; this.vistaActiva = 'historico'; },
+			error: error => { console.error(error); avisarAplicacion('Error al obtener el histórico del producto.'); }
+		});
+	}
+	async deshacer() {
+		if (!this.productoSeleccionado || (this.productoSeleccionado.proIdHis || 1) <= 1) return;
+		if (!await confirmarAplicacion('¿Desea deshacer el último movimiento del producto?')) return;
+		this.productoService.deshacer(this.productoSeleccionado.proId).subscribe({
+			next: producto => { this.productoSeleccionado = producto; avisarAplicacion('Movimiento deshecho correctamente.'); this.historico(); },
+			error: error => { console.error(error); avisarAplicacion('Error al deshacer el movimiento.'); }
+		});
 	}
 
 	// Este método muestra el formulario de registro y limpia los campos del formulario	
@@ -169,6 +200,7 @@ export class Productos {
 	
 	// Este método modifica	
 	modificar() {
+	  this.modoFormulario = 'modificar';
 
 	  // Si estamos en la pestaña registro
 	  if (this.vistaActiva === 'registro') {
@@ -185,7 +217,7 @@ export class Productos {
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.productoSeleccionado) {
 
-	      alert('Debe seleccionar un registro');
+	      avisarAplicacion('Debe seleccionar un registro');
 
 	      return;
 	    }
@@ -198,8 +230,11 @@ export class Productos {
 		// Convierte formtato backend pro_id a formato frontend idProducto
 		this.producto = {
 
-			cliId: this.productoSeleccionado.cliId,			
+			empId: this.productoSeleccionado.empId,			
 			proId: this.productoSeleccionado.proId,
+			proIdHis: this.productoSeleccionado.proIdHis,
+			proTipMov: 'M',
+			proCauMov: 'Modificación del registro',
 
 		  	proTipPro: this.productoSeleccionado.proTipPro,
 			proNom: this.productoSeleccionado.proNom,
@@ -223,6 +258,9 @@ export class Productos {
 			proConSto: this.productoSeleccionado.proConSto,
 			
 			proObs: this.productoSeleccionado.proObs,
+			proDurMin: this.productoSeleccionado.proDurMin || 0,
+			proVisCat: this.productoSeleccionado.proVisCat || false,
+			proIma: this.productoSeleccionado.proIma || '',
 			
 			proFilMal: this.productoSeleccionado.proFilMal,
 			proColMal: this.productoSeleccionado.proColMal,
@@ -238,8 +276,20 @@ export class Productos {
 
 	}
 	
-	// Este método elimina
-	eliminar() {
+	async baja() {
+	  if (!this.productoSeleccionado || this.productoSeleccionado.proTipMov === 'B') return;
+	  if (!await confirmarAplicacion('¿Desea dar de baja el producto seleccionado? El movimiento quedará en el histórico.',true)) return;
+	  this.productoService.baja(this.productoSeleccionado.proId).subscribe({next:()=>this.consultar(),error:e=>{console.error(e);avisarAplicacion(e?.error?.mensaje||'No se pudo dar de baja el producto.');}});
+	}
+
+	async reactivar() {
+	  if (!this.productoSeleccionado || this.productoSeleccionado.proTipMov !== 'B') return;
+	  if (!await confirmarAplicacion('¿Desea reactivar el producto seleccionado?')) return;
+	  this.productoService.deshacer(this.productoSeleccionado.proId).subscribe({next:()=>this.consultar(),error:e=>{console.error(e);avisarAplicacion(e?.error?.mensaje||'No se pudo reactivar el producto.');}});
+	}
+
+	// Elimina el registro completo y todas sus versiones.
+	async eliminar() {
 
 	  // Si estamos en la pestaña registro
 	  if (this.vistaActiva === 'registro') {
@@ -257,16 +307,16 @@ export class Productos {
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.productoSeleccionado) {
 
-	      alert('Debe seleccionar un registro');
+	      avisarAplicacion('Debe seleccionar un registro');
 
 	      return;
 
 	    }
 
 	    // Solicita confirmación
-	    const confirmado = confirm(
-	      '¿Desea eliminar el producto seleccionado?'
-	    );
+	    const confirmado = await confirmarAplicacion(
+	      '¿Desea eliminar definitivamente el producto y todos sus movimientos históricos?'
+	    ,true);
 
 	    // Si cancela
 	    if (!confirmado) {
@@ -282,7 +332,7 @@ export class Productos {
 
 	      next: () => {
 
-	        alert('Producto eliminado correctamente');
+	        avisarAplicacion('Producto e histórico eliminados correctamente');
 
 	        // Limpia selección
 	        this.productoSeleccionado = null;
@@ -296,7 +346,7 @@ export class Productos {
 
 	        console.error(error);
 
-	        alert('Error al eliminar producto');
+	        avisarAplicacion('Error al eliminar producto');
 
 	      }
 
@@ -348,7 +398,7 @@ export class Productos {
 		) {
 
 			// Muestra el mensaje
-			alert('Debe rellenar todos los campos obligatorios.');
+			avisarAplicacion('Debe rellenar todos los campos obligatorios.');
 
 			// Indica que el formulario no es válido
 			return false;
@@ -371,11 +421,14 @@ export class Productos {
 
 	  	const producto = {
 
-			cliId: this.producto.cliId,
+			empId: this.producto.empId,
 			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
 			// El backend interpreta este registro como nuevo e ignora este valor,
 			// dejando que la base de datos asigne automáticamente el identificador definitivo.		
 		    proId: 0,
+			proIdHis: 1,
+			proTipMov: 'A',
+			proCauMov: this.producto.proCauMov || 'Alta del registro',
 	
 		    proTipPro: this.producto.proTipPro,
 		    proNom: this.producto.proNom,
@@ -399,6 +452,9 @@ export class Productos {
 			proConSto: this.producto.proConSto,
 			
 			proObs: this.producto.proObs,
+			proDurMin: this.producto.proDurMin || 0,
+			proVisCat: this.producto.proVisCat || false,
+			proIma: this.producto.proIma || '',
 			
 			proFilMal: this.producto.proFilMal,
 			proColMal: this.producto.proColMal,
@@ -412,9 +468,10 @@ export class Productos {
 
 	  this.productoService.guardar(producto).subscribe({
 
-	    next: () => {
+	    next: (guardado) => {
 
-	      alert('Producto guardado correctamente.');
+
+	      avisarAplicacion('Producto guardado correctamente.');
 		  
 		  this.limpiarFormulario();
 
@@ -443,10 +500,13 @@ export class Productos {
 
 		const producto = {
 
-			cliId: this.producto.cliId,
+			empId: this.producto.empId,
 
 			// Mantiene el identificador del producto que se va a modificar
 			proId: this.producto.proId,
+			proIdHis: this.producto.proIdHis,
+			proTipMov: 'M',
+			proCauMov: this.producto.proCauMov || 'Modificación del registro',
 
 			proTipPro: this.producto.proTipPro,
 			proNom: this.producto.proNom,
@@ -470,6 +530,9 @@ export class Productos {
 			proConSto: this.producto.proConSto,
 
 			proObs: this.producto.proObs,
+			proDurMin: this.producto.proDurMin || 0,
+			proVisCat: this.producto.proVisCat || false,
+			proIma: this.producto.proIma || '',
 			
 			proFilMal: this.producto.proFilMal,
 			proColMal: this.producto.proColMal,
@@ -485,9 +548,10 @@ export class Productos {
 
 		this.productoService.actualizar(producto).subscribe({
 
-			next: () => {
+			next: (actualizado) => {
 
-				alert('Producto actualizado correctamente.');
+
+				avisarAplicacion('Producto actualizado correctamente.');
 
 				this.limpiarFormulario();
 
@@ -499,7 +563,7 @@ export class Productos {
 
 				console.error(error);
 
-				alert('Error al actualizar producto.');
+				avisarAplicacion('Error al actualizar producto.');
 
 			}
 
@@ -519,8 +583,11 @@ export class Productos {
 
 		return {
 
-		cliId: Number(localStorage.getItem('clienteId')) || 0,
+		empId: Number(localStorage.getItem('empresaId')) || 0,
 	  	proId: 0,
+		proIdHis: 1,
+		proTipMov: 'A',
+		proCauMov: 'Alta del registro',
 		
 	  	proTipPro: '',
 	  	proNom: '',
@@ -544,6 +611,9 @@ export class Productos {
 		proConSto: true,
 		
 		proObs: '',
+		proDurMin: 0,
+		proVisCat: true,
+		proIma: 'producto-predeterminado.png',
 		
 		proFilMal: 0,
 		proColMal: 0,
@@ -561,7 +631,8 @@ export class Productos {
 
 		this.producto = this.crearProductoVacio();
 
-	}
+	 }
+
 	
 	// Recalcula el campo precio final
 	actualizarPrecioFinal() {

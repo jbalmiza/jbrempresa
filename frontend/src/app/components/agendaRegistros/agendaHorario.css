@@ -1,0 +1,276 @@
+.disponibilidad-dia {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid #cfe0f2;
+  border-radius: 8px;
+  background: #f4f8fd;
+}
+
+.disponibilidad-dia span,
+.horario-dia b {
+  padding: 4px 7px;
+  border-radius: 5px;
+  background: #e2effc;
+  color: #245a91;
+  font-size: 12px;
+}
+
+.disponibilidad-dia em {
+  color: #8b5b22;
+  font-style: normal;
+}
+
+.horario-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  padding: 7px;
+  border: 1px solid #d8e7f5;
+  border-radius: 6px;
+  background: #f3f8fd;
+}
+
+.horario-dia span {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.horario-dia.cerrado {
+  border-color: #e8e8e8;
+  background: #f7f7f7;
+}
+
+.horario-dia.cerrado b,
+.horario-mes.cerrado {
+  color: #8a8f98;
+}
+
+.horario-mes {
+  display: block;
+  margin: 3px 0 5px;
+  color: #315b91;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.acciones-config {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.controles-calendario,
+.selector-zoom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.selector-zoom span {
+  margin-right: 2px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.selector-zoom button.activo {
+  border-color: #315b91;
+  background: #315b91;
+  color: #fff;
+}
+
+.agenda-tiempo {
+  max-height: 650px;
+  overflow: auto;
+  background: #fff;
+}
+
+.agenda-tiempo-semana {
+  min-width: 860px;
+}
+
+.cabecera-tiempo,
+.fila-tiempo {
+  display: grid;
+  grid-template-columns: 66px repeat(7, minmax(105px, 1fr));
+}
+
+.agenda-tiempo-dia .cabecera-tiempo,
+.agenda-tiempo-dia .fila-tiempo {
+  grid-template-columns: 66px minmax(300px, 1fr);
+}
+
+.cabecera-tiempo {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: #f8fafc;
+  box-shadow: 0 1px #dce5ef;
+}
+
+.cabecera-tiempo strong {
+  padding: 10px 6px;
+  text-align: center;
+}
+
+.cabecera-tiempo strong.hoy {
+  color: #245a91;
+  background: #eef6ff;
+}
+
+.fila-tiempo time {
+  position: relative;
+  top: -7px;
+  padding-right: 8px;
+  color: #64748b;
+  text-align: right;
+  font-size: 11px;
+}
+
+.cabecera-tiempo + .fila-tiempo {
+  margin-top: 7px;
+}
+
+.tramo {
+  position: relative;
+  min-height: 20px;
+  border-top: 1px solid #dce5ef;
+  border-left: 1px solid #e8edf3;
+  box-sizing: border-box;
+}
+
+.tramo.disponible {
+  background: #b7e4c1;
+}
+
+.tramo.no-disponible {
+  background: #d9dde3;
+}
+
+.tramo.margen {
+  background: #93c5fd;
+}
+
+.tramo.ocupado {
+  background: #fca5a5;
+}
+
+.tramo:hover,
+.tramo:focus-visible {
+  z-index: 1;
+  outline: 2px solid #475569;
+  outline-offset: -2px;
+  cursor: pointer;
+}
+
+.tramo.seleccionado {
+  z-index: 2;
+  outline: 3px solid #172554;
+  outline-offset: -3px;
+}
+
+.leyenda-tiempo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #526174;
+  font-size: 12px;
+}
+
+.leyenda-tiempo .muestra {
+  width: 14px;
+  height: 14px;
+  margin-left: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 3px;
+}
+
+.leyenda-tiempo .muestra.disponible { background: #b7e4c1; }
+.leyenda-tiempo .muestra.ocupado { background: #fca5a5; }
+.leyenda-tiempo .muestra.margen { background: #93c5fd; }
+.leyenda-tiempo .muestra.no-disponible { background: #d9dde3; }
+
+.reserva-tramo {
+  position: relative;
+  z-index: 2;
+  width: calc(100% - 4px);
+  min-height: 18px !important;
+  margin: 1px 2px;
+  padding: 2px 5px !important;
+  border-color: #4479b2 !important;
+  background: #dc2626 !important;
+  color: #fff !important;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px !important;
+}
+
+.detalle-celda {
+  padding: 14px 16px;
+  border-top: 2px solid #315b91;
+  background: #f8fafc;
+}
+
+.detalle-celda-cabecera,
+.detalle-celda-cabecera > div,
+.ocupacion-detalle {
+  display: flex;
+}
+
+.detalle-celda-cabecera {
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detalle-celda-cabecera > div,
+.ocupacion-detalle {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detalle-celda-cabecera span,
+.ocupacion-detalle span {
+  color: #526174;
+  font-size: 12px;
+}
+
+.ocupacion-detalle {
+  margin-top: 10px;
+  padding: 12px;
+  border-left: 5px solid #dc2626;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 3px #17233b20;
+}
+
+.ocupacion-detalle p,
+.ocupacion-detalle ul {
+  margin: 4px 0;
+}
+
+.acciones-reserva {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+@media (max-width: 900px) {
+  .controles-calendario {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

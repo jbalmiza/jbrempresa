@@ -1,0 +1,2 @@
+package com.jbrempresa.backend.repository; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; import com.jbrempresa.backend.entity.Provincia;
+public interface ProvinciaRepository extends JpaRepository<Provincia,Long>{List<Provincia> findByEmpIdOrderByPrvNom(Long c);Optional<Provincia> findByEmpIdAndPrvId(Long c,Long id);boolean existsByEmpIdAndPrvCodIgnoreCase(Long c,String cod);boolean existsByEmpIdAndPrvCodIgnoreCaseAndPrvIdNot(Long c,String cod,Long id);boolean existsByEmpIdAndPaiId(Long c,Long id);}

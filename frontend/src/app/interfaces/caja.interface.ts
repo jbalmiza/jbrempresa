@@ -1,0 +1,3 @@
+export interface Caja { empId:number; cajId:number|null; cajNom:string; cajDes:string; cajAct:boolean; cajUsuMov?:string; cajFecMov?:string; }
+export interface CajaSesion { casId:number; empId:number; cajId:number; casEst:'ABIERTA'|'CERRADA'; casFecApe:string; casFecCie?:string; casImpIni:number; casImpEsp?:number; casImpCon?:number; casImpDif?:number; casObs?:string; casUsuMov?:string; casFecMov?:string; cajaNom?:string; }
+export interface CajaMovimiento { camId:number|null; empId:number; casId:number; camTip:'ENTRADA'|'SALIDA'|'COBRO'|'DEVOLUCION'; camMed:'EFECTIVO'|'TARJETA'|'TRANSFERENCIA'|'OTRO'; camImp:number; camCon:string; perId:number|null; dovId:number|null; camObs:string; camAct:boolean; camUsuMov?:string; camFecMov?:string; personaNomCom?:string; }

@@ -1,4 +1,8 @@
 
+<div class="tabla-barra"><strong *ngIf="titulo" class="tabla-titulo">{{titulo}}</strong><div class="tabla-acciones"><button type="button" class="boton-configurar" title="Configurar columnas" aria-label="Configurar columnas" (click)="abrirConfiguracion()">⚙</button><button *ngIf="permitirImportar" type="button" class="boton-tabla boton-accion accion-importar" (click)="importarSolicitado.emit()">Importar</button><button *ngIf="permitirExportar" type="button" class="boton-tabla boton-accion accion-exportar" (click)="exportarTabla()">Exportar</button></div></div>
+
+<p *ngIf="tieneTipoMovimiento()" class="aviso-registros-baja">Los registros de baja están ocultos. Para consultarlos, filtre la columna Tipo Movimiento por el valor B.</p>
+
 <div class="tabla-scroll">
 
 <table>
@@ -8,9 +12,11 @@
         <!-- CABECERAS -->
         <tr>
 
-            <th *ngFor="let columna of columnas">
+            <th #cabecera *ngFor="let columna of columnasVisibles" [style.width.px]="anchosColumnas[columna]" [style.min-width.px]="anchosColumnas[columna]">
 
                 {{ titulosColumnas[columna] || columna }}
+
+                <span class="redimensionador-columna" title="Arrastrar para cambiar el ancho" (mousedown)="iniciarRedimension($event,columna,cabecera)"></span>
 
             </th>
 
@@ -19,12 +25,13 @@
         <!-- FILTROS -->
         <tr>
 
-            <th *ngFor="let columna of columnas">
+            <th *ngFor="let columna of columnasVisibles" [style.width.px]="anchosColumnas[columna]" [style.min-width.px]="anchosColumnas[columna]">
 
                 <input
                     type="text"
                     [(ngModel)]="filtros[columna]"
                     (input)="filtrar()"
+                    (keyup.enter)="consultaRemota && solicitarConsulta()"
                     placeholder="Buscar">
 
             </th>
@@ -42,7 +49,7 @@
             [class.fila-seleccionada]="filaActiva === fila">
 
             <!-- CELDAS -->
-            <td *ngFor="let columna of columnas">
+            <td *ngFor="let columna of columnasVisibles" [style.width.px]="anchosColumnas[columna]" [style.min-width.px]="anchosColumnas[columna]">
 
                 {{ fila[columna] }}
 
@@ -59,7 +66,7 @@
 
     <button
         (click)="primeraPagina()"
-        [disabled]="paginaActual === 1">
+        [disabled]="(consultaRemota ? paginaRemota : paginaActual) === 1 || cargando">
 
         Primera
 
@@ -67,7 +74,7 @@
 
     <button
         (click)="paginaAnterior()"
-        [disabled]="paginaActual === 1">
+        [disabled]="(consultaRemota ? paginaRemota : paginaActual) === 1 || cargando">
 
         Anterior
 
@@ -75,13 +82,13 @@
 
     <span>
 
-        Página {{ paginaActual }} de {{ totalPaginas }}
+        Página {{ consultaRemota ? paginaRemota : paginaActual }} de {{ totalPaginas }}
 
     </span>
 
     <button
         (click)="paginaSiguiente()"
-        [disabled]="paginaActual === totalPaginas">
+        [disabled]="(consultaRemota ? paginaRemota : paginaActual) === totalPaginas || cargando">
 
         Siguiente
 
@@ -89,7 +96,7 @@
 
     <button
         (click)="ultimaPagina()"
-        [disabled]="paginaActual === totalPaginas">
+        [disabled]="(consultaRemota ? paginaRemota : paginaActual) === totalPaginas || cargando">
 
         Última
 
@@ -115,6 +122,22 @@
 
 <!-- Cierre de tabla y paginador -->
 </div></div>
+
+<div *ngIf="cargando" class="tabla-cargando">Cargando...</div>
+
+<div *ngIf="configurando" class="configuracion-fondo" (click)="cerrarConfiguracion()">
+  <section class="configuracion-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-configuracion-tabla" (click)="$event.stopPropagation()">
+    <div class="configuracion-cabecera"><h3 id="titulo-configuracion-tabla">Configurar tabla</h3><button type="button" aria-label="Cerrar" (click)="cerrarConfiguracion()">×</button></div>
+    <p>Seleccione las columnas visibles y cambie su posición.</p>
+    <div class="lista-columnas">
+      <div *ngFor="let item of configuracionEdicion;let i=index" class="columna-configuracion">
+        <label><input type="checkbox" [(ngModel)]="item.visible"> <span>{{tituloColumna(item.campo)}}</span></label>
+        <div><button type="button" title="Subir" [disabled]="i===0" (click)="moverColumna(i,-1)">↑</button><button type="button" title="Bajar" [disabled]="i===configuracionEdicion.length-1" (click)="moverColumna(i,1)">↓</button></div>
+      </div>
+    </div>
+    <div class="configuracion-acciones"><button type="button" (click)="restaurarConfiguracion()">Restaurar</button><span class="espaciador"></span><button type="button" (click)="cerrarConfiguracion()">Cancelar</button><button type="button" class="guardar" [disabled]="guardandoConfiguracion" (click)="guardarConfiguracion()">{{guardandoConfiguracion?'Guardando...':'Guardar'}}</button></div>
+  </section>
+</div>
 
 
 

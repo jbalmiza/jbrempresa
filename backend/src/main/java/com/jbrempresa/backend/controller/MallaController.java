@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 // Importa Autowired.
-import org.springframework.beans.factory.annotation.Autowired;
 
 // Importa Authentication.
 import org.springframework.security.core.Authentication;
@@ -42,15 +41,18 @@ import com.jbrempresa.backend.security.JwtUser;
 public class MallaController {
 
     // Repositorio de mallas.
-    @Autowired
-    private MallaRepository mallaRepository;
+    private final MallaRepository mallaRepository;
 
     // Servicio de mallas.
-    @Autowired
-    private MallaService mallaService;
+    private final MallaService mallaService;
+
+    public MallaController(MallaRepository mallaRepository, MallaService mallaService) {
+        this.mallaRepository = mallaRepository;
+        this.mallaService = mallaService;
+    }
 
     // Obtiene el cliente autenticado.
-    private Long obtenerCliente() {
+    private Long obtenerEmpresa() {
 
         // Obtiene la autenticación.
         Authentication authentication =
@@ -63,7 +65,22 @@ public class MallaController {
                 (JwtUser) authentication.getPrincipal();
 
         // Devuelve el cliente.
-        return usuario.getClienteId();
+        return usuario.getEmpresaId();
+
+    }
+
+    // Obtiene el usuario autenticado.
+    private String obtenerUsuario() {
+
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        JwtUser usuario =
+                (JwtUser) authentication.getPrincipal();
+
+        return usuario.getUsername();
 
     }
 
@@ -73,10 +90,13 @@ public class MallaController {
             @RequestBody Malla malla) {
 
         // Obtiene el cliente.
-        Long cliId = obtenerCliente();
+        Long empId = obtenerEmpresa();
 
         // Asigna el cliente.
-        malla.setCliId(cliId);
+        malla.setEmpId(empId);
+
+        // Asigna el usuario de modificacion.
+        malla.setMalUsuMov(obtenerUsuario());
 
         // Si el identificador es 0, se trata de un registro nuevo.
         if (malla.getMalId() != null && malla.getMalId() == 0) {
@@ -101,12 +121,12 @@ public class MallaController {
             @RequestBody Malla malla) {
 
         // Obtiene el cliente.
-        Long cliId = obtenerCliente();
+        Long empId = obtenerEmpresa();
 
         // Comprueba que la malla pertenece al cliente.
-        mallaRepository.findByMalIdAndCliId(
+        mallaRepository.findByMalIdAndEmpId(
                 id,
-                cliId)
+                empId)
                 .orElseThrow(
                         () -> new RuntimeException(
                                 "Malla no encontrada."));
@@ -115,7 +135,10 @@ public class MallaController {
         malla.setMalId(id);
 
         // Asigna el cliente.
-        malla.setCliId(cliId);
+        malla.setEmpId(empId);
+
+        // Asigna el usuario de modificacion.
+        malla.setMalUsuMov(obtenerUsuario());
 
         // Asigna la fecha.
         malla.setMalFecMov(LocalDateTime.now());
@@ -130,19 +153,19 @@ public class MallaController {
     public List<Malla> obtenerMallas() {
 
         // Obtiene el cliente.
-        Long cliId = obtenerCliente();
+        Long empId = obtenerEmpresa();
 
         // Devuelve los registros del cliente.
-        return mallaRepository.findByCliId(cliId);
+        return mallaRepository.findByEmpId(empId);
 
     }
 
-    // Obtiene el siguiente ID.
+    // Obtiene el siguiente ID orientativo.
     @GetMapping("/siguiente-id")
     public Long obtenerSiguienteId() {
 
-        // Devuelve el identificador.
-        return mallaRepository.obtenerSiguienteId();
+        // Devuelve un identificador solo para mostrarlo en pantalla.
+        return mallaRepository.obtenerSiguienteId(obtenerEmpresa());
 
     }
 
@@ -152,11 +175,14 @@ public class MallaController {
             @RequestBody Malla malla) {
 
         // Obtiene el cliente autenticado.
-        Long cliId = obtenerCliente();
+        Long empId = obtenerEmpresa();
+
+        // Asigna el usuario autenticado.
+        malla.setMalUsuMov(obtenerUsuario());
 
         // Pinta la posición utilizando el servicio.
         return mallaService.pintar(
-                cliId,
+                empId,
                 malla);
 
     }
@@ -169,11 +195,11 @@ public class MallaController {
             @PathVariable Integer columna) {
 
         // Obtiene el cliente autenticado.
-        Long cliId = obtenerCliente();
+        Long empId = obtenerEmpresa();
 
         // Elimina la posición.
         mallaService.borrarPosicion(
-                cliId,
+                empId,
                 entidad,
                 fila,
                 columna);
@@ -186,14 +212,14 @@ public class MallaController {
             @PathVariable Long id) {
 
         // Obtiene el cliente.
-        Long cliId = obtenerCliente();
+        Long empId = obtenerEmpresa();
 
         // Busca la malla.
         Malla malla =
                 mallaRepository
-                        .findByMalIdAndCliId(
+                        .findByMalIdAndEmpId(
                                 id,
-                                cliId)
+                                empId)
                         .orElseThrow(
                                 () -> new RuntimeException(
                                         "Malla no encontrada."));

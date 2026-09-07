@@ -1,7 +1,13 @@
 export interface Persona {
 
-	cliId: number;	
+	empId: number;	
   	perId: number;
+   perIdHis: number;
+   perTipMov: 'A' | 'M' | 'B';
+   perCauMov: string;
+   perTipPer: 'FISICA' | 'JURIDICA';
+   perRazSocCor: string;
+   perRazSocLar: string;
   
 
   	perTipDoc: string;
@@ -16,7 +22,10 @@ export interface Persona {
   	perTel: string;
   	perEma: string;
 
-  	domId: number;
+	domId: number;
+	perCoX: number;
+	perCoY: number;
+	perHus: number;
 
   	perUsuMov: string;
   	perFecMov: string;

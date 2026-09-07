@@ -1,0 +1,244 @@
+<supbar></supbar>
+<div class="menu">
+  <sidebar modulo="ventas"></sidebar>
+  <div class="pagina">
+    <label class="titulo">{{ modoGestion ? 'GESTIÓN DE ' + nombre : 'REGISTRO DE ' + nombre }}</label>
+    <div barraAcciones class="toolbar">
+      <button *ngIf="modoGestion && tipo === 'PED'" class="boton boton-accion accion-malla" (click)="malla()">Malla</button>
+      <button class="boton boton-accion accion-consultar" (click)="consultar()">Consultar</button
+      ><button *ngIf="!modoGestion" class="boton boton-accion accion-insertar" (click)="insertar()">
+        Insertar
+      </button>
+      <button
+        *ngIf="vista === 'tabla' && seleccionado"
+        class="boton boton-accion accion-ver"
+        (click)="ver()"
+      >
+        Ver
+      </button>
+      <button
+        *ngIf="!modoGestion && vista === 'tabla' && seleccionado && seleccionado.dovEst !== 'CONVERTIDO'"
+        class="boton boton-accion accion-modificar"
+        (click)="modificar()"
+      >
+        Modificar
+      </button>
+      <button *ngIf="!modoGestion && vista === 'tabla' && seleccionado" class="boton boton-accion accion-eliminar" (click)="eliminar()">
+        Eliminar documento</button
+      ><button *ngIf="modoGestion && vista === 'tabla' && seleccionado" class="boton boton-accion accion-eliminar-completo" (click)="eliminarCompleto()">
+        Eliminar cadena
+      </button>
+      <button
+        *ngIf="
+          modoGestion && tipo !== 'FAC' &&
+          vista === 'tabla' &&
+          seleccionado &&
+          seleccionado.dovEst !== 'CONVERTIDO'
+        "
+        class="boton boton-accion accion-convertir"
+        (click)="convertir()"
+      >
+        {{
+          tipo === 'PRE'
+            ? 'Convertir a pedido'
+            : tipo === 'PED'
+              ? 'Convertir a albarán'
+              : 'Convertir a factura'
+        }}</button>
+      <button *ngIf="modoGestion && vista === 'tabla' && seleccionado?.dovAct" class="boton boton-accion accion-baja" (click)="baja()">Baja</button>
+      <button *ngIf="modoGestion && vista === 'tabla' && seleccionado && !seleccionado.dovAct" class="boton boton-accion accion-reactivar" (click)="reactivar()">Reactivar</button>
+      <button *ngIf="modoGestion && vista === 'tabla' && seleccionado" class="boton boton-accion accion-adjuntos" (click)="adjuntos()">Adjuntos</button>
+      <button *ngIf="modoGestion && vista === 'tabla' && seleccionado" class="boton boton-accion accion-historico" (click)="historico()">Histórico</button
+      ><button class="boton boton-accion accion-volver" (click)="volver()">Volver</button>
+    </div>
+    <div *ngIf="vista === 'malla'" class="form-contenedor">
+      <mallaRegistros
+        entidad="PEDIDOS"
+        [obtenerRegistros]="obtenerMallas"
+        [obtenerDetalles]="obtenerPedidos"
+        campoIdDetalle="dovId"
+        [formatearDetalle]="formatearPedidoMalla"
+        campoId="malRefId"
+        campoTitulo="malDes"
+        campoFila="malFil"
+        campoColumna="malCol"
+        (registroSeleccionado)="abrirPedidoDesdeMalla($event)">
+      </mallaRegistros>
+    </div>
+    <div *ngIf="vista === 'adjuntos'" class="form-contenedor">
+      <div class="form-grupo">
+        <label class="titulo">Documentación adjunta · {{ seleccionado?.dovNum }}</label>
+        <documentacionAdjunta modulo="VENTAS" [tipoRegistro]="tipo" [registroId]="seleccionado?.dovId || 0" codigoRuta="RUTA_DOCUMENTOS_VENTAS"></documentacionAdjunta>
+      </div>
+      <div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="consultar()">Volver a consulta</button></div>
+    </div>
+    <div *ngIf="vista === 'historico'" class="tabla-contenedor">
+      <label class="titulo">HISTÓRICO · {{ seleccionado?.dovNum }}</label>
+      <div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="consultar()">Volver a consulta</button></div>
+      <tabla [columnas]="columnasHistorico" [titulosColumnas]="titulosHistorico" [datos]="datosHistorico"></tabla>
+    </div>
+    <div *ngIf="vista === 'registro'" class="form-contenedor" [class.solo-lectura]="modo === 'ver'">
+      <p *ngIf="modo === 'ver'" class="modo-ver-aviso">Consulta en modo de solo lectura.</p>
+      <datosIdentificacion [campos]="[{etiqueta:'Id Empresa',valor:documento.empId},{etiqueta:'Id Venta',valor:documento.dovId}]"></datosIdentificacion>
+      <div class="form-grupo">
+        <label class="titulo">Datos Venta</label>
+        <div class="form-fila">
+          <div class="form-campo-200">
+            <label class="label">Número</label
+            ><input [(ngModel)]="documento.dovNum" placeholder="Automático" disabled />
+          </div>
+          <div class="form-campo-200">
+            <label class="label">Fecha</label><input type="date" [(ngModel)]="documento.dovFec" />
+          </div>
+          <div class="form-campo-200">
+            <label class="label">Estado</label
+            ><select [(ngModel)]="documento.dovEst">
+              <option>BORRADOR</option>
+              <option>EMITIDO</option>
+              <option>PAGADO</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-grupo">
+        <label class="titulo">Datos Cliente</label>
+        <div class="form-fila">
+          <div class="form-campo-500"><label class="label">Persona *</label><selectorBusqueda [datos]="personas" [idSeleccionado]="documento.perId" campoDescripcion="perNomCom" campoId="perId" (valorSeleccionado)="seleccionarPersona($event)"></selectorBusqueda></div>
+          <div class="form-campo-200"><label class="label">Documento</label><input [value]="personaSeleccionada?.perDoc || ''" disabled /></div>
+          <div class="form-campo-500"><label class="label">Dirección postal</label><input [value]="direccionPostal" disabled /></div>
+          <div class="form-campo-200"><label class="label">Teléfono</label><input [value]="personaSeleccionada?.perTel || ''" disabled /></div>
+          <div class="form-campo-500"><label class="label">Correo</label><input [value]="personaSeleccionada?.perEma || ''" disabled /></div>
+        </div>
+        <div class="form-fila">
+          <div class="form-campo-200"><label class="label">Teléfono</label><input [value]="personaSeleccionada?.perTel || ''" disabled /></div>
+          <div class="form-campo-500"><label class="label">Correo</label><input [value]="personaSeleccionada?.perEma || ''" disabled /></div>
+        </div>
+      </div>
+      <div class="form-grupo">
+        <tablaEdicion
+          [titulo]="'Detalle de ' + nombre.toLowerCase().slice(0, -1)"
+          [columnas]="columnasDetalle"
+          [titulosColumnas]="titulosDetalle"
+          [datos]="documento.detalles"
+          (insertarLinea)="insertarLinea()"
+        >
+          <ng-template tablaColumna="dvdTipLin" let-f
+            ><input
+              class="input-tabla"
+              [value]="f.dvdTipLin === 'S' ? 'Servicio' : f.dvdTipLin === 'P' ? 'Producto' : ''"
+              disabled
+          /></ng-template>
+          <ng-template tablaColumna="referencia" let-f
+            ><selectorBusqueda
+              [datos]="conceptos"
+              [idSeleccionado]="f.referencia || 0"
+              [enFlujo]="true"
+              campoDescripcion="etiqueta"
+              campoId="ref"
+              (valorSeleccionado)="seleccionarConcepto(f, $event)"
+            ></selectorBusqueda
+          ></ng-template>
+          <ng-template tablaColumna="dvdNom" let-f
+            ><input class="input-tabla" [(ngModel)]="f.dvdNom" disabled
+          /></ng-template>
+          <ng-template tablaColumna="dvdObs" let-f><input class="input-tabla" maxlength="250" [(ngModel)]="f.dvdObs" placeholder="Observaciones" /></ng-template>
+          <ng-template tablaColumna="dvdCan" let-f
+            ><input
+              type="number"
+              min="1"
+              class="input-tabla"
+              [(ngModel)]="f.dvdCan"
+              (ngModelChange)="linea(f)" /></ng-template
+          ><ng-template tablaColumna="dvdPre" let-f
+            ><input
+              type="number"
+              class="input-tabla"
+              [(ngModel)]="f.dvdPre"
+              (ngModelChange)="linea(f)"
+          /></ng-template>
+          <ng-template tablaColumna="dvdDes" let-f
+            ><input
+              type="number"
+              class="input-tabla"
+              [(ngModel)]="f.dvdDes"
+              (ngModelChange)="linea(f)" /></ng-template
+          ><ng-template tablaColumna="dvdIva" let-f
+            ><input
+              type="number"
+              class="input-tabla"
+              [(ngModel)]="f.dvdIva"
+              (ngModelChange)="linea(f)"
+          /></ng-template>
+          <ng-template tablaColumna="dvdImp" let-f
+            ><input
+              class="input-tabla"
+              [value]="importe(f.dvdImp)"
+              disabled /></ng-template
+          ><ng-template tablaColumna="dvdDurTot" let-f
+            ><input
+              type="number"
+              class="input-tabla"
+              [(ngModel)]="f.dvdDurTot"
+              disabled /></ng-template
+          ><ng-template tablaColumna="accion" let-i="indice"
+            ><button *ngIf="modo !== 'ver'" class="boton boton-accion accion-eliminar" (click)="eliminarLinea(i)">Eliminar</button></ng-template
+          >
+        </tablaEdicion>
+      </div>
+      <div class="form-grupo">
+        <label class="titulo">Importes</label>
+        <div class="form-fila">
+          <div class="form-campo-200">
+            <label class="label">Subtotal</label
+            ><input [value]="importe(documento.dovImpSub)" disabled />
+          </div>
+          <div class="form-campo-200">
+            <label class="label">Descuento</label
+            ><input [value]="importe(documento.dovImpDes)" disabled />
+          </div>
+          <div class="form-campo-200">
+            <label class="label">IVA</label><input [value]="importe(documento.dovImpIva)" disabled />
+          </div>
+          <div class="form-campo-200">
+            <label class="label">Total</label><input [value]="importe(documento.dovImpTot)" disabled />
+          </div>
+        </div>
+      </div>
+      <div class="form-grupo">
+        <label class="titulo">Datos Adicionales</label>
+        <div class="form-fila">
+          <div class="form-campo-500">
+            <label class="label">Observaciones</label><input maxlength="500" [(ngModel)]="documento.dovObs" />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="tipo === 'PED'" class="form-grupo">
+        <label class="titulo">Datos Ubicación</label>
+        <div class="form-fila">
+          <div class="form-campo-200"><label class="label">Modalidad</label><select [(ngModel)]="documento.dovMod"><option value="EN_POSICION">En posición</option><option value="DOMICILIO">Domicilio</option></select></div>
+          <div class="form-campo-200"><label class="label">Ubicación</label><input type="text" maxlength="100" [(ngModel)]="documento.dovUbi" /></div>
+          <div class="form-campo"><label class="label">Fila</label><input type="number" min="1" [(ngModel)]="documento.dovFilMal" /></div>
+          <div class="form-campo"><label class="label">Columna</label><input type="number" min="1" [(ngModel)]="documento.dovColMal" /></div>
+        </div>
+        <div *ngIf="documento.dovMod === 'DOMICILIO'" class="form-fila">
+          <div class="form-campo-500"><label class="label">Dirección de envío</label><input type="text" maxlength="500" [(ngModel)]="documento.dovDirEnv" /></div>
+        </div>
+      </div>
+      <div barraAcciones class="toolbar">
+        <button *ngIf="modo !== 'ver'" class="boton boton-accion accion-guardar" (click)="guardar()">Guardar</button
+        ><button class="boton boton-accion" [class.accion-cancelar]="modo !== 'ver'" [class.accion-volver]="modo === 'ver'" (click)="consultar()">{{ modo === 'ver' ? 'Volver a consulta' : 'Cancelar' }}</button>
+      </div>
+    </div>
+    <div *ngIf="vista === 'tabla'" class="tabla-contenedor">
+      <tabla
+        [titulo]="'TABLA DE ' + nombre"
+        [permitirImportar]="true"
+        [permitirExportar]="true"
+        [columnas]="columnas"
+        [titulosColumnas]="titulos"
+        [datos]="datos"
+        (filaSeleccionada)="seleccionado = $event"
+      ></tabla>
+    </div>
+  </div>
+</div>

@@ -24,10 +24,18 @@ export class SelectorBusqueda implements OnChanges {
   @Input()
   campoId: string = '';
 
+  // Campos adicionales por los que se permite buscar.
+  @Input()
+  camposBusqueda: string[] = [];
+
+  // Dentro de tablas permite que la lista aumente la fila y no quede recortada por el scroll.
+  @Input()
+  enFlujo: boolean = false;
+
   @Input()
   set datos(value: any[]) {
 
-    this._datos = value;
+    this._datos = Array.isArray(value) ? value : [];
 
     // Actualiza la selección cuando cambia la lista
     this.actualizarSeleccion();
@@ -71,11 +79,14 @@ export class SelectorBusqueda implements OnChanges {
 
     }
 
-    return this.datos.filter(d =>
-      String(d[this.campoDescripcion] || '')
-        .toLowerCase()
-        .includes(this.textoBusqueda.toLowerCase())
-    );
+    const termino = this.normalizar(this.textoBusqueda);
+    const campos = [...new Set([this.campoDescripcion, ...this.camposBusqueda].filter(Boolean))];
+    return this.datos.filter((dato) => {
+      const valoresConfigurados = campos.map((campo) => dato?.[campo]);
+      return valoresConfigurados.some((valor) =>
+        this.normalizar(valor).includes(termino),
+      );
+    });
 
   }
 
@@ -94,17 +105,15 @@ export class SelectorBusqueda implements OnChanges {
   }
 
   // Se ejecuta cuando el usuario modifica el texto
-  cambiarTexto() {
+  cambiarTexto(texto: string) {
+
+    this.textoBusqueda = texto ?? '';
 
     // Elimina la selección anterior
     this.seleccionado = null;
 
     // Si el cuadro queda vacío, informa al componente padre
-    if (this.textoBusqueda.trim() === '') {
-
-      this.valorSeleccionado.emit(0);
-
-    }
+    this.valorSeleccionado.emit(0);
 
   }
 
@@ -139,6 +148,10 @@ export class SelectorBusqueda implements OnChanges {
 
     }
 
+  }
+
+  private normalizar(valor: unknown): string {
+    return String(valor ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }
 
 }

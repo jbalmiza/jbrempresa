@@ -1,0 +1,11 @@
+<div class="form-grupo">
+  <label class="titulo">Datos Movimiento</label>
+  <div class="form-fila">
+    <div *ngIf="mostrarTipo" class="form-campo-200"><label class="label">Tipo Movimiento</label><input [value]="tipo" disabled></div>
+    <div *ngIf="mostrarCausa" class="form-campo-200"><label class="label">Causa Movimiento</label><input [ngModel]="causa" (ngModelChange)="causaChange.emit($event)" maxlength="500" [disabled]="!causaEditable"></div>
+    <div *ngIf="mostrarUsuario" class="form-campo-200"><label class="label">Usuario Movimiento</label><input [value]="usuarioMostrado" disabled></div>
+    <div *ngIf="mostrarFecha" class="form-campo-200"><label class="label">Fecha Movimiento</label><input [value]="fechaMostrada" disabled></div>
+    <div *ngIf="mostrarActivo" class="form-campo"><label class="label">Activo</label><input type="checkbox" [ngModel]="activo" disabled></div>
+    <ng-content></ng-content>
+  </div>
+</div>

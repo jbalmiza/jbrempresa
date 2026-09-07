@@ -1,124 +1,14 @@
-// Define el paquete.
 package com.jbrempresa.backend.controller;
-
-// Importa Autowired.
-import org.springframework.beans.factory.annotation.Autowired;
-
-// Importa LocalDateTime.
-import java.time.LocalDateTime;
-
-// Importa List.
-import java.util.List;
-
-// Importa las anotaciones REST.
-import org.springframework.web.bind.annotation.*;
-
-// Importa Compra.
-import com.jbrempresa.backend.entity.Compra;
-
-// Importa CompraRepository.
-import com.jbrempresa.backend.repository.CompraRepository;
-
-// Define el controlador.
-@RestController
-
-// Define la ruta base.
-@RequestMapping("/compras")
-
-// Permite peticiones desde Angular.
-@CrossOrigin(origins = "http://localhost:4200")
-public class CompraController {
-
-    // Repositorio de compras.
-    @Autowired
-    private CompraRepository compraRepository;
-
-    // Guarda una compra.
-    @PostMapping("/{cliId}")
-    public Compra guardar(
-            @PathVariable Long cliId,
-            @RequestBody Compra compra) {
-    	
-        // Si el identificador es 0, se trata de un registro nuevo.
-        if (compra.getCliId() != null && compra.getCliId() == 0) {
-
-            compra.setCliId(null);
-
-        }
-
-        // Comprueba el cliente.
-        if (!cliId.equals(compra.getCliId())) {
-            throw new RuntimeException("El cliente de la compra no coincide con el cliente de la operación.");
-        }
-
-        // Asigna la fecha.
-        compra.setComFecMov(LocalDateTime.now());
-
-        // Guarda el registro.
-        return compraRepository.save(compra);
-
-    }
-
-    // Actualiza una compra.
-    @PutMapping("/{cliId}/{id}")
-    public Compra actualizar(
-            @PathVariable Long cliId,
-            @PathVariable Long id,
-            @RequestBody Compra compra) {
-
-        // Comprueba el cliente.
-        if (!cliId.equals(compra.getCliId())) {
-            throw new RuntimeException("El cliente de la compra no coincide con el cliente de la operación.");
-        }
-
-        // Comprueba la compra.
-        compraRepository.findByCliIdAndComId(cliId, id)
-                .orElseThrow(() -> new RuntimeException("Compra no encontrada."));
-
-        // Asigna el identificador.
-        compra.setComId(id);
-
-        // Asigna la fecha.
-        compra.setComFecMov(LocalDateTime.now());
-
-        // Guarda el registro.
-        return compraRepository.save(compra);
-
-    }
-
-    // Obtiene las compras.
-    @GetMapping("/{cliId}")
-    public List<Compra> obtenerCompras(
-            @PathVariable Long cliId) {
-
-        // Devuelve los registros.
-        return compraRepository.findByCliId(cliId);
-
-    }
-
-    // Obtiene el siguiente ID.
-    @GetMapping("/siguiente-id")
-    public Long obtenerSiguienteId() {
-
-        // Devuelve el identificador.
-        return compraRepository.obtenerSiguienteId();
-
-    }
-
-    // Elimina una compra.
-    @DeleteMapping("/{cliId}/{id}")
-    public void eliminar(
-            @PathVariable Long cliId,
-            @PathVariable Long id) {
-
-        // Busca la compra.
-        Compra compra = compraRepository
-                .findByCliIdAndComId(cliId, id)
-                .orElseThrow(() -> new RuntimeException("Compra no encontrada."));
-
-        // Elimina el registro.
-        compraRepository.delete(compra);
-
-    }
-
+import java.util.List;import org.springframework.web.bind.annotation.*;import com.jbrempresa.backend.core.context.ContextoOperacion;import com.jbrempresa.backend.dto.compras.CompraDtos;import com.jbrempresa.backend.entity.Compra;import com.jbrempresa.backend.exception.RecursoNoEncontradoException;import com.jbrempresa.backend.repository.CompraRepository;import jakarta.validation.Valid;
+@RestController @RequestMapping("/compras")
+public class CompraController{
+ private final CompraRepository compras;private final ContextoOperacion contexto;
+ public CompraController(CompraRepository compras,ContextoOperacion contexto){this.compras=compras;this.contexto=contexto;}
+ @PostMapping("/{empId}") public CompraDtos.Salida guardar(@PathVariable Long empId,@Valid @RequestBody CompraDtos.Entrada entrada){validarRuta(empId);Compra v=entrada.entidad();v.setEmpId(contexto.empresaId());v.setComUsuMov(contexto.nombreUsuario());v.setComFecMov(contexto.fechaActual());v.setComAct(true);return CompraDtos.Salida.desde(compras.save(v));}
+ @PutMapping("/{empId}/{id}") public CompraDtos.Salida actualizar(@PathVariable Long empId,@PathVariable Long id,@Valid @RequestBody CompraDtos.Entrada entrada){validarRuta(empId);Compra actual=obtener(id);Compra v=entrada.entidad();v.setComId(actual.getComId());v.setEmpId(contexto.empresaId());v.setComUsuMov(contexto.nombreUsuario());v.setComFecMov(contexto.fechaActual());v.setComAct(actual.getComAct());return CompraDtos.Salida.desde(compras.save(v));}
+ @GetMapping("/{empId}") public List<CompraDtos.Salida> consultar(@PathVariable Long empId){validarRuta(empId);return compras.findByEmpId(contexto.empresaId()).stream().map(compra->CompraDtos.Salida.desde(compra)).toList();}
+ @GetMapping("/siguiente-id") public Long siguienteId(){return compras.obtenerSiguienteId(contexto.empresaId());}
+ @DeleteMapping("/{empId}/{id}") public void eliminar(@PathVariable Long empId,@PathVariable Long id){validarRuta(empId);compras.delete(obtener(id));}
+ private Compra obtener(Long id){return compras.findByEmpIdAndComId(contexto.empresaId(),id).orElseThrow(()->new RecursoNoEncontradoException("Compra no encontrada."));}
+ private void validarRuta(Long empresa){if(!contexto.empresaId().equals(empresa))throw new org.springframework.security.access.AccessDeniedException("Empresa no autorizado.");}
 }

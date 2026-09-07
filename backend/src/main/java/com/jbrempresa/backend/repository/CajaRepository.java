@@ -1,0 +1,2 @@
+package com.jbrempresa.backend.repository;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;import com.jbrempresa.backend.entity.Caja;
+public interface CajaRepository extends JpaRepository<Caja,Long>{List<Caja> findByEmpIdOrderByCajNom(Long empId);Optional<Caja> findByEmpIdAndCajId(Long empId,Long id);boolean existsByEmpIdAndCajNomIgnoreCaseAndCajIdNot(Long empId,String nombre,Long id);}

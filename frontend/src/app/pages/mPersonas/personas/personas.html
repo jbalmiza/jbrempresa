@@ -7,59 +7,88 @@
 	
 <div class="pagina">
 
-<label class="titulo"> REGISTRO DE PERSONAS </label>
+<label class="titulo"> {{ modoGestion ? 'GESTIÓN DE PERSONAS' : 'REGISTRO DE PERSONAS' }} </label>
 
 <!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
-<div class="toolbar">
+<div barraAcciones *ngIf="vistaActiva !== 'historico'" class="toolbar">
 
-  <button class="boton" (click)="consultar()"> Consultar </button>
+  <button *ngIf="modoGestion" class="boton boton-accion accion-mapa" (click)="mapa()"> Mapa </button>
 
-  <button class="boton" (click)="insertar()"> Insertar </button>
+  <button class="boton boton-accion accion-consultar" (click)="consultar()"> Consultar </button>
 
-  <button class="boton" (click)="modificar()"> Modificar </button>
+  <button *ngIf="!modoGestion" class="boton boton-accion accion-insertar" (click)="insertar()"> Insertar </button>
 
-  <button class="boton" (click)="eliminar()"> Eliminar </button>
+  <button
+	*ngIf="(vistaActiva === 'tabla' || (modoGestion && vistaActiva === 'mapa')) && personaSeleccionada"
+	class="boton boton-accion accion-ver"
+	(click)="ver()">Ver</button>
 
-  <button class="boton"> Importar </button>
+  <button
+	*ngIf="(vistaActiva === 'tabla' || (modoGestion && vistaActiva === 'mapa')) && personaSeleccionada && personaSeleccionada.perTipMov !== 'B'"
+	class="boton boton-accion accion-modificar"
+	(click)="modificar()">
+	Modificar
+  </button>
 
-  <button class="boton" (click)="exportar()"> Exportar </button>
-    
-  <button class="boton" (click)="volver()"> Volver </button>
+  <button
+	*ngIf="modoGestion && (vistaActiva === 'tabla' || vistaActiva === 'mapa') && personaSeleccionada && personaSeleccionada.perTipMov !== 'B'"
+	class="boton boton-accion accion-baja"
+	(click)="baja()">
+	Baja
+  </button>
+
+  <button *ngIf="modoGestion && vistaActiva === 'tabla' && personaSeleccionada?.perTipMov === 'B'" class="boton boton-accion accion-reactivar" (click)="reactivar()">Reactivar</button>
+
+  <button
+	*ngIf="(vistaActiva === 'tabla' || vistaActiva === 'mapa') && personaSeleccionada"
+	class="boton boton-accion accion-eliminar"
+	(click)="eliminar()">
+	Eliminar
+  </button>
+
+  <button
+	*ngIf="modoGestion && (vistaActiva === 'tabla' || vistaActiva === 'mapa') && personaSeleccionada"
+	class="boton boton-accion accion-adjuntos"
+	(click)="adjuntos()">
+	Adjuntos
+  </button>
+
+  <button
+	*ngIf="modoGestion && (vistaActiva === 'tabla' || vistaActiva === 'mapa') && personaSeleccionada"
+	class="boton boton-accion accion-historico"
+	(click)="historico()">
+	Histórico
+  </button>
+
+  <button class="boton boton-accion accion-volver" (click)="volver()"> Volver </button>
 
 </div>
 
 <!-- FORMULARIO DE REGISTRO -->
-<div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
+<div *ngIf="vistaActiva === 'registro'" class="form-contenedor" [class.solo-lectura]="modoFormulario === 'ver'">
+	<p *ngIf="modoFormulario === 'ver'" class="modo-ver-aviso">Vista de consulta. Los campos no se pueden modificar.</p>
 
+  	<datosIdentificacion [campos]="modoGestion ? [{etiqueta:'Id Empresa',valor:persona.empId},{etiqueta:'Id Persona',valor:persona.perId},{etiqueta:'Id Histórico',valor:persona.perIdHis}] : [{etiqueta:'Id Empresa',valor:persona.empId},{etiqueta:'Id Persona',valor:persona.perId}]"></datosIdentificacion>
+  			
   	<div class="form-grupo"> 
   	
-  	<label class="titulo"> Datos Identificación </label>
+	<label class="titulo"> Datos Persona </label>
 
 		<div class="form-fila">
-		
-		  	<div class="form-campo"> 
-  				<label class="label">Id Cliente</label> 
-  				<input type="number" maxlength="10" [(ngModel)]="persona.cliId" name="cliId" disabled> 
-  			</div>
-		
-  			<div class="form-campo"> 
-  				<label class="label">Id Persona</label> 
-  				<input type="number" maxlength="10" [(ngModel)]="persona.perId" name="perId" disabled> 
-  			</div>
-  			
-  		</div>
-  		
-  	</div>
-  			
-  	<div class="form-grupo"> 
-  	
-  	<label class="titulo"> Datos Persona </label>
+			<div class="form-campo-200">
+				<label class="label">Tipo Persona <span class="obligatorio">*</span></label>
+				<select [(ngModel)]="persona.perTipPer" name="perTipPer" (ngModelChange)="cambiarTipoPersona()">
+					<option value="FISICA">Física</option>
+					<option value="JURIDICA">Jurídica</option>
+				</select>
+			</div>
+		</div>
 
-		<div class="form-fila">  	
-  	
-  			<div class="form-campo-200">
+		<div class="form-fila">
+
+  			<div class="form-campo-200"> 
   				<label class="label"> Tipo Documento <span class="obligatorio">*</span> </label> 
-  				<select [(ngModel)]="persona.perTipDoc" name="perTipDoc"> 
+				<select [(ngModel)]="persona.perTipDoc" name="perTipDoc" [disabled]="persona.perTipPer === 'JURIDICA' || modoFormulario === 'ver'"> 
   					<option value="" selected hidden>Seleccione...</option>
 					<option value="D.N.I.">D.N.I.</option>
 					<option value="C.I.F.">C.I.F.</option>
@@ -72,32 +101,37 @@
 
   			<div class="form-campo-200"> 
   				<label class="label"> Documento <span class="obligatorio">*</span> </label> 
-  				<input type="text" maxlength="50" [(ngModel)]="persona.perDoc" name="perDoc" (ngModelChange)="actualizarNombreCompleto()"> 
+				<input type="text" maxlength="50" [(ngModel)]="persona.perDoc" name="perDoc" [disabled]="modoFormulario === 'ver'" (ngModelChange)="actualizarNombreCompleto()"> 
   				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !persona.perDoc"> Valor Obligatorio </div>
   			</div>
   			
-  		</div>
-  			
+  		</div>	
+
   		<div class="form-fila">  
 
   			<div class="form-campo-200"> 
   				<label class="label"> Nombre <span class="obligatorio">*</span> </label> 
-  				<input type="text" maxlength="50" [(ngModel)]="persona.perNom" name="perNom" (ngModelChange)="actualizarNombreCompleto()"> 
+				<input type="text" maxlength="50" [(ngModel)]="persona.perNom" name="perNom" [disabled]="persona.perTipPer === 'JURIDICA' || modoFormulario === 'ver'" (ngModelChange)="actualizarNombreCompleto()"> 
   				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !persona.perNom"> Valor Obligatorio </div>
   			</div>
 
   			<div class="form-campo-200"> 
   				<label class="label"> Apellido 1 <span class="obligatorio">*</span> </label> 
-  				<input type="text" maxlength="50" [(ngModel)]="persona.perApe1" name="perApe1" (ngModelChange)="actualizarNombreCompleto()"> 
+				<input type="text" maxlength="50" [(ngModel)]="persona.perApe1" name="perApe1" [disabled]="persona.perTipPer === 'JURIDICA' || modoFormulario === 'ver'" (ngModelChange)="actualizarNombreCompleto()"> 
   				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !persona.perApe1"> Valor Obligatorio </div>
   			</div>
   			
   			<div class="form-campo-200"> 
   				<label class="label">Apellido 2</label> 
-  				<input type="text" maxlength="50" [(ngModel)]="persona.perApe2" name="perApe2" (ngModelChange)="actualizarNombreCompleto()"> 
+				<input type="text" maxlength="50" [(ngModel)]="persona.perApe2" name="perApe2" [disabled]="persona.perTipPer === 'JURIDICA' || modoFormulario === 'ver'" (ngModelChange)="actualizarNombreCompleto()"> 
   			</div>
   		
   		</div>	
+
+		<div class="form-fila">
+			<div class="form-campo-200"><label class="label">Razón Social Corta <span class="obligatorio">*</span></label><input type="text" maxlength="100" [(ngModel)]="persona.perRazSocCor" name="perRazSocCor" [disabled]="persona.perTipPer !== 'JURIDICA' || modoFormulario === 'ver'"></div>
+			<div class="form-campo-500"><label class="label">Razón Social Larga <span class="obligatorio">*</span></label><input type="text" maxlength="250" [(ngModel)]="persona.perRazSocLar" name="perRazSocLar" [disabled]="persona.perTipPer !== 'JURIDICA' || modoFormulario === 'ver'" (ngModelChange)="actualizarNombreCompleto()"></div>
+		</div>
   		
   		<div class="form-fila">
   		  		  
@@ -132,7 +166,7 @@
 				        [idSeleccionado]="persona.domId"
 				        [campoDescripcion]="'domDir'"
 				        [campoId]="'domId'"
-				        (valorSeleccionado)="persona.domId = $event">
+				        (valorSeleccionado)="seleccionarDomicilio($event)">
 				    </selectorBusqueda>
 				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !persona.domId"> Valor Obligatorio </div>
 			</div>
@@ -142,12 +176,37 @@
   	</div>
 
 	<div class="form-grupo">
+
+		<label class="titulo"> Datos Ubicación </label>
+
+		<div class="form-fila">  
+			<div class="form-campo-200">
+				<label class="label">Coordenada X</label>
+				<input type="number" [(ngModel)]="persona.perCoX" name="perCoX" disabled>
+			</div>
+			<div class="form-campo-200">
+				<label class="label">Coordenada Y</label>
+				<input type="number" [(ngModel)]="persona.perCoY" name="perCoY" disabled>
+			</div>
+			<div class="form-campo-200">
+				<label class="label">Huso UTM</label>
+				<input type="number" [(ngModel)]="persona.perHus" name="perHus" disabled>
+			</div>
+			<div class="form-campo-200">
+				<label class="label">Mapa</label>
+				<selectorMapa [(x)]="persona.perCoX" [(y)]="persona.perCoY" [(epsg)]="persona.perHus"></selectorMapa>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="form-grupo">
 	
 	<label class="titulo"> Datos Contacto </label>
 	
-		<div class="form-fila">
-	
-  			<div class="form-campo-200"> 
+		<div class="form-fila">  
+
+ 			<div class="form-campo-200"> 
   				<label class="label"> Teléfono </label> 
   				<input type="number" maxlength="30" [(ngModel)]="persona.perTel" name="perTel"> 
   			</div>
@@ -159,53 +218,92 @@
   			
   		</div>
   		
-  	</div>
+	</div>
 
-  	<div class="form-grupo"> 
-  	
-  	<label class="titulo"> Datos Movimiento </label>
-
-		<div class="form-fila">
-
-  			<div class="form-campo-200"> 
-  				<label class="label">Usuario Movimiento</label> 
-  				<input type="text" maxlength="50" [(ngModel)]="persona.perUsuMov" name="perUsuMov" disabled> 
-  			</div>
- 			
-  			<div class="form-campo-200"> 
-  				<label class="label">Fecha Movimiento</label> 
-  				<input type="text" maxlength="10" [(ngModel)]="persona.perFecMov" name="perFecMov" disabled> 
-  			</div>
-  			
-  			<div class="form-campo"> 
-  				<label class="label">Activo</label> 
-  				<input type="checkbox" maxlength="10" [(ngModel)]="persona.perAct" name="perAct" disabled> 
-  			</div>
-  			
- 		</div>
- 	
- 	</div>
+	<datosMovimiento [mostrarTipo]="modoGestion" [mostrarCausa]="modoGestion" [tipo]="persona.perTipMov" [causa]="persona.perCauMov" [usuario]="persona.perUsuMov||''" [fecha]="persona.perFecMov" [activo]="persona.perAct"></datosMovimiento>
  
-	<div class="toolbar"> 
+	<div barraAcciones class="toolbar"> 
 	
-		<button *ngIf="modoFormulario === 'insertar'" class="boton" (click)="guardar()"> Guardar </button>
+		<button *ngIf="modoFormulario === 'insertar'" class="boton boton-accion accion-guardar" (click)="guardar()"> Guardar </button>
 		
-		<button *ngIf="modoFormulario === 'modificar'" class="boton" (click)="actualizar()"> Actualizar </button>
+		<button *ngIf="modoFormulario === 'modificar'" class="boton boton-accion accion-actualizar" (click)="actualizar()"> Actualizar </button>
 		
-		<!-- Botón Cancelar tiene misma lógica que insertar -->
-		<button class="boton" (click)="insertar()"> Cancelar </button>
+		<!-- Cancelar vuelve siempre a la consulta -->
+		<button class="boton boton-accion accion-cancelar" (click)="consultar()"> Cancelar </button>
 		
 	</div>
+
+</div>
+
+<!-- MAPA DE PERSONAS -->
+<div *ngIf="vistaActiva === 'mapa'" class="form-contenedor mapa-gestion">
+	<mapaRegistros
+		[obtenerRegistros]="obtenerPersonas"
+		campoTitulo="perNomCom"
+		campoX="perCoX"
+		campoY="perCoY"
+		campoEpsg="perHus"
+		(registroSeleccionado)="abrirPersonaDesdeMapa($event)">
+	</mapaRegistros>
+</div>
+
+<!-- DOCUMENTACIÓN DEL REGISTRO SELECCIONADO -->
+<div *ngIf="vistaActiva === 'adjuntos'" class="form-contenedor">
+
+	<div class="form-grupo">
+
+		<label class="titulo">
+			Documentación Adjunta · {{ personaSeleccionada?.perNomCom }}
+		</label>
+
+		<documentacionAdjunta
+			[modulo]="'PERSONAS'"
+			[tipoRegistro]="'PERSONA'"
+			[registroId]="personaSeleccionada?.perId || 0"
+			[codigoRuta]="'RUTA_DOCUMENTOS_PERSONAS'">
+		</documentacionAdjunta>
+
+	</div>
+
+	<div barraAcciones class="toolbar">
+		<button class="boton boton-accion accion-volver" (click)="volverAConsulta()">Volver a consulta</button>
+	</div>
+
+</div>
+
+<!-- HISTÓRICO DE LA PERSONA SELECCIONADA -->
+<div *ngIf="vistaActiva === 'historico'" class="tabla-contenedor">
+
+	<label class="titulo">HISTÓRICO DE PERSONA · {{ personaSeleccionada?.perNomCom }}</label>
+
+	<div barraAcciones class="toolbar">
+		<button class="boton boton-accion accion-volver" (click)="volverAConsulta()">Volver</button>
+		<button
+			*ngIf="(personaSeleccionada?.perIdHis || 1) > 1"
+			class="boton"
+			(click)="deshacer()">
+			Deshacer
+		</button>
+	</div>
+
+	<tabla
+		[columnas]="columnas"
+		[titulosColumnas]="titulosColumnas"
+		[incluirBajas]="true"
+		[datos]="datosHistorico">
+	</tabla>
 
 </div>
 
 <!-- TABLA DE RESULTADOS-->
 <div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
 
-  	<label class="titulo"> TABLA DE PERSONAS </label>
-  
   	<tabla 
   	
+		titulo="TABLA DE PERSONAS"
+		[permitirImportar]="true"
+		[permitirExportar]="true"
+		(exportarSolicitado)="exportar()"
   		[columnas]="columnas" 
   		[titulosColumnas]="titulosColumnas"
   		[datos]="datos" 

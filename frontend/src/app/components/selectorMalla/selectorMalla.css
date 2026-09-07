@@ -1,135 +1,18 @@
-/* Fondo oscuro */
-
-.fondo {
-
-    position: fixed;
-
-    inset: 0;
-
-    background: rgba(0,0,0,.45);
-
-    display: flex;
-
-    justify-content: center;
-
-    align-items: center;
-
-    z-index: 9999;
-
-}
-
-/* Ventana */
-
-.ventana {
-
-    width: 1000px;
-
-    height: 700px;
-
-    background: white;
-
-    border: 1px solid #808080;
-
-    border-radius: 6px;
-
-    display: flex;
-
-    flex-direction: column;
-
-}
-
-/* Cabecera */
-
-.cabecera {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    padding: 5px;
-
-    border-bottom: 1px solid #d0d0d0;
-
-    font-weight: bold;
-
-}
-
-/* Zona de la malla */
-
-.malla {
-
-    flex: 1;
-
-    overflow: auto;
-
-    display: grid;
-
-    background: #f5f5f5;
-
-    padding: 5px;
-
-    gap: 5px;
-
-    grid-auto-columns: 20px;
-
-    grid-auto-rows: 20px;
-
-}
-
-/* Celdas */
-
-.celda {
-
-    width: 20px;
-
-    height: 20px;
-
-    background: white;
-
-    border: 1px solid #b5b5b5;
-
-    box-sizing: border-box;
-
-    cursor: pointer;
-
-    user-select: none;
-
-}
-
-.celda:hover {
-
-    background: #d9ecff;
-
-}
-
-.celdaSeleccionada {
-
-    background-color: #4da3ff;
-
-    border: 2px solid #0b5ed7;
-
-}
-
-.ocupada {
-
-    background: #ff6666;
-
-}
-
-/* Pie */
-
-.pie {
-
-    display: flex;
-
-    justify-content: flex-end;
-
-    gap: 10px;
-
-    padding: 5px;
-
-    border-top: 1px solid #d0d0d0;
-
-}
+selectorMalla { display: block; width: 100%; font-family: Calibri,"Segoe UI",Arial,sans-serif; }
+selectorMalla .boton { min-height: 36px; margin: 0; padding: 7px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: #263247; font: 500 14px Calibri,"Segoe UI",Arial,sans-serif; cursor: pointer; transition: border-color .15s ease,background .15s ease,color .15s ease; }
+selectorMalla .boton:hover { border-color: #93b4ef; background: #f5f8ff; color: #174ea6; }
+selectorMalla .fondo { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; padding: 20px; background: rgba(15,23,42,.42); backdrop-filter: blur(1px); }
+selectorMalla .ventana { display: flex; flex-direction: column; width: min(1000px,100%); height: min(700px,calc(100vh - 40px)); overflow: hidden; border: 1px solid #d8e1eb; border-radius: 10px; background: #fff; box-shadow: 0 20px 60px rgba(15,23,42,.24); }
+selectorMalla .cabecera { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 16px; border-bottom: 1px solid #e2e8f0; color: #17233a; font-weight: 700; }
+selectorMalla .cabecera .cerrar { display: grid; place-items: center; width: 32px; min-height: 32px; padding: 0; border: 0; background: transparent; color: #64748b; font-size: 18px; }
+selectorMalla .cabecera .cerrar:hover { background: #f1f5f9; color: #1e293b; }
+selectorMalla .malla { display: grid; flex: 1; overflow: auto; padding: 9px; gap: 2px; background: #f1f5f9; }
+selectorMalla .celda { box-sizing: border-box; width: 24px; height: 24px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; user-select: none; }
+selectorMalla .celda:hover { border-color: #5b8fd5; background: #e5f1fd; }
+selectorMalla .celdaSeleccionada { border: 2px solid #174ea6; background: #75a9df; box-shadow: 0 0 0 2px rgba(37,99,235,.18); }
+selectorMalla .ocupada { border-color: #ddb3b3; background: #e8b0b0; cursor: not-allowed; }
+selectorMalla .ocupada:hover { border-color: #d39797; background: #e8b0b0; }
+selectorMalla .ocupada.celdaSeleccionada { border-color: #174ea6; background: #75a9df; cursor: pointer; }
+selectorMalla .pie { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 12px 16px; border-top: 1px solid #e2e8f0; background: #fff; }
+selectorMalla .posicion { margin-right: auto; color: #64748b; font-size: 13px; }
+@media(max-width:600px){selectorMalla .fondo{padding:8px}selectorMalla .ventana{height:calc(100vh - 16px)}selectorMalla .cabecera,selectorMalla .pie{padding:10px}}

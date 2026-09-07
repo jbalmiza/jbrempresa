@@ -1,0 +1,2 @@
+package com.jbrempresa.backend.repository; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; import com.jbrempresa.backend.entity.Via;
+public interface ViaRepository extends JpaRepository<Via,Long>{List<Via> findByEmpIdOrderByViaNom(Long c);Optional<Via> findByEmpIdAndViaId(Long c,Long id);boolean existsByEmpIdAndViaCodIgnoreCase(Long c,String cod);boolean existsByEmpIdAndViaCodIgnoreCaseAndViaIdNot(Long c,String cod,Long id);boolean existsByEmpIdAndCopId(Long c,Long id);}

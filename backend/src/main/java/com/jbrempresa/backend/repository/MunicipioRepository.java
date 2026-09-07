@@ -1,0 +1,2 @@
+package com.jbrempresa.backend.repository; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; import com.jbrempresa.backend.entity.Municipio;
+public interface MunicipioRepository extends JpaRepository<Municipio,Long>{List<Municipio> findByEmpIdOrderByMunNom(Long c);Optional<Municipio> findByEmpIdAndMunId(Long c,Long id);boolean existsByEmpIdAndMunCodIgnoreCase(Long c,String cod);boolean existsByEmpIdAndMunCodIgnoreCaseAndMunIdNot(Long c,String cod,Long id);boolean existsByEmpIdAndPrvId(Long c,Long id);}

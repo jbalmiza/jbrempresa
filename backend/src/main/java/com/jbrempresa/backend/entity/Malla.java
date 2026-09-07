@@ -14,12 +14,13 @@ public class Malla {
 
     // Identificador
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "mal_id")
     private Long malId;
 
-    // Cliente
-    @Column(name = "cli_id")
-    private Long cliId;
+    // Empresa
+    @Column(name = "emp_id")
+    private Long empId;
     
     // Entidad de malla (productos, usuarios, etc.)
     @Column(name = "mal_ent")
@@ -68,12 +69,12 @@ public class Malla {
         this.malId = malId;
     }
 
-    public Long getCliId() {
-        return cliId;
+    public Long getEmpId() {
+        return empId;
     }
 
-    public void setCliId(Long cliId) {
-        this.cliId = cliId;
+    public void setEmpId(Long empId) {
+        this.empId = empId;
     }
     
     public String getMalEnt() {

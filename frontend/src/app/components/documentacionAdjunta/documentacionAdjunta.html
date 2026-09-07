@@ -1,0 +1,51 @@
+<div class="documentacion" [class.documentacion-desactivada]="desactivado">
+  <div *ngIf="desactivado" class="aviso">
+    La documentación solo se puede incorporar al modificar el registro.
+  </div>
+
+  <fieldset [disabled]="desactivado || cargando">
+    <div class="incorporacion">
+      <div class="campo nombre">
+        <label>Nombre del adjunto</label>
+        <input type="text" maxlength="150" [(ngModel)]="nombre" placeholder="Ej. Documento de identidad">
+      </div>
+      <div class="campo tipo">
+        <label>Tipo</label>
+        <select [(ngModel)]="tipo">
+          <option value="ORIGINAL">Original</option>
+          <option value="COPIA">Copia</option>
+          <option value="OTRO">Otro</option>
+        </select>
+      </div>
+      <div class="campo archivo">
+        <label>Archivo</label>
+        <input #inputArchivo type="file" [accept]="formatos" (change)="seleccionarArchivo($event)">
+      </div>
+      <button type="button" class="boton" (click)="incorporar(inputArchivo)">Incorporar</button>
+    </div>
+  </fieldset>
+
+  <div class="ayuda">PDF, Word, Excel o imagen · Máximo 10 MB por archivo</div>
+  <div *ngIf="mensajeError" class="error">{{ mensajeError }}</div>
+  <div *ngIf="cargando" class="cargando">Cargando documentación...</div>
+
+  <div class="tabla-scroll" *ngIf="!desactivado">
+    <table>
+      <thead><tr><th *ngIf="permitirImagenPrincipal">Imagen</th><th>Nombre</th><th>Tipo</th><th>Archivo</th><th *ngIf="permitirImagenPrincipal">Principal</th><th>Tamaño</th><th>Usuario</th><th>Fecha</th><th>Acciones</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let adjunto of adjuntos">
+          <td *ngIf="permitirImagenPrincipal" class="miniatura"><img *ngIf="vistasImagen.get(adjunto.adjId) as vista" [src]="vista" [alt]="adjunto.adjNom"><span *ngIf="!esImagen(adjunto)">No es imagen</span></td>
+          <td>{{ adjunto.adjNom }}</td><td>{{ adjunto.adjTip }}</td><td>{{ adjunto.adjNomArc }}</td>
+          <td *ngIf="permitirImagenPrincipal" class="principal"><input *ngIf="esImagen(adjunto)" type="radio" name="imagenPrincipal" [checked]="adjunto.adjPri" [disabled]="cargando" (change)="marcarPrincipal(adjunto)" [attr.aria-label]="'Marcar ' + adjunto.adjNom + ' como imagen principal'"></td>
+          <td>{{ formatearTamanio(adjunto.adjTam) }}</td><td>{{ adjunto.adjUsuMov }}</td><td>{{ adjunto.adjFecMov }}</td>
+          <td class="acciones">
+            <button type="button" (click)="visualizar(adjunto)">Visualizar</button>
+            <button type="button" (click)="descargar(adjunto)">Descargar</button>
+            <button type="button" class="eliminar" (click)="eliminar(adjunto)">Eliminar</button>
+          </td>
+        </tr>
+        <tr *ngIf="!cargando && adjuntos.length === 0"><td [attr.colspan]="permitirImagenPrincipal ? 9 : 7" class="vacio">No hay documentación adjunta.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>

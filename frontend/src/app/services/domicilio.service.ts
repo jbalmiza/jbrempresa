@@ -10,6 +10,8 @@ import { Observable } from 'rxjs';
 // Importa la interfaz Domicilio.
 import { Domicilio } from '../interfaces/domicilio.interface';
 
+import { API_URL } from '../config/api-url.config';
+
 // Define el servicio.
 @Injectable({
   providedIn: 'root'
@@ -19,7 +21,7 @@ import { Domicilio } from '../interfaces/domicilio.interface';
 export class DomicilioService {
 
   // URL del controlador.
-  private apiUrl = 'http://localhost:8080/domicilio';
+  private apiUrl = `${API_URL}/domicilio`;
 
   // Constructor.
   constructor(private http: HttpClient) {}
@@ -74,6 +76,18 @@ export class DomicilioService {
       domicilio
     );
 
+  }
+
+  baja(id: number): Observable<Domicilio> {
+    return this.http.post<Domicilio>(`${this.apiUrl}/${id}/baja`, {});
+  }
+
+  obtenerHistorico(id: number): Observable<Domicilio[]> {
+    return this.http.get<Domicilio[]>(`${this.apiUrl}/${id}/historico`);
+  }
+
+  deshacer(id: number): Observable<Domicilio> {
+    return this.http.post<Domicilio>(`${this.apiUrl}/${id}/deshacer`, {});
   }
 
 }

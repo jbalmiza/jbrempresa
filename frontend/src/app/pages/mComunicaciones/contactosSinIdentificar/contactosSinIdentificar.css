@@ -1,0 +1,4 @@
+@import '../../../styles/estiloGeneral.css';
+.utilidad-ventana{margin:8px 0 20px;color:#526174;font-size:15px;line-height:1.45}
+.alinear-final{align-items:flex-end}
+.tabla-relaciones{margin-top:18px}.tabla-relaciones>.boton{margin-top:12px}.boton-peligro{color:#9b1c1c;border-color:#e5a5a5}.ayuda{color:#526174}

@@ -1,0 +1,63 @@
+<supbar></supbar>
+<div class="menu">
+  <sidebar modulo="administracion"></sidebar>
+  <div class="pagina">
+    <label class="titulo">REGISTRO DE PARÁMETROS</label>
+    <div barraAcciones class="toolbar">
+<button class="boton boton-accion accion-consultar" (click)="consultar()">Consultar</button>
+<button class="boton boton-accion accion-insertar" (click)="insertar()">Insertar</button>
+<button class="boton boton-accion accion-modificar" (click)="modificar()">Modificar</button>
+<button class="boton boton-accion accion-eliminar" (click)="eliminar()">Eliminar</button>
+<button class="boton boton-accion accion-volver" (click)="volver()">Volver</button>
+    </div>
+
+    <div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
+      <datosIdentificacion [campos]="[{etiqueta:'Id Empresa',valor:parametro.empId},{etiqueta:'Id Parámetro',valor:parametro.parId}]"></datosIdentificacion>
+      <div class="form-grupo">
+        <label class="titulo">Datos Parámetro</label>
+        <div class="form-fila">
+          <div class="form-campo-200">
+            <label class="label">Módulo <span class="obligatorio">*</span></label>
+            <select [(ngModel)]="parametro.parMod" [disabled]="!!moduloContexto">
+              <option value="" hidden>Seleccione...</option>
+              <option *ngFor="let modulo of modulos" [value]="modulo">{{ modulo }}</option>
+            </select>
+            <div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !parametro.parMod">Valor obligatorio</div>
+          </div>
+        </div>
+        <div class="form-fila">
+          <div class="form-campo-500">
+            <label class="label">Código <span class="obligatorio">*</span></label>
+            <input type="text" maxlength="100" [(ngModel)]="parametro.parCod">
+            <div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !parametro.parCod.trim()">Valor obligatorio</div>
+          </div>
+        </div>
+        <div class="form-fila">
+          <div class="form-campo-500">
+            <label class="label">Descripción <span class="obligatorio">*</span></label>
+            <input type="text" maxlength="150" [(ngModel)]="parametro.parDes">
+            <div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !parametro.parDes.trim()">Valor obligatorio</div>
+          </div>
+        </div>
+        <div class="form-fila">
+          <div class="form-campo-500">
+            <label class="label">Valor <span class="obligatorio">*</span></label>
+            <input [type]="esParametroSensible() ? 'password' : 'text'" maxlength="2000" [(ngModel)]="parametro.parVal" [placeholder]="esParametroSensible() ? 'Introduzca una nueva clave para sustituirla' : ''">
+            <div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !esParametroSensible() && !parametro.parVal.trim()">Valor obligatorio</div>
+          </div>
+        </div>
+      </div>
+      <datosMovimiento [mostrarTipo]="false" [mostrarCausa]="false" [usuario]="parametro.parUsuMov||''" [fecha]="parametro.parFecMov" [activo]="parametro.parAct"></datosMovimiento>
+      <div barraAcciones class="toolbar">
+<button *ngIf="modoFormulario === 'insertar'" class="boton boton-accion accion-guardar" (click)="guardar()">Guardar</button>
+<button *ngIf="modoFormulario === 'modificar'" class="boton boton-accion accion-actualizar" (click)="actualizar()">Actualizar</button>
+<button class="boton boton-accion accion-cancelar" (click)="cancelar()">Cancelar</button>
+      </div>
+    </div>
+
+    <div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
+      <tabla titulo="TABLA DE PARÁMETROS" [columnas]="columnas" [titulosColumnas]="titulosColumnas" [datos]="datos"
+             (filaSeleccionada)="parametroSeleccionado = $event"></tabla>
+    </div>
+  </div>
+</div>

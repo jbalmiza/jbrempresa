@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 // Entidad JPA
 @Entity
+@IdClass(DomicilioId.class)
 
 // Tabla domicilios
 @Table(name = "domicilios")
@@ -25,14 +26,22 @@ public class Domicilio {
     @Id
 
     // Genera automáticamente el ID
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     @Column(name = "dom_id")
     private Long domId;
 
-    // Cliente
-    @Column(name = "cli_id")
-    private Long cliId;
+    @Id
+    @Column(name = "dom_id_his")
+    private Long domIdHis;
+
+    @Column(name = "dom_tip_mov")
+    private String domTipMov;
+
+    @Column(name = "dom_cau_mov", length = 500)
+    private String domCauMov;
+
+    // Empresa
+    @Column(name = "emp_id")
+    private Long empId;
 
     // CIV
     @Column(name = "dom_civ")
@@ -45,6 +54,10 @@ public class Domicilio {
     // Vía
     @Column(name = "dom_via")
     private String domVia;
+
+    // Relación normalizada con el catálogo de vías. Los textos se conservan como fotografía histórica.
+    @Column(name = "dom_via_id")
+    private Long domViaId;
 
     // Número
     @Column(name = "dom_num")
@@ -135,14 +148,21 @@ public class Domicilio {
         this.domId = domId;
     }
 
-    // Obtiene el cliente
-    public Long getCliId() {
-        return cliId;
+    public Long getDomIdHis() { return domIdHis; }
+    public void setDomIdHis(Long domIdHis) { this.domIdHis = domIdHis; }
+    public String getDomTipMov() { return domTipMov; }
+    public void setDomTipMov(String domTipMov) { this.domTipMov = domTipMov; }
+    public String getDomCauMov() { return domCauMov; }
+    public void setDomCauMov(String domCauMov) { this.domCauMov = domCauMov; }
+
+    // Obtiene el empresa
+    public Long getEmpId() {
+        return empId;
     }
 
-    // Modifica el cliente
-    public void setCliId(Long cliId) {
-        this.cliId = cliId;
+    // Modifica el empresa
+    public void setEmpId(Long empId) {
+        this.empId = empId;
     }
     
     // Obtiene el CIV
@@ -174,6 +194,9 @@ public class Domicilio {
     public void setDomVia(String domVia) {
         this.domVia = domVia;
     }
+
+    public Long getDomViaId() { return domViaId; }
+    public void setDomViaId(Long domViaId) { this.domViaId = domViaId; }
 
     // Obtiene el número
     public String getDomNum() {

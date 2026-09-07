@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 // Importa Autowired.
-import org.springframework.beans.factory.annotation.Autowired;
 
 // Importa Service.
 import org.springframework.stereotype.Service;
@@ -18,6 +17,7 @@ import com.jbrempresa.backend.entity.Malla;
 
 // Importa Producto.
 import com.jbrempresa.backend.entity.Producto;
+import com.jbrempresa.backend.entity.DocumentoVenta;
 
 // Importa MallaRepository.
 import com.jbrempresa.backend.repository.MallaRepository;
@@ -27,8 +27,32 @@ import com.jbrempresa.backend.repository.MallaRepository;
 public class MallaService {
 
     // Repositorio de mallas.
-    @Autowired
-    private MallaRepository mallaRepository;
+    private final MallaRepository mallaRepository;
+
+    public MallaService(MallaRepository mallaRepository) {
+        this.mallaRepository = mallaRepository;
+    }
+
+    public void sincronizarPedido(DocumentoVenta pedido) {
+        eliminarDesdePedido(pedido.getEmpId(), pedido.getDovId());
+        if (pedido.getDovFilMal() == null || pedido.getDovColMal() == null || "PAGADO".equals(pedido.getDovEst())) return;
+        Malla malla = new Malla();
+        malla.setEmpId(pedido.getEmpId());
+        malla.setMalEnt("PEDIDOS");
+        malla.setMalFil(pedido.getDovFilMal());
+        malla.setMalCol(pedido.getDovColMal());
+        malla.setMalTip("PEDIDO");
+        malla.setMalRefId(pedido.getDovId());
+        malla.setMalDes(pedido.getDovNum());
+        malla.setMalAct(true);
+        malla.setMalUsuMov(pedido.getDovUsuMov());
+        malla.setMalFecMov(pedido.getDovFecMov());
+        mallaRepository.save(malla);
+    }
+
+    public void eliminarDesdePedido(Long empId, Long pedidoId) {
+        mallaRepository.deleteByEmpIdAndMalEntAndMalRefId(empId, "PEDIDOS", pedidoId);
+    }
 
     /**
      * Guarda en la tabla mallas la posición de un producto.
@@ -37,27 +61,15 @@ public class MallaService {
             Producto producto) {
 
         // Obtiene el cliente.
-        Long cliId = producto.getCliId();
+        Long empId = producto.getEmpId();
 
         // Crea la malla.
         Malla malla = new Malla();
 
-        // Obtiene el siguiente identificador.
-        Long siguienteId = mallaRepository.obtenerSiguienteId();
-
-        // Si no existe ningún registro.
-        if (siguienteId == null) {
-
-            // Asigna el primer identificador.
-            siguienteId = 1L;
-
-        }
-
-        // Asigna el identificador.
-        malla.setMalId(siguienteId);
+        // El identificador lo asigna PostgreSQL al guardar.
 
         // Asigna el cliente.
-        malla.setCliId(cliId);
+        malla.setEmpId(empId);
 
         // Asigna la entidad.
         malla.setMalEnt("PRODUCTOS");
@@ -99,12 +111,12 @@ public class MallaService {
             Producto producto) {
 
         // Obtiene el cliente.
-        Long cliId = producto.getCliId();
+        Long empId = producto.getEmpId();
 
         // Busca la malla del producto.
         Optional<Malla> opt =
-                mallaRepository.findByCliIdAndMalEntAndMalRefId(
-                        cliId,
+                mallaRepository.findByEmpIdAndMalEntAndMalRefId(
+                        empId,
                         "PRODUCTOS",
                         producto.getProId());
 
@@ -151,12 +163,12 @@ public class MallaService {
      * Elimina la posición de un producto de la tabla mallas.
      */
     public void eliminarDesdeProducto(
-            Long cliId,
+            Long empId,
             Long proId) {
 
         // Elimina la malla del producto.
-        mallaRepository.deleteByCliIdAndMalEntAndMalRefId(
-                cliId,
+        mallaRepository.deleteByEmpIdAndMalEntAndMalRefId(
+                empId,
                 "PRODUCTOS",
                 proId);
 
@@ -168,13 +180,19 @@ public class MallaService {
      * Si la posición no existe, crea un nuevo registro.
      */
     public Malla pintar(
-            Long cliId,
+            Long empId,
             Malla datos) {
+
+        if ("PRODUCTOS".equalsIgnoreCase(datos.getMalEnt()) &&
+                "AZUL".equalsIgnoreCase(datos.getMalTip())) {
+            throw new IllegalArgumentException(
+                    "El color azul está reservado para los productos posicionados.");
+        }
 
         // Busca la posición dentro de la malla de la entidad indicada.
         Optional<Malla> opt =
-                mallaRepository.findByCliIdAndMalEntAndMalFilAndMalCol(
-                        cliId,
+                mallaRepository.findByEmpIdAndMalEntAndMalFilAndMalCol(
+                        empId,
                         datos.getMalEnt(),
                         datos.getMalFil(),
                         datos.getMalCol());
@@ -218,22 +236,10 @@ public class MallaService {
         // Crea una nueva posición.
         Malla malla = new Malla();
 
-        // Obtiene el siguiente identificador.
-        Long siguienteId = mallaRepository.obtenerSiguienteId();
-
-        // Si no existe ningún registro.
-        if (siguienteId == null) {
-
-            // Asigna el primer identificador.
-            siguienteId = 1L;
-
-        }
-
-        // Asigna el identificador.
-        malla.setMalId(siguienteId);
+        // El identificador lo asigna PostgreSQL al guardar.
 
         // Asigna el cliente.
-        malla.setCliId(cliId);
+        malla.setEmpId(empId);
 
         // Asigna la entidad.
         malla.setMalEnt(datos.getMalEnt());
@@ -271,15 +277,15 @@ public class MallaService {
      * Elimina una posición pintada manualmente de la malla.
      */
     public void borrarPosicion(
-            Long cliId,
+            Long empId,
             String malEnt,
             Integer malFil,
             Integer malCol) {
 
         // Busca la posición.
         Optional<Malla> opt =
-                mallaRepository.findByCliIdAndMalEntAndMalFilAndMalCol(
-                        cliId,
+                mallaRepository.findByEmpIdAndMalEntAndMalFilAndMalCol(
+                        empId,
                         malEnt,
                         malFil,
                         malCol);

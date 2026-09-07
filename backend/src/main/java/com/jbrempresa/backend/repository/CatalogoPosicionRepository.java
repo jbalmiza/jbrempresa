@@ -1,0 +1,3 @@
+package com.jbrempresa.backend.repository;
+import java.util.List;import java.util.Optional;import org.springframework.data.jpa.repository.JpaRepository;import com.jbrempresa.backend.entity.CatalogoPosicion;
+public interface CatalogoPosicionRepository extends JpaRepository<CatalogoPosicion,Long>{List<CatalogoPosicion> findByEmpIdOrderByCapFilAscCapColAsc(Long empId);Optional<CatalogoPosicion> findByEmpIdAndCapId(Long empId,Long id);Optional<CatalogoPosicion> findByCapTokenAndCapActTrue(String token);Optional<CatalogoPosicion> findByEmpIdAndCapFilAndCapCol(Long empId,Integer fila,Integer columna);}

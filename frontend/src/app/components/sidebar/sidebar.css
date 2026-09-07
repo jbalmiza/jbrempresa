@@ -1,124 +1,145 @@
-
-.hamburguesa {
-
-  display: none;
-
+:host {
+  display: block;
+  flex: 0 0 270px;
+  align-self: flex-start;
+  font-family: Calibri, "Segoe UI", Arial, sans-serif;
 }
+
+.hamburguesa { display: none; }
 
 .sidebar {
-
-  font-family: Calibri;
-
-  font-size: 14px;
- 
-  width: 250px;
-
-  height: calc(100vh - 120px);
-
-  background-color: #eeeeee;
-
-  padding: 20px;
-  
-  margin: 5px;
-
+  box-sizing: border-box;
+  width: 270px;
+  min-height: calc(100vh - 114px);
+  margin: 0;
+  padding: 20px 17px;
+  border: 1px solid #dce5ef;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #1e293b;
+  box-shadow: 0 2px 8px rgba(15,23,42,.025);
 }
 
-ul {
-
-  list-style: none;
-
-  padding: 0;
-
+.sidebar h1,
+.sidebar h2,
+.sidebar h3 {
+  margin: 5px 8px 20px;
+  color: #17233a;
+  font-size: 20px;
+  line-height: 1.25;
 }
+
+ul { margin: 0; padding: 0; list-style: none; }
 
 .menu-title {
-
-  padding: 12px;
-
-  margin-bottom: 5px;
-
-  background-color: white;
-
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  margin: 0 0 7px;
+  padding: 11px 34px 11px 13px;
+  border: 1px solid #e1e7ee;
+  border-left: 3px solid #94a3b8;
+  border-radius: 6px;
+  background: #fff;
+  color: #26364f;
+  line-height: 1.25;
   cursor: pointer;
-
-  border-left: 4px solid #666666;
-
+  transition: border-color .15s ease, background-color .15s ease, color .15s ease, box-shadow .15s ease;
 }
 
+.menu-title::after {
+  content: "›";
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  color: #94a3b8;
+  font-size: 19px;
+  line-height: 1;
+  transform: translateY(-52%);
+  transition: color .15s ease, transform .15s ease;
+}
+
+.menu-title:hover {
+  border-color: #bfdbfe;
+  border-left-color: #4f83c2;
+  background: #f5f8ff;
+  color: #174ea6;
+  box-shadow: 0 2px 7px rgba(30,64,175,.06);
+}
+
+.menu-title:hover::after { color: #2563eb; transform: translate(2px,-52%); }
+
 .submenu {
-
-  margin-bottom: 10px;
-
-  padding-left: 20px;
-
+  margin: -1px 0 10px 12px;
+  padding: 1px 0 1px 10px;
+  border-left: 1px solid #d7e1ec;
 }
 
 .submenu li {
-
-  padding: 8px;
-
-  background-color: #dddddd;
-
-  margin-bottom: 5px;
-
+  box-sizing: border-box;
+  margin: 4px 0;
+  padding: 9px 11px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: #eef3f8;
+  color: #344258;
+  line-height: 1.25;
   cursor: pointer;
-
+  transition: border-color .15s ease, background-color .15s ease, color .15s ease, transform .15s ease;
 }
 
-.boton {
-	
-  margin: 5px;
-  
-  padding: 5px;
-
-  cursor: pointer;
-  
-  background-color: #ffffff;
-
+.submenu li:hover {
+  border-color: #d7e5f4;
+  background: #e7f0fa;
+  color: #174ea6;
+  transform: translateX(2px);
 }
+
+.submenu li.activo { border-color:#9fc2ea; background:#dceafa; color:#174ea6; font-weight:700; }
+.submenu li.inactivo { color:#94a3b8; cursor:default; }
+.submenu li.inactivo:hover { border-color:transparent; background:#eef3f8; color:#94a3b8; transform:none; }
+.menu-title.abierto::after { transform:translateY(-52%) rotate(90deg); }
 
 @media (max-width: 900px) {
+  :host { flex: 0 0 0; }
 
   .hamburguesa {
-
-    display: block;
-
     position: fixed;
-
-    top: 5px;
-
-    left: 5px;
-    
+    top: 17px;
+    left: 18px;
     z-index: 1001;
-
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: #fff;
+    color: #26364f;
+    font-size: 21px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(15,23,42,.12);
   }
 
   .sidebar {
-
     position: fixed;
-
     top: 0;
-
-    left: -260px;
-
-    height: 100vh;
-
-    transition: 0.3s;
-
-    z-index: 1000;
-
-  }
-
-  .sidebar-abierto {
-
+    bottom: 0;
     left: 0;
-
+    z-index: 1000;
+    height: 100vh;
+    min-height: 0;
+    overflow-y: auto;
+    padding-top: 68px;
+    border-width: 0 1px 0 0;
+    border-radius: 0 9px 9px 0;
+    box-shadow: 10px 0 30px rgba(15,23,42,.16);
+    transform: translateX(-102%);
+    transition: transform .22s ease;
   }
-  
-  .menu {
 
-    display: block;
-
-  }
-
+  .sidebar-abierto { transform: translateX(0); }
 }

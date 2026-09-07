@@ -1,11 +1,13 @@
 export interface Compra {
 
 	// Datos Identificación
-	cliId: number;	
+	empId: number;	
   	comId: number;
 
   	perIdCom: number;
 	perIdVen: number;
+	compradorNomCom?: string;
+	vendedorNomCom?: string;
 	
 	comImpSub: number;
 	comImpDes: number;

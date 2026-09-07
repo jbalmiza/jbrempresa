@@ -1,1 +1,18 @@
-/* You can add global styles to this file, and also import other style files */
+/* Base del documento: evita el margen de 8 px que añade el navegador y que
+   provocaba desbordamiento en vistas ajustadas a la altura de la pantalla. */
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+app-root {
+  display: block;
+  min-height: 100%;
+}

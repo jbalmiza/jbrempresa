@@ -29,9 +29,9 @@ public class Compra {
     @Column(name = "com_id")
     private Long comId;
 
-    // Cliente
-    @Column(name = "cli_id")
-    private Long cliId;
+    // Empresa
+    @Column(name = "emp_id")
+    private Long empId;
 
     // ID del comprador
     @Column(name = "per_id_com")
@@ -114,14 +114,14 @@ public class Compra {
         this.comId = comId;
     }
 
-    // Obtiene el cliente
-    public Long getCliId() {
-        return cliId;
+    // Obtiene el empresa
+    public Long getEmpId() {
+        return empId;
     }
 
-    // Modifica el cliente
-    public void setCliId(Long cliId) {
-        this.cliId = cliId;
+    // Modifica el empresa
+    public void setEmpId(Long empId) {
+        this.empId = empId;
     }
 
     // Obtiene el ID del comprador

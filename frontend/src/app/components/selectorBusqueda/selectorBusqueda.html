@@ -1,9 +1,10 @@
 <!-- Cuadro donde el usuario escribe el texto a buscar -->
-<input type="text" [(ngModel)]="textoBusqueda" (input)="cambiarTexto()">
+<input type="text" [ngModel]="textoBusqueda" (ngModelChange)="cambiarTexto($event)">
 
 <!-- Lista de resultados filtrados -->
-<ul> 
+<ul [class.en-flujo]="enFlujo"> 
 
 	<li *ngFor="let dato of datosFiltrados" (click)="seleccionar(dato)"> {{ dato[campoDescripcion] }} </li>
+	<li *ngIf="!seleccionado && textoBusqueda.trim().length >= 3 && !datosFiltrados.length" class="sin-resultados">No hay coincidencias</li>
 
 </ul>

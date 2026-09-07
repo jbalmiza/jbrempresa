@@ -1,5 +1,8 @@
 
-<button class="botonDerecha" (click)="insertarLinea.emit()"> Insertar línea </button>
+<header class="tabla-edicion-cabecera">
+    <strong>{{ titulo }}</strong>
+    <button type="button" class="boton-insertar" (click)="insertarLinea.emit()">+ Insertar línea</button>
+</header>
 
 <div class="tabla-scroll">
 
@@ -18,6 +21,14 @@
 
     <!-- Cuerpo de la tabla -->
     <tbody>
+
+        <tr *ngIf="!datos.length" class="fila-vacia">
+            <td [attr.colspan]="columnas.length">
+                <span class="icono-vacio">＋</span>
+                <strong>No hay líneas añadidas</strong>
+                <small>Utiliza «Insertar línea» para incorporar un producto o servicio.</small>
+            </td>
+        </tr>
 
         <!-- Recorre la lista de datos para crear una fila por cada registro -->
         <tr *ngFor="let fila of datos; let indice = index">

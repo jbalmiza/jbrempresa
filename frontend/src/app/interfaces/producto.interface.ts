@@ -1,7 +1,10 @@
 export interface Producto {
 
-	cliId: number;	
+	empId: number;	
   	proId: number;
+	proIdHis?: number;
+	proTipMov?: string;
+	proCauMov?: string;
 
   	proTipPro: string;
   	proNom: string;
@@ -24,6 +27,9 @@ export interface Producto {
 	proUniMed: string;
 	proConSto: boolean;
 	proObs: string;
+	proDurMin: number;
+	proVisCat?: boolean;
+	proIma?: string;
 
 	proUbi: string;	
 	proFilMal: number;

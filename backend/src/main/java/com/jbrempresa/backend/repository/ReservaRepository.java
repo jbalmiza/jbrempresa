@@ -1,0 +1,2 @@
+package com.jbrempresa.backend.repository;import java.time.LocalDateTime;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;import com.jbrempresa.backend.entity.Reserva;
+public interface ReservaRepository extends JpaRepository<Reserva,Long>{Optional<Reserva> findByEmpIdAndResIdAndResActTrue(Long empId,Long id);List<Reserva> findByEmpIdAndResIniLessThanAndResFinGreaterThanAndResActTrueOrderByResIniAsc(Long empId,LocalDateTime hasta,LocalDateTime desde);}

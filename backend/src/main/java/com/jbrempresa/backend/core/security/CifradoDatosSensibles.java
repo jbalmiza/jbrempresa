@@ -1,0 +1,8 @@
+package com.jbrempresa.backend.core.security;
+import java.nio.charset.StandardCharsets;import java.security.*;import java.util.*;import javax.crypto.*;import javax.crypto.spec.*;import org.springframework.beans.factory.annotation.Value;import org.springframework.stereotype.Service;
+@Service public class CifradoDatosSensibles{
+ private final SecretKey clave;private final SecureRandom random=new SecureRandom();
+ public CifradoDatosSensibles(@Value("${core.data.encryption-key}")String secreto){if(secreto==null||secreto.length()<32)throw new IllegalStateException("CORE_DATA_ENCRYPTION_KEY debe tener al menos 32 caracteres.");try{clave=new SecretKeySpec(MessageDigest.getInstance("SHA-256").digest(secreto.getBytes(StandardCharsets.UTF_8)),"AES");}catch(Exception e){throw new IllegalStateException(e);}}
+ public String cifrar(String valor){try{byte[]iv=new byte[12];random.nextBytes(iv);Cipher c=Cipher.getInstance("AES/GCM/NoPadding");c.init(Cipher.ENCRYPT_MODE,clave,new GCMParameterSpec(128,iv));byte[]dato=c.doFinal(valor.getBytes(StandardCharsets.UTF_8));byte[]todo=new byte[iv.length+dato.length];System.arraycopy(iv,0,todo,0,iv.length);System.arraycopy(dato,0,todo,iv.length,dato.length);return Base64.getEncoder().encodeToString(todo);}catch(Exception e){throw new IllegalStateException("No se pudo cifrar el dato sensible.",e);}}
+ public String descifrar(String valor){try{byte[]todo=Base64.getDecoder().decode(valor);byte[]iv=Arrays.copyOfRange(todo,0,12);Cipher c=Cipher.getInstance("AES/GCM/NoPadding");c.init(Cipher.DECRYPT_MODE,clave,new GCMParameterSpec(128,iv));return new String(c.doFinal(Arrays.copyOfRange(todo,12,todo.length)),StandardCharsets.UTF_8);}catch(Exception e){throw new IllegalStateException("No se pudo descifrar el dato sensible.",e);}}
+}

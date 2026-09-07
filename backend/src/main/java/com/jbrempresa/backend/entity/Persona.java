@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 // Entidad JPA
 @Entity
+@IdClass(PersonaId.class)
 
 // Tabla personas
 @Table(name = "personas")
@@ -25,14 +26,32 @@ public class Persona {
     @Id
 
     // Genera automáticamente el ID
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     @Column(name = "per_id")
     private Long perId;
 
-    // Cliente
-    @Column(name = "cli_id")
-    private Long cliId;
+    @Id
+    @Column(name = "per_id_his")
+    private Long perIdHis;
+
+    @Column(name = "per_tip_mov")
+    private String perTipMov;
+
+    @Column(name = "per_cau_mov", length = 500)
+    private String perCauMov;
+
+    // Empresa
+    @Column(name = "emp_id")
+    private Long empId;
+
+    @Column(name = "per_tip_per")
+    private String perTipPer;
+
+
+    @Column(name = "per_raz_soc_cor")
+    private String perRazSocCor;
+
+    @Column(name = "per_raz_soc_lar")
+    private String perRazSocLar;
 
     // Tipo de documento
     @Column(name = "per_tip_doc")
@@ -74,6 +93,15 @@ public class Persona {
     @Column(name = "dom_id")
     private Long domId;
 
+    @Column(name = "per_cox")
+    private Double perCoX;
+
+    @Column(name = "per_coy")
+    private Double perCoY;
+
+    @Column(name = "per_hus")
+    private Long perHus;
+
     // Activo
     @Column(name = "per_act")
     private Boolean perAct;
@@ -99,14 +127,27 @@ public class Persona {
         this.perId = perId;
     }
 
-    // Obtiene el cliente
-    public Long getCliId() {
-        return cliId;
+    public Long getPerIdHis() { return perIdHis; }
+    public void setPerIdHis(Long perIdHis) { this.perIdHis = perIdHis; }
+    public String getPerTipMov() { return perTipMov; }
+    public void setPerTipMov(String perTipMov) { this.perTipMov = perTipMov; }
+    public String getPerCauMov() { return perCauMov; }
+    public void setPerCauMov(String perCauMov) { this.perCauMov = perCauMov; }
+    public String getPerTipPer() { return perTipPer; }
+    public void setPerTipPer(String perTipPer) { this.perTipPer = perTipPer; }
+    public String getPerRazSocCor() { return perRazSocCor; }
+    public void setPerRazSocCor(String perRazSocCor) { this.perRazSocCor = perRazSocCor; }
+    public String getPerRazSocLar() { return perRazSocLar; }
+    public void setPerRazSocLar(String perRazSocLar) { this.perRazSocLar = perRazSocLar; }
+
+    // Obtiene el empresa
+    public Long getEmpId() {
+        return empId;
     }
 
-    // Modifica el cliente
-    public void setCliId(Long cliId) {
-        this.cliId = cliId;
+    // Modifica el empresa
+    public void setEmpId(Long empId) {
+        this.empId = empId;
     }
 
     // Obtiene el tipo de documento
@@ -209,6 +250,13 @@ public class Persona {
     public void setDomId(Long domId) {
         this.domId = domId;
     }
+
+    public Double getPerCoX() { return perCoX; }
+    public void setPerCoX(Double perCoX) { this.perCoX = perCoX; }
+    public Double getPerCoY() { return perCoY; }
+    public void setPerCoY(Double perCoY) { this.perCoY = perCoY; }
+    public Long getPerHus() { return perHus; }
+    public void setPerHus(Long perHus) { this.perHus = perHus; }
 
     // Obtiene el estado activo
     public Boolean getPerAct() {

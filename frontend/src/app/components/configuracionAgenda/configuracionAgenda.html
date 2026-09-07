@@ -1,0 +1,23 @@
+<section class="configuracion">
+  <p *ngIf="recursos.length>1" class="aviso">Configuración global: los cambios se aplicarán a los {{recursos.length}} empleados.</p>
+  <div class="campos">
+    <label *ngIf="tipoRecurso==='DOMICILIO'">Capacidad<input type="number" min="1" [(ngModel)]="capacidad"></label>
+    <label>Hora inicial de visualización<input type="time" [(ngModel)]="horaVisual" required></label>
+    <label>Preparación (min)<input type="number" min="0" [(ngModel)]="preparacion"></label>
+    <label>Limpieza (min)<input type="number" min="0" [(ngModel)]="limpieza"></label>
+  </div>
+  <h3>Horario semanal</h3>
+  <div class="horarios">
+    <div *ngFor="let dia of dias" class="dia">
+      <label class="dia-check"><input type="checkbox" [(ngModel)]="dia.activo">{{dia.nombre}}</label>
+      <div *ngIf="dia.activo" class="franjas">
+        <span *ngFor="let franja of dia.franjas;let indice=index"><input type="time" [(ngModel)]="franja.inicio"><b>a</b><input type="time" [(ngModel)]="franja.fin"><button *ngIf="dia.franjas.length>1" type="button" (click)="eliminarFranja(dia,indice)">×</button></span>
+        <button type="button" (click)="agregarFranja(dia)">+ Franja</button>
+      </div>
+    </div>
+  </div>
+  <div class="acciones">
+    <button type="button" class="guardar" (click)="guardar()" [disabled]="cargando">{{cargando?'Guardando…':'Guardar configuración'}}</button>
+    <button type="button" (click)="cancelar.emit()" [disabled]="cargando">Cancelar</button>
+  </div>
+</section>

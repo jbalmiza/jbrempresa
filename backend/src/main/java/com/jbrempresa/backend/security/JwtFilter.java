@@ -5,7 +5,6 @@ package com.jbrempresa.backend.security;
 import java.io.IOException;
 
 // Importa Autowired.
-import org.springframework.beans.factory.annotation.Autowired;
 
 // Importa UsernamePasswordAuthenticationToken.
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,12 +44,15 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtFilter extends OncePerRequestFilter {
 
     // Servicio JWT.
-    @Autowired
-    private JwtService jwtService;
+    private final JwtService jwtService;
 
     // Servicio de usuarios.
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
+
+    public JwtFilter(JwtService jwtService, CustomUserDetailsService customUserDetailsService) {
+        this.jwtService = jwtService;
+        this.customUserDetailsService = customUserDetailsService;
+    }
 
     // Filtra las peticiones.
     @Override
@@ -138,6 +140,28 @@ public class JwtFilter extends OncePerRequestFilter {
             SecurityContextHolder
                     .getContext()
                     .setAuthentication(authToken);
+
+            // Renueva el token si está próximo a caducar.
+            if (jwtService.debeRenovarse(token)) {
+
+                // Obtiene el usuario autenticado.
+                JwtUser jwtUser =
+                        (JwtUser) userDetails;
+
+                // Genera un token con un nuevo vencimiento.
+                String tokenRenovado =
+                        jwtService.generarToken(
+                                jwtUser.getUsername(),
+                                jwtUser.getUsuarioId(),
+                                jwtUser.getEmpresaId(),
+                                jwtUser.getPerfilId());
+
+                // Devuelve el token renovado al frontend.
+                response.setHeader(
+                        "X-Refresh-Token",
+                        tokenRenovado);
+
+            }
 
         }
 

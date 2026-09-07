@@ -1,7 +1,11 @@
+import {BarraAcciones} from '../../../directives/barraAcciones/barraAcciones';
+import {avisarAplicacion,confirmarAplicacion} from '../../../core/interaccion/dialogos.service';
+import { DatosMovimiento } from '../../../components/datosMovimiento/datosMovimiento';
+import { DatosIdentificacion } from '../../../components/datosIdentificacion/datosIdentificacion';
 // La lógica de la pantalla (Framework Angular / Lenguaje TypeScript)
 
 // Importa libreria para crear componentes Angular
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 
@@ -11,33 +15,43 @@ import { Router } from '@angular/router';
 import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
 import { Tabla } from '../../../components/tabla/tabla';
+import { DatosPersonaRelacion } from '../../../components/datosPersonaRelacion/datosPersonaRelacion';
 
-import { FechasUtil } from '../../../core/utils/fechas.util';
+import { FechasUtil } from '../../../shared/utils/fechas.util';
 
 import { Usuario } from '../../../interfaces/usuario.interface';
+import { Persona } from '../../../interfaces/persona.interface';
+import { Perfil } from '../../../interfaces/perfil.interface';
 
 import { FormsModule } from '@angular/forms';
 
 import { UsuarioService } from '../../../services/usuario.service';
+import { PersonaService } from '../../../services/persona.service';
+import { PerfilService } from '../../../services/perfil.service';
 import { PdfService } from '../../../services/pdf.service';
 
 import { ViewChild } from '@angular/core';
+import { finalize } from 'rxjs';
 
 // Se define la configuración del componente Angular
 @Component({
   selector: 'Usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule, Sidebar, Supbar, Tabla],
+  imports:[CommonModule, FormsModule, Sidebar, Supbar, Tabla, DatosPersonaRelacion,DatosIdentificacion,DatosMovimiento,BarraAcciones],
   templateUrl: './usuarios.html',
   styleUrl: '../../../styles/estiloGeneral.css'
 })
 
 // Definición de la lógica del componente 
 export class Usuarios {
+	ngOnInit() {
+		this.personaService.obtenerPersonas().subscribe(datos => {this.personasLista = datos.filter(p => p.perTipMov !== 'B');this.datos=this.datos.map(usuario=>({...usuario,personaNomCom:this.personasLista.find(persona=>Number(persona.perId)===Number(usuario.usuPerId))?.perNomCom||''}));});
+		this.perfilService.obtenerPerfiles().subscribe(datos => this.perfilesLista = datos);
+	}
 	
 	//Busca el componente tabla en el html y guarda en una variable tabla por la cual se podrá acceder a variables y métodos dentro de tabla
 	// por ejemplo a 'this.tabla.datosFiltrados' que devolverá los registros que se están mostrando en pantalla después de aplicar los filtros.
-	//Sin ViewChild, clientes.ts no sabe nada de lo que ocurre dentro de tabla.ts.
+	//Sin ViewChild, empresas.ts no sabe nada de lo que ocurre dentro de tabla.ts.
 	// Permitirá acceder a los datos filtrados para exportarlos posteriormente a PDF.
 	@ViewChild(Tabla)
 	tabla!: Tabla;
@@ -52,12 +66,13 @@ export class Usuarios {
 	
 	// Títulos de las columnas de la tabla
 	titulosColumnas = {
-	    cliId: 'Cliente',
+	    empId: 'Empresa',
 	    usuId: 'Id Usuario',
 	    usuUsu: 'Usuario',
-	    usuCon: 'Contraseña',
 	    perId: 'Perfil',
+		personaNomCom: 'Persona',
 	    usuNom: 'Nombre',
+		usuTel: 'Teléfono',
 	    usuEma: 'Correo Electrónico',
 	    usuUsuMov: 'Usuario Mod.',
 	    usuFecMov: 'Fecha Mod.',
@@ -65,18 +80,25 @@ export class Usuarios {
 	};
 	
 	// Campos mostrados en la tabla
-	columnas: string[] = [ 'cliId', 'usuId', 
-		'usuUsu', 'usuCon', 'perId', 
-		'usuNom', 'usuEma',
+	columnas: string[] = [ 'empId', 'usuId', 
+		'usuUsu', 'perId', 'personaNomCom',
+		'usuNom', 'usuTel', 'usuEma',
 	  	'usuUsuMov', 'usuFecMov', 'usuAct'
 	  
 	];
 
 	// Datos de la tabla
 	datos: any[] = [];
+
+	// Estado de la consulta paginada de usuarios.
+	cargando = false;
+	totalUsuarios = 0;
+	paginaUsuarios = 1;
 	
 	// Lista para el selector de perfiles
 	usuariosLista: Usuario[] = [];
+	personasLista: Persona[] = [];
+	perfilesLista: Perfil[] = [];
 	
 	// Guarda el registro seleccionado de la tabla
 	usuarioSeleccionado: Usuario | null = null;
@@ -86,22 +108,55 @@ export class Usuarios {
 		
 		private readonly router: Router, 
 		private usuarioService: UsuarioService,
-		private pdfService: PdfService
+		private personaService: PersonaService,
+		private perfilService: PerfilService,
+		private pdfService: PdfService,
+		private readonly changeDetectorRef: ChangeDetectorRef
 		
 	) {}
 
+	seleccionarPersona(perId: number): void {
+		this.usuario.usuPerId = perId;
+		const persona = this.personasLista.find(item => Number(item.perId) === Number(perId));
+		if (persona) {
+			this.usuario.usuNom = persona.perNomCom || '';
+			this.usuario.usuTel = persona.perTel || '';
+			this.usuario.usuEma = persona.perEma || '';
+		} else {
+			this.usuario.usuNom = '';
+			this.usuario.usuTel = '';
+			this.usuario.usuEma = '';
+		}
+	}
+
 	// Este método muestra la tabla de datos
 	consultar() {
+
+		this.consultarPagina(1, this.tabla?.registrosPorPagina || 50);
 			
-		this.vistaActiva = 'tabla';	 
-		
-		this.usuarioService.obtenerUsuarios().subscribe({
+	}
+
+	// Consulta una página concreta usando los filtros escritos en la tabla.
+	consultarPagina(pagina: number, tamanio: number) {
+
+		this.vistaActiva = 'tabla';
+		this.cargando = true;
+
+		const filtros = this.tabla?.filtros || {};
+
+		this.usuarioService.consultar(filtros, pagina - 1, tamanio)
+			.pipe(finalize(() => {
+				this.cargando = false;
+				this.changeDetectorRef.markForCheck();
+			}))
+			.subscribe({
 			
 			next: (respuesta) => {
 	
-				console.log('respuesta=', respuesta);
-
-				this.datos = respuesta;
+				this.datos = respuesta.content.map(usuario => ({...usuario, personaNomCom: this.personasLista.find(persona => Number(persona.perId) === Number(usuario.usuPerId))?.perNomCom || ''}));
+				this.totalUsuarios = respuesta.totalElements;
+				this.paginaUsuarios = respuesta.number + 1;
+				this.usuarioSeleccionado = null;
 
 			},
 
@@ -109,11 +164,11 @@ export class Usuarios {
 
 				console.error(error);
 
-				alert('Error al obtener usuarios');  
+				avisarAplicacion('Error al obtener usuarios');  
 
 			}
 
-		});
+			});
 			
 	}
 		
@@ -181,7 +236,7 @@ export class Usuarios {
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.usuarioSeleccionado) {
 
-	      alert('Debe seleccionar un registro');
+	      avisarAplicacion('Debe seleccionar un registro');
 
 	      return;
 	    }
@@ -194,14 +249,16 @@ export class Usuarios {
 		// Convierte formtato backend usu_id a formato frontend idUsuario
 		this.usuario = {
 
-			cliId: this.usuarioSeleccionado.cliId,			
+			empId: this.usuarioSeleccionado.empId,			
 			usuId: this.usuarioSeleccionado.usuId,
 
 			usuUsu: this.usuarioSeleccionado.usuUsu,
-			usuCon: this.usuarioSeleccionado.usuCon,
+			usuCon: '',
 			perId: this.usuarioSeleccionado.perId,
+			usuPerId: this.usuarioSeleccionado.usuPerId,
 
 			usuNom: this.usuarioSeleccionado.usuNom,
+			usuTel: this.usuarioSeleccionado.usuTel,
 			usuEma: this.usuarioSeleccionado.usuEma,
 
 			usuUsuMov: this.usuarioSeleccionado.usuUsuMov,
@@ -215,7 +272,7 @@ export class Usuarios {
 	}
 	
 	// Este método elimina
-	eliminar() {
+	async eliminar() {
 
 	  // Si estamos en la pestaña registro
 	  if (this.vistaActiva === 'registro') {
@@ -233,16 +290,16 @@ export class Usuarios {
 	    // Comprueba si hay un usuario seleccionado
 	    if (!this.usuarioSeleccionado) {
 
-	      alert('Debe seleccionar un registro');
+	      avisarAplicacion('Debe seleccionar un registro');
 
 	      return;
 
 	    }
 
 	    // Solicita confirmación
-	    const confirmado = confirm(
+	    const confirmado = await confirmarAplicacion(
 	      '¿Desea eliminar el usuario seleccionado?'
-	    );
+	    ,true);
 
 	    // Si cancela
 	    if (!confirmado) {
@@ -258,7 +315,7 @@ export class Usuarios {
 
 	      next: () => {
 
-	        alert('Usuario eliminado correctamente');
+	        avisarAplicacion('Usuario eliminado correctamente');
 
 	        // Limpia selección
 	        this.usuarioSeleccionado = null;
@@ -272,7 +329,7 @@ export class Usuarios {
 
 	        console.error(error);
 
-	        alert('Error al eliminar usuario');
+	        avisarAplicacion('Error al eliminar usuario');
 
 	      }
 
@@ -314,14 +371,15 @@ export class Usuarios {
 		// Comprueba los campos obligatorios
 		if (
 			!this.usuario.usuUsu || 
-			!this.usuario.usuCon || 
+			(this.modoFormulario === 'insertar' && !this.usuario.usuCon) ||
 			!this.usuario.perId || 
+			!this.usuario.usuPerId ||
 			!this.usuario.usuNom || 
 			!this.usuario.usuEma
 		) {
 
 			// Muestra el mensaje
-			alert('Debe rellenar todos los campos obligatorios.');
+			avisarAplicacion('Debe rellenar todos los campos obligatorios.');
 
 			// Indica que el formulario no es válido
 			return false;
@@ -344,7 +402,7 @@ export class Usuarios {
 
 	  	const usuario = {
 
-			cliId: this.usuario.cliId,	
+			empId: this.usuario.empId,	
 			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
 			// El backend interpreta este registro como nuevo e ignora este valor,
 			// dejando que la base de datos asigne automáticamente el identificador definitivo.	
@@ -353,8 +411,10 @@ export class Usuarios {
 		    usuUsu: this.usuario.usuUsu,
 		    usuCon: this.usuario.usuCon,
 			perId: this.usuario.perId,
+			usuPerId: this.usuario.usuPerId,
 	
 		    usuNom: this.usuario.usuNom,
+			usuTel: this.usuario.usuTel,
 		    usuEma: this.usuario.usuEma,
 	
 		    usuUsuMov: this.usuario.usuUsuMov,
@@ -363,13 +423,11 @@ export class Usuarios {
 
 	  	};
 	  
-	  console.log(usuario);
-	  
 	  this.usuarioService.guardar(usuario).subscribe({
 
 	    next: () => {
 
-	      alert('Usuario guardado correctamente');
+	      avisarAplicacion('Usuario guardado correctamente');
 		  
 		  this.limpiarFormulario();
 
@@ -381,7 +439,7 @@ export class Usuarios {
 
 	      console.error(error);
 
-	      alert('Error al guardar usuario');
+	      avisarAplicacion('Error al guardar usuario');
 
 	    }
 
@@ -400,14 +458,16 @@ export class Usuarios {
 
 		const usuario = {
 
-			cliId: this.usuario.cliId,
+			empId: this.usuario.empId,
 		    usuId: this.usuario.usuId,
 
 		    usuUsu: this.usuario.usuUsu,
 		    usuCon: this.usuario.usuCon,
 			perId: this.usuario.perId,
+			usuPerId: this.usuario.usuPerId,
 
 		    usuNom: this.usuario.usuNom,
+			usuTel: this.usuario.usuTel,
 		    usuEma: this.usuario.usuEma,
 
 		    usuUsuMov: this.usuario.usuUsuMov,
@@ -416,13 +476,11 @@ export class Usuarios {
 
 		};
 
-		console.log(usuario);
-
 		this.usuarioService.actualizar(usuario).subscribe({
 
 			next: () => {
 
-				alert('Usuario actualizado correctamente.');
+				avisarAplicacion('Usuario actualizado correctamente.');
 
 				this.limpiarFormulario();
 
@@ -434,7 +492,7 @@ export class Usuarios {
 
 				console.error(error);
 
-				alert('Error al actualizar usuario.');
+				avisarAplicacion('Error al actualizar usuario.');
 
 			}
 
@@ -454,14 +512,16 @@ export class Usuarios {
 
 		return {
 
-		cliId: Number(localStorage.getItem('clienteId')) || 0,
+		empId: Number(localStorage.getItem('empresaId')) || 0,
 	  	usuId: 0,
 		
 	  	usuUsu: '',
 	  	usuCon: '',
 	  	perId: 0,
+		usuPerId: 0,
 		
 	  	usuNom: '',
+		usuTel: '',
 	  	usuEma: '',
 		
 		usuUsuMov: localStorage.getItem('usuario') || '',

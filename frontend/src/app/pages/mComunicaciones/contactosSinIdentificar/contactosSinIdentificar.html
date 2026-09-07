@@ -1,0 +1,55 @@
+<supbar></supbar>
+<div class="menu">
+  <sidebar modulo="comunicaciones"></sidebar>
+  <div class="pagina">
+    <label class="titulo">CONTACTOS DE CANAL</label>
+    <div barraAcciones class="toolbar">
+      <button class="boton" (click)="cambiarConsulta(false)" [disabled]="!mostrarTodos">
+        Sin identificar</button
+      ><button class="boton" (click)="cambiarConsulta(true)" [disabled]="mostrarTodos">Todos</button
+      ><button class="boton" (click)="volver()">Volver</button>
+    </div>
+    <div class="tabla-contenedor">
+      <tabla
+        [columnas]="columnas"
+        [titulosColumnas]="titulosColumnas"
+        [datos]="datos"
+        (filaSeleccionada)="seleccionar($event)"
+      ></tabla>
+    </div>
+    <div *ngIf="seleccionado" class="form-grupo">
+      <label class="titulo"
+        >Relaciones de {{ seleccionado.cocCan }} · {{ seleccionado.cocIde }}</label
+      >
+      <div class="form-fila alinear-final">
+        <div class="form-campo-500">
+          <label class="label">Añadir Persona</label
+          ><selectorBusqueda
+            [datos]="personas"
+            [idSeleccionado]="personaId"
+            [campoDescripcion]="'perNomCom'"
+            [campoId]="'perId'"
+            (valorSeleccionado)="personaId = $event"
+          ></selectorBusqueda>
+        </div>
+        <button class="boton" (click)="identificar()" [disabled]="!personaId">
+          Confirmar relación
+        </button>
+      </div>
+      <div *ngIf="relaciones.length" class="tabla-relaciones">
+        <tabla
+          [columnas]="columnasRelaciones"
+          [titulosColumnas]="titulosRelaciones"
+          [datos]="relaciones"
+          (filaSeleccionada)="relacionSeleccionada = $event"
+        ></tabla
+        ><button *ngIf="relacionSeleccionada" class="boton boton-peligro" (click)="revocar()">
+          Revocar relación
+        </button>
+      </div>
+      <p *ngIf="!relaciones.length" class="ayuda">
+        Esta identidad todavía no tiene Personas confirmadas.
+      </p>
+    </div>
+  </div>
+</div>

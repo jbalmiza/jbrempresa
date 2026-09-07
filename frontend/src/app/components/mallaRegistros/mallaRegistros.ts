@@ -3,21 +3,26 @@ import {
     AfterViewInit,
     Component,
     ElementRef,
+    EventEmitter,
     Input,
+    OnDestroy,
+    Output,
     ViewChild
 } from '@angular/core';
 
 // Importa Observable.
-import { Observable } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 
 // Importa ViewEncapsulation.
 import { ViewEncapsulation } from '@angular/core';
 
 // Importa MallaService.
 import { MallaService } from '../../services/malla.service';
+import { BlobUrlUtil } from '../../shared/utils/blob-url.util';
 
 // Importa la interfaz Malla.
 import { Malla } from '../../interfaces/malla.interface';
+import { CommonModule } from '@angular/common';
 
 // Define el componente.
 @Component({
@@ -29,7 +34,7 @@ import { Malla } from '../../interfaces/malla.interface';
     standalone: true,
 
     // Componentes utilizados.
-    imports: [],
+    imports: [CommonModule],
 
     // Vista HTML.
     templateUrl: './mallaRegistros.html',
@@ -41,7 +46,21 @@ import { Malla } from '../../interfaces/malla.interface';
     encapsulation: ViewEncapsulation.None
 
 })
-export class MallaRegistros implements AfterViewInit {
+export class MallaRegistros implements AfterViewInit, OnDestroy {
+    private readonly blobs=new BlobUrlUtil();
+
+    registrosPendientes: Array<{ registro: any; etiqueta: string }> = [];
+    posicionPendiente = '';
+    vistaPreviaVisible = false;
+    vistaPreviaNombre = '';
+    vistaPreviaInformacion: string[] = [];
+    vistaPreviaImagen = '';
+    vistaPreviaX = 0;
+    vistaPreviaY = 0;
+
+    // Devuelve el registro asociado a una posición ocupada.
+    @Output()
+    registroSeleccionado = new EventEmitter<any>();
 
     // Contenedor donde se dibuja la malla.
     @ViewChild('contenedor')
@@ -56,6 +75,21 @@ export class MallaRegistros implements AfterViewInit {
     // Función que obtiene los registros.
     @Input()
     obtenerRegistros!: () => Observable<any[]>;
+
+    // Función opcional para enriquecer la información de registros vinculados.
+    @Input()
+    obtenerDetalles?: () => Observable<any[]>;
+
+    // Identificador del registro de detalle.
+    @Input()
+    campoIdDetalle = '';
+
+    // Formatea la información mostrada al pasar el cursor.
+    @Input()
+    formatearDetalle?: (detalle: any) => string;
+
+    @Input()
+    obtenerImagenDetalle?: (detalle: any) => Observable<Blob>;
 
     // Campo identificador.
     @Input()
@@ -105,10 +139,13 @@ export class MallaRegistros implements AfterViewInit {
 
         }
 
-        // Obtiene los registros.
-        this.obtenerRegistros().subscribe({
+        // Obtiene la malla y, si se ha configurado, sus registros asociados.
+        forkJoin({
+            registros: this.obtenerRegistros(),
+            detalles: this.obtenerDetalles ? this.obtenerDetalles() : of([])
+        }).subscribe({
 
-            next: (registros) => {
+            next: ({ registros, detalles }) => {
 
                 // Conserva únicamente los registros
                 // de la entidad seleccionada.
@@ -119,7 +156,7 @@ export class MallaRegistros implements AfterViewInit {
                     );
 
                 // Construye la malla con los registros recibidos.
-                this.crearMalla(registrosEntidad);
+                this.crearMalla(registrosEntidad, detalles);
 
             },
 
@@ -139,7 +176,7 @@ export class MallaRegistros implements AfterViewInit {
     }
 
     // Construye la malla.
-    private crearMalla(registros: any[]): void {
+    private crearMalla(registros: any[], detalles: any[]): void {
 
         // Comprueba que existe el contenedor.
         if (!this.contenedor) {
@@ -161,7 +198,30 @@ export class MallaRegistros implements AfterViewInit {
 
         // Define el número y tamaño de las columnas.
         malla.style.gridTemplateColumns =
-            `repeat(${this.columnasMalla}, 21px)`;
+            `32px repeat(${this.columnasMalla}, 21px)`;
+
+        const detallesPorId = new Map(
+            detalles.map(detalle => [Number(detalle[this.campoIdDetalle]), detalle])
+        );
+
+        const esquina = document.createElement('div');
+        esquina.classList.add('cabecera-malla', 'esquina-malla');
+        malla.appendChild(esquina);
+
+        for (let columna = 1; columna <= this.columnasMalla; columna++) {
+            const cabecera = document.createElement('div');
+            cabecera.classList.add('cabecera-malla', 'cabecera-columna');
+            cabecera.textContent = String(columna);
+            malla.appendChild(cabecera);
+        }
+
+        const registrosPorPosicion = new Map<string, any[]>();
+        for (const registro of registros) {
+            const clave = `${Number(registro[this.campoFila])}-${Number(registro[this.campoColumna])}`;
+            const agrupados = registrosPorPosicion.get(clave) ?? [];
+            agrupados.push(registro);
+            registrosPorPosicion.set(clave, agrupados);
+        }
 
         // Recorre las filas.
         for (
@@ -169,6 +229,11 @@ export class MallaRegistros implements AfterViewInit {
             fila <= this.filasMalla;
             fila++
         ) {
+
+            const cabeceraFila = document.createElement('div');
+            cabeceraFila.classList.add('cabecera-malla', 'cabecera-fila');
+            cabeceraFila.textContent = String(fila);
+            malla.appendChild(cabeceraFila);
 
             // Recorre las columnas.
             for (
@@ -189,15 +254,8 @@ export class MallaRegistros implements AfterViewInit {
                 celda.classList.add('celda');
 
                 // Busca un registro situado en esta posición.
-                const registro = registros.find(
-                    registro =>
-                        Number(
-                            registro[this.campoFila]
-                        ) === fila &&
-                        Number(
-                            registro[this.campoColumna]
-                        ) === columna
-                );
+                const registrosCelda = registrosPorPosicion.get(`${fila}-${columna}`) ?? [];
+                const registro = registrosCelda[0];
 
                 // Si existe un registro en esta posición.
                 if (registro) {
@@ -265,16 +323,24 @@ export class MallaRegistros implements AfterViewInit {
                     const titulo =
                         registro[this.campoTitulo] ?? '';
 
-                    // Obtiene el identificador del registro.
-                    const id =
-                        registro[this.campoId] ?? '';
-
                     // Muestra la información al pasar el ratón.
-                    celda.title =
-                        `${titulo}\n` +
-                        `ID: ${id}\n` +
-                        `Fila: ${fila}\n` +
-                        `Columna: ${columna}`;
+                    const detalle = detallesPorId.get(Number(registro.malRefId));
+                    const informacion = detalle && this.formatearDetalle
+                        ? this.formatearDetalle(detalle)
+                        : titulo;
+
+                    // Las posiciones ocupadas utilizan exclusivamente la vista previa enriquecida.
+                    celda.removeAttribute('title');
+                    celda.onmouseenter = () => this.mostrarVistaPrevia(celda, detalle, informacion, fila, columna);
+                    celda.onmouseleave = () => this.ocultarVistaPrevia();
+
+                    if (registrosCelda.length > 1) {
+                        const contador = document.createElement('span');
+                        contador.classList.add('contador-registros');
+                        contador.textContent = String(registrosCelda.length);
+                        celda.appendChild(contador);
+                        celda.removeAttribute('title');
+                    }
 
                 }
 
@@ -289,6 +355,25 @@ export class MallaRegistros implements AfterViewInit {
 
                 // Permite actuar sobre la celda al hacer clic.
                 celda.onclick = () => {
+
+                    // Una posición vinculada a un registro abre su gestión.
+                    if (registrosCelda.some(item => item?.malRefId)) {
+                        const vinculados = registrosCelda.filter(item => item?.malRefId);
+                        if (vinculados.length === 1) {
+                            this.registroSeleccionado.emit(vinculados[0]);
+                            return;
+                        }
+                        this.posicionPendiente = `Fila ${fila} · Columna ${columna}`;
+                        this.registrosPendientes = vinculados.map(item => {
+                            const detalle = detallesPorId.get(Number(item.malRefId));
+                            const etiqueta = detalle && this.formatearDetalle
+                                ? this.formatearDetalle(detalle)
+                                : item[this.campoTitulo] || `ID ${item.malRefId}`;
+                            return { registro: item, etiqueta };
+                        });
+                        return;
+
+                    }
 
                     // Procesa la celda pulsada.
                     this.pulsarCelda(
@@ -308,6 +393,44 @@ export class MallaRegistros implements AfterViewInit {
     }
 
     // Selecciona el color con el que se pintará la malla.
+    seleccionarRegistro(registro: any): void {
+        this.cerrarSelector();
+        this.registroSeleccionado.emit(registro);
+    }
+
+    private mostrarVistaPrevia(celda: HTMLElement, detalle: any, informacion: string, fila: number, columna: number): void {
+        if (!detalle) return;
+        const posicion = celda.getBoundingClientRect();
+        const lineas = informacion.split('\n').filter(Boolean);
+        this.vistaPreviaNombre = lineas[0] || 'Registro';
+        this.vistaPreviaInformacion = [...lineas.slice(1), `Fila: ${fila} | Columna: ${columna}`];
+        this.vistaPreviaX = Math.min(posicion.right + 10, window.innerWidth - 210);
+        this.vistaPreviaY = Math.min(posicion.top, window.innerHeight - 180);
+        this.vistaPreviaVisible = true;
+        if (!this.obtenerImagenDetalle) return;
+        this.obtenerImagenDetalle(detalle).subscribe({
+            next: imagen => {
+                this.blobs.liberar(this.vistaPreviaImagen);
+                this.vistaPreviaImagen = this.blobs.crear(imagen);
+            },
+            error: () => { this.vistaPreviaImagen = ''; }
+        });
+    }
+
+    private ocultarVistaPrevia(): void {
+        this.vistaPreviaVisible = false;
+        this.vistaPreviaInformacion = [];
+        this.blobs.liberar(this.vistaPreviaImagen);
+        this.vistaPreviaImagen = '';
+    }
+
+    ngOnDestroy(): void { this.ocultarVistaPrevia(); }
+
+    cerrarSelector(): void {
+        this.registrosPendientes = [];
+        this.posicionPendiente = '';
+    }
+
     seleccionarColor(
             color: string): void {
 
@@ -364,7 +487,7 @@ export class MallaRegistros implements AfterViewInit {
             malId: 0,
 
             // El cliente lo asignará el backend.
-            cliId: 0,
+            empId: 0,
 
             // Entidad a la que pertenece esta malla.
             malEnt: this.entidad,
@@ -393,7 +516,7 @@ export class MallaRegistros implements AfterViewInit {
                 localStorage.getItem('usuario') ?? '',
 
             // La fecha la asignará el backend.
-            malFecMov: ''
+            malFecMov: null
 
         } as Malla;
 

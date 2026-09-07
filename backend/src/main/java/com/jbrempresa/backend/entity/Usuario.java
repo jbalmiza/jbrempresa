@@ -5,6 +5,7 @@ package com.jbrempresa.backend.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 // Entidad JPA
 @Entity
@@ -29,15 +30,16 @@ public class Usuario {
     @Column(name = "usu_id")
     private Long usuId;
 
-    // Cliente
-    @Column(name = "cli_id")
-    private Long cliId;
+    // Empresa
+    @Column(name = "emp_id")
+    private Long empId;
 
     // Usuario
-    @Column(name = "usu_usu")
+    @Column(name = "usu_usu", unique = true)
     private String usuUsu;
 
     // Contraseña
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "usu_con")
     private String usuCon;
 
@@ -45,9 +47,15 @@ public class Usuario {
     @Column(name = "per_id")
     private Long perId;
 
+    @Column(name = "usu_per_id", nullable = false)
+    private Long usuPerId;
+
     // Nombre
     @Column(name = "usu_nom")
     private String usuNom;
+
+    @Column(name = "usu_tel")
+    private String usuTel;
 
     // Email
     @Column(name = "usu_ema")
@@ -78,14 +86,14 @@ public class Usuario {
         this.usuId = usuId;
     }
 
-    // Obtiene el cliente
-    public Long getCliId() {
-        return cliId;
+    // Obtiene el empresa
+    public Long getEmpId() {
+        return empId;
     }
 
-    // Modifica el cliente
-    public void setCliId(Long CliId) {
-        this.cliId = CliId;
+    // Modifica el empresa
+    public void setEmpId(Long EmpId) {
+        this.empId = EmpId;
     }
 
     // Obtiene el usuario
@@ -118,6 +126,9 @@ public class Usuario {
         this.perId = perId;
     }
 
+    public Long getUsuPerId() { return usuPerId; }
+    public void setUsuPerId(Long usuPerId) { this.usuPerId = usuPerId; }
+
     // Obtiene el nombre
     public String getUsuNom() {
         return usuNom;
@@ -127,6 +138,9 @@ public class Usuario {
     public void setUsu_nom(String usuNom) {
         this.usuNom = usuNom;
     }
+
+    public String getUsuTel() { return usuTel; }
+    public void setUsuTel(String usuTel) { this.usuTel = usuTel; }
 
     // Obtiene el email
     public String getUsuEma() {

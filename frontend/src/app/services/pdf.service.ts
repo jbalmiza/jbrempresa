@@ -34,7 +34,7 @@ export class PdfService {
 	    datos: any[],
 		
 		// Logo del cliente.
-		logoCliente?: string,
+		logoEmpresa?: string,
 
 		// Logo de la aplicación.
 		logoAplicacion?: string
@@ -49,8 +49,8 @@ export class PdfService {
 		});
 		
 		// Carga el logotipo del cliente.
-		const imagenCliente = logoCliente ?
-		    await this.cargarImagen(logoCliente) : null;
+		const imagenCliente = logoEmpresa ?
+		    await this.cargarImagen(logoEmpresa) : null;
 
 		// Carga el logotipo de la aplicación.
 		const imagenAplicacion = logoAplicacion ?

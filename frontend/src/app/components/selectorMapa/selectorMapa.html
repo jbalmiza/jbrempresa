@@ -1,7 +1,7 @@
 
 <button type="button" class="boton" (click)="abrirMapa()"> 🗺 Seleccionar en Mapa </button>
 
-<div class="fondo" [style.display]="mostrarMapa ? 'flex' : 'none'">
+<div class="fondo" [style.display]="mostrarMapa ? 'grid' : 'none'">
 
     <div class="ventana">
 
@@ -9,13 +9,15 @@
 
             <span>Seleccionar Mapa</span>
 
-            <button type="button" class="boton" (click)="cerrarMapa()"> ✖ </button>
+            <button type="button" class="boton cerrar" aria-label="Cerrar selector de mapa" (click)="cerrarMapa()">✖</button>
 
         </div>
 
         <div id="mapa" class="mapa"></div>
 
         <div class="pie">
+
+            <span class="ayuda">Haz clic en el mapa o arrastra el marcador para elegir la posición.</span>
         
 			<button type="button" class="boton" (click)="aceptarMapa()"> Aceptar </button>
         

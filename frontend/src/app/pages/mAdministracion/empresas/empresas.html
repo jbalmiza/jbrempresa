@@ -1,0 +1,88 @@
+
+<supbar></supbar>
+
+<div class="menu"> 
+
+	<sidebar modulo="administracion"></sidebar> 
+	
+<div class="pagina">
+
+<label class="titulo"> REGISTRO DE EMPRESAS </label>
+	
+<!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
+<div barraAcciones class="toolbar">
+
+<button class="boton boton-accion accion-consultar" (click)="consultar()"> Consultar </button>
+
+<button *ngIf="empresaSeleccionado" class="boton boton-accion accion-adjuntos" (click)="adjuntos()"> Adjuntos </button>
+
+<button class="boton boton-accion accion-volver" (click)="volver()"> Volver </button>
+
+</div>
+
+		
+
+<!-- FORMULARIO DE REGISTRO -->
+<div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
+
+  	<datosIdentificacion [campos]="[{etiqueta:'Id Empresa',valor:empresa.empId}]"></datosIdentificacion>
+  	
+  	<div class="form-grupo"> 
+  			
+  	<label class="titulo"> Datos Empresa </label>
+
+		<div class="form-fila">
+  			
+  			<div class="form-campo-200"> 
+  				<label class="label"> Nombre <span class="obligatorio">*</span> </label> 
+  				<input type="text" maxlength="50" [(ngModel)]="empresa.empNom" name="empNom"> 
+  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !empresa.empNom"> Valor Obligatorio </div>
+  			</div>
+  			
+  			
+  			
+  		</div>
+  		
+  	</div>
+  
+  	<datosMovimiento [mostrarTipo]="false" [mostrarCausa]="false" [usuario]="empresa.empUsuMov||''" [fecha]="empresa.empFecMov" [activo]="empresa.empAct"></datosMovimiento>
+ 
+	<div barraAcciones class="toolbar"> 
+	
+<button *ngIf="modoFormulario === 'insertar'" class="boton boton-accion accion-guardar" (click)="guardar()"> Guardar </button>
+		
+<button *ngIf="modoFormulario === 'modificar'" class="boton boton-accion accion-actualizar" (click)="actualizar()"> Actualizar </button>
+		
+		<!-- Botón Cancelar tiene misma lógica que insertar -->
+<button class="boton boton-accion accion-cancelar" (click)="insertar()"> Cancelar </button>
+		
+	</div>
+
+</div>
+
+<div *ngIf="vistaActiva === 'adjuntos'" class="form-contenedor">
+	<div class="form-grupo">
+		<label class="titulo">Documentación Adjunta · {{ empresaSeleccionado?.empNom }}</label>
+		<documentacionAdjunta modulo="EMPRESAS" tipoRegistro="EMPRESA" [registroId]="empresaSeleccionado?.empId || 0" codigoRuta="RUTA_DOCUMENTOS_EMPRESAS" [permitirImagenPrincipal]="true"></documentacionAdjunta>
+	</div>
+</div>
+
+<!-- TABLA DE RESULTADOS-->
+<div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
+
+  	<tabla 
+  	
+		titulo="TABLA DE EMPRESAS"
+		[permitirExportar]="true"
+		(exportarSolicitado)="exportar()"
+  		[columnas]="columnas" 
+  		[titulosColumnas]="titulosColumnas"
+  		[datos]="datos" 
+		(filaSeleccionada)="empresaSeleccionado = $event"> 
+  		
+  	</tabla>
+  	  
+</div>
+
+<!-- Cierres de div class menu y pagina -->
+</div> </div>

@@ -1,5 +1,5 @@
 // Importa las clases necesarias de Angular
-import { AfterViewInit, Component, Input } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, Output } from '@angular/core';
 
 // Importa Leaflet
 import * as L from 'leaflet';
@@ -33,8 +33,13 @@ proj4.defs("EPSG:25831", "+proj=utm +zone=31 +ellps=GRS80 +units=m +no_defs");
 })
 export class MapaRegistros implements AfterViewInit {
 
+    // Devuelve el registro asociado al marcador seleccionado.
+    @Output()
+    registroSeleccionado = new EventEmitter<any>();
+
     // Objeto del mapa
     private mapa!: L.Map;
+    private marcadorSeleccionado: L.Marker | null = null;
 
     // Función que obtiene los registros
     @Input()
@@ -99,19 +104,29 @@ export class MapaRegistros implements AfterViewInit {
         // Obtiene los registros
         this.obtenerRegistros().subscribe(registros => {
 
-            console.log('Registros recibidos:', registros);
+            const posiciones: L.LatLngExpression[] = [];
 
             for (const registro of registros) {
 
-                this.crearMarcador(registro);
+                const posicion = this.crearMarcador(registro);
+                if (posicion) posiciones.push(posicion);
 
+            }
+
+            if (posiciones.length === 1) {
+                this.mapa.setView(posiciones[0], 16);
+            } else if (posiciones.length > 1) {
+                this.mapa.fitBounds(L.latLngBounds(posiciones), { padding: [28, 28], maxZoom: 16 });
             }
 
         });
 
     }
 	
-	private crearMarcador(registro: any): void {
+	private crearMarcador(registro: any): L.LatLngExpression | null {
+
+		const campoMovimiento = Object.keys(registro).find(campo => campo.toLowerCase().endsWith('tipmov'));
+		if (campoMovimiento && String(registro[campoMovimiento] ?? '').toUpperCase() === 'B') return null;
 
 	    const x = registro[this.campoX];
 	    const y = registro[this.campoY];
@@ -119,7 +134,7 @@ export class MapaRegistros implements AfterViewInit {
 
 	    // Ignora registros sin coordenadas
 	    if (!x || !y || !epsg) {
-	        return;
+	        return null;
 	    }
 
 	    // Convierte UTM a Lat/Lon
@@ -133,10 +148,31 @@ export class MapaRegistros implements AfterViewInit {
 	    const lat = posicion[1];
 
 	    // Crea el marcador
-	    L.marker([lat, lon])
-	        .addTo(this.mapa)
-	        .bindPopup(registro[this.campoTitulo]);
+	    const coordenadas: L.LatLngExpression = [lat, lon];
 
+	    const marcador = L.marker(coordenadas)
+	        .addTo(this.mapa)
+	        .bindTooltip(String(registro[this.campoTitulo] ?? 'Sin descripción'))
+	        .on('click', () => this.seleccionarMarcador(marcador, registro));
+
+	    return coordenadas;
+
+	}
+
+	private seleccionarMarcador(marcador: L.Marker, registro: any): void {
+		if (this.marcadorSeleccionado && this.marcadorSeleccionado !== marcador) {
+			this.marcadorSeleccionado.setZIndexOffset(0);
+			this.marcadorSeleccionado.setOpacity(1);
+			const anterior = this.marcadorSeleccionado.getElement();
+			if (anterior) anterior.style.filter = '';
+			this.marcadorSeleccionado.closeTooltip();
+		}
+		this.marcadorSeleccionado = marcador;
+		marcador.setZIndexOffset(1000);
+		const elemento = marcador.getElement();
+		if (elemento) elemento.style.filter = 'drop-shadow(0 0 5px #1d5fa7) saturate(1.35)';
+		marcador.openTooltip();
+		this.registroSeleccionado.emit(registro);
 	}
 
 }

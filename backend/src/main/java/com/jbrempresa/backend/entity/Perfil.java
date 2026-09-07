@@ -29,9 +29,9 @@ public class Perfil {
     @Column(name = "per_id")
     private Long perId;
 
-    // Cliente
-    @Column(name = "cli_id")
-    private Long cliId;
+    // Empresa
+    @Column(name = "emp_id")
+    private Long empId;
 
     // Nombre
     @Column(name = "per_nom")
@@ -86,14 +86,14 @@ public class Perfil {
         this.perId = perId;
     }
 
-    // Obtiene el cliente
-    public Long getCliId() {
-        return cliId;
+    // Obtiene el empresa
+    public Long getEmpId() {
+        return empId;
     }
 
-    // Modifica el cliente
-    public void setCliId(Long cliId) {
-        this.cliId = cliId;
+    // Modifica el empresa
+    public void setEmpId(Long empId) {
+        this.empId = empId;
     }
 
     // Obtiene el nombre

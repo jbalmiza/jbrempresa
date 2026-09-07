@@ -1,0 +1,22 @@
+:host { display: block; width: 100%; }
+.arbol-contenedor { overflow: hidden; min-height: 280px; border: 1px solid #d8e2ee; border-radius: 10px; background: #fff; box-shadow: 0 2px 10px rgba(15,23,42,.04); color: #17233b; }
+.arbol-cabecera { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; font-size: 13px; font-weight: 700; }
+.acciones-arbol { display: flex; gap: 6px; }
+.acciones-arbol button { padding: 5px 9px; border: 1px solid #cbd8e6; border-radius: 6px; background: #fff; color: #315b91; cursor: pointer; font-size: 12px; }
+.acciones-arbol button:hover { border-color: #8eb0d7; background: #edf5fd; }
+.lista-arbol { padding: 8px; }
+.nodo-arbol { --sangria: calc(var(--nivel) * 26px); position: relative; display: flex; align-items: center; min-height: 42px; margin-left: var(--sangria); padding: 4px 10px 4px 5px; border: 1px solid transparent; border-radius: 7px; cursor: pointer; outline: none; transition: background .15s,border-color .15s; }
+.nodo-arbol:hover,.nodo-arbol:focus-visible { border-color: #cad9ea; background: #f4f8fc; }
+.nodo-seleccionado { border-color: #93b8e6; background: #eaf3ff; box-shadow: inset 3px 0 #3979c6; }
+.nodo-hoja .icono-nodo { color: #4f8b68; background: #edf8f1; }
+.nodo-deshabilitado { opacity: .55; cursor: default; }
+.guia-nodo { position: absolute; left: -14px; top: -9px; bottom: 50%; width: 13px; border-left: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; }
+.nodo-raiz .guia-nodo { display: none; }
+.alternador,.alternador-vacio { display: inline-grid; place-items: center; flex: 0 0 22px; width: 22px; height: 22px; margin-right: 5px; }
+.alternador { padding: 0; border: 1px solid #b9cadd; border-radius: 5px; background: #fff; color: #315b91; cursor: pointer; font-size: 16px; line-height: 1; }
+.icono-nodo { display: inline-grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; margin-right: 9px; border-radius: 7px; background: #edf3fa; color: #416b9e; font-size: 13px; }
+.contenido-nodo { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
+.contenido-nodo strong { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.contenido-nodo small { overflow: hidden; color: #64748b; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.arbol-vacio { margin: 0; padding: 48px 20px; color: #64748b; text-align: center; }
+@media(max-width:700px){.nodo-arbol{--sangria:calc(var(--nivel) * 18px)}.arbol-cabecera{align-items:flex-start}.acciones-arbol{flex-wrap:wrap;justify-content:flex-end}}

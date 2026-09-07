@@ -1,0 +1,29 @@
+<main class="catalogo-shell" [class.vista-movil]="modoMovil">
+  <section *ngIf="cargando" class="estado">Cargando catálogo...</section>
+  <section *ngIf="!cargando && error && !catalogo" class="estado"><h1>Catálogo no disponible</h1><p>{{error}}</p></section>
+  <ng-container *ngIf="catalogo">
+    <header class="cabecera">
+      <img [src]="service.imagen(catalogo.empresaImagenUrl)" [alt]="catalogo.empresa">
+      <div><span class="cabecera-etiqueta">Catálogo</span><h1>{{catalogo.empresa}}</h1><p>{{catalogo.modalidad === 'EN_POSICION' ? catalogo.ubicacion : 'Envío a domicilio'}}</p></div>
+      <button type="button" class="cerrar-catalogo" (click)="cerrar()">Cerrar</button>
+    </header>
+    <section *ngIf="confirmacion" class="confirmacion"><span class="check">✓</span><h2>Pedido confirmado</h2><strong>{{confirmacion.numero}}</strong><p>Total: {{confirmacion.total | currency:'EUR':'symbol':'1.2-2'}}</p></section>
+    <ng-container *ngIf="!confirmacion">
+      <nav class="categorias" aria-label="Tipos disponibles"><button *ngFor="let c of categorias" [class.activa]="c===categoria" [class.servicio]="esCategoriaServicio(c)" (click)="categoria=c">{{c | titlecase}}</button></nav>
+      <section class="productos">
+        <article *ngFor="let p of productos" class="producto" [class.agotado]="p.agotado">
+          <div class="producto-imagen"><img [src]="service.imagen(p.imagenUrl)" [alt]="p.nombre" loading="lazy"><span class="identificador">#{{p.id}}</span><span *ngIf="p.agotado" class="etiqueta">Agotado</span></div>
+          <div class="producto-info"><small>{{p.tipo==='SERVICIO'?'Servicio':p.subcategoria}}</small><h2>{{p.nombre}}</h2><p>{{p.descripcion}}</p><div class="producto-pie"><strong>{{p.precio | currency:'EUR':'symbol':'1.2-2'}}</strong><button *ngIf="!p.agotado && !cantidad(p.id,p.tipo)" class="anadir" (click)="agregar(p)">Añadir <span>+</span></button><div *ngIf="!p.agotado && cantidad(p.id,p.tipo)" class="cantidad"><button aria-label="Quitar uno" (click)="quitar(p)">−</button><span>{{cantidad(p.id,p.tipo)}}</span><button aria-label="Añadir uno" (click)="agregar(p)">+</button></div></div></div>
+        </article>
+      </section>
+      <button *ngIf="unidades" class="barra-cesta" (click)="cestaAbierta=true"><span class="cesta-unidades">{{unidades}}</span><span>Ver pedido</span><strong>{{total | currency:'EUR':'symbol':'1.2-2'}}</strong></button>
+      <div *ngIf="cestaAbierta" class="modal-fondo" (click)="cestaAbierta=false">
+        <section class="cesta" (click)="$event.stopPropagation()"><header><h2>Tu pedido</h2><button aria-label="Cerrar" (click)="cestaAbierta=false">×</button></header>
+          <div *ngFor="let l of cesta" class="linea"><div><strong>{{l.producto.nombre}}</strong><span>{{l.producto.precio*l.cantidad | currency:'EUR':'symbol':'1.2-2'}}</span></div><div class="cantidad"><button (click)="quitar(l.producto)">−</button><span>{{l.cantidad}}</span><button (click)="agregar(l.producto)">+</button></div><input maxlength="250" [(ngModel)]="l.observaciones" placeholder="Observaciones de este elemento"></div>
+          <div class="datos"><h3>Tus datos</h3><label>Nombre<input maxlength="100" [(ngModel)]="nombre" autocomplete="name"></label><label>Teléfono<input maxlength="30" [(ngModel)]="telefono" type="tel" autocomplete="tel"></label><label *ngIf="catalogo.modalidad==='DOMICILIO'">Dirección de envío<textarea maxlength="500" [(ngModel)]="direccion" autocomplete="street-address"></textarea></label><label>Observaciones del pedido<textarea maxlength="500" [(ngModel)]="observaciones"></textarea></label><p *ngIf="error" class="error">{{error}}</p></div>
+          <footer><div><span>Total</span><strong>{{total | currency:'EUR':'symbol':'1.2-2'}}</strong></div><button class="enviar" [disabled]="confirmando" (click)="enviar()">{{confirmando?'Enviando...':'Realizar pedido'}}</button></footer>
+        </section>
+      </div>
+    </ng-container>
+  </ng-container>
+</main>

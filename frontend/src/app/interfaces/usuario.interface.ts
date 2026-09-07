@@ -1,14 +1,16 @@
 export interface Usuario {
 
-	cliId: number;
+	empId: number;
   	usuId: number;
 
   	usuUsu: string;
   	usuCon: string;
 
-  	perId: number;
+	perId: number;
+	usuPerId: number;
 
   	usuNom: string;
+	usuTel: string;
   	usuEma: string;
 
   	usuUsuMov: string;

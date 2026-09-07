@@ -1,9 +1,11 @@
 # Angular
 frontend/node_modules/
 frontend/dist/
+frontend/dist-verificacion/
 
 # Spring Boot
 backend/target/
+backend/*.pid
 
 # VS Code
 .vscode/

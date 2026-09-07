@@ -4,7 +4,8 @@ package com.jbrempresa.backend.security;
 import java.util.List;
 
 // Permite que Spring inyecte automáticamente objetos.
-import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.beans.factory.annotation.Value;
 
 // Permite declarar métodos que crean objetos gestionados por Spring.
 import org.springframework.context.annotation.Bean;
@@ -55,9 +56,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // Origen permitido por CORS, configurable sin cambiar el código.
+    @Value("${CORS_ALLOWED_ORIGIN:http://localhost:4200,http://127.0.0.1:4200,http://192.168.*:4200,http://10.*:4200,http://172.*:4200}")
+    private String corsAllowedOrigin;
+
     // Inyecta automáticamente el filtro JWT.
-    @Autowired
-    private JwtFilter jwtFilter;
+    private final JwtFilter jwtFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
     // Define la configuración principal de seguridad.
     @Bean
@@ -86,7 +94,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // Permite acceder libremente al login.
-                        .requestMatchers("/usuarios/login")
+                        .requestMatchers(
+                                "/usuarios/login",
+                                "/auth/password/**",
+                                "/catalogo/publico/**",
+                                "/webhooks/meta/whatsapp",
+                                "/webhooks/twilio/whatsapp")
                         .permitAll()
 
                         // Obliga a autenticarse para el resto.
@@ -114,8 +127,8 @@ public class SecurityConfig {
                 new CorsConfiguration();
 
         // Permite peticiones desde Angular.
-        configuration.setAllowedOrigins(
-                List.of("http://localhost:4200"));
+        configuration.setAllowedOriginPatterns(
+                List.of(corsAllowedOrigin.split("\\s*,\\s*")));
         
         // Permite enviar credenciales y cabeceras Authorization.
         configuration.setAllowCredentials(true);
@@ -126,12 +139,17 @@ public class SecurityConfig {
                         "GET",
                         "POST",
                         "PUT",
+                        "PATCH",
                         "DELETE",
                         "OPTIONS"));
 
         // Permite todas las cabeceras.
         configuration.setAllowedHeaders(
                 List.of("*"));
+
+        // Permite que Angular lea el token renovado.
+        configuration.setExposedHeaders(
+                List.of("X-Refresh-Token"));
 
         // Crea el objeto que almacenará la configuración.
         UrlBasedCorsConfigurationSource source =

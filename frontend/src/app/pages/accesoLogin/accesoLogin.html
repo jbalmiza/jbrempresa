@@ -2,10 +2,10 @@
 
 <div class="login-container">
 
-	<img class="logo-greensaas" src="assets/logos/logo-greensaas.png" alt="GreenSaaS">
+	<img class="logo-greensaas" src="assets/logos/logo-greensaas.svg" alt="GreenSaaS">
 
 	<!-- Apartado formulario para el inicio de sesión -->
-	<form (ngSubmit)="entrar()">
+	<form *ngIf="vista === 'login'" (ngSubmit)="entrar()">
 	
 	<div class="titulo"> Iniciar sesión </div>
 
@@ -17,21 +17,54 @@
 			autocomplete="username" 
 			[(ngModel)]="usuario">
 
-		<input 
-		
-			type="password" 
-			name="password" 
-			placeholder="Contraseña" 
-			autocomplete="current-password" 
-			[(ngModel)]="password">
+		<div class="campo-password">
+			<input 
+				[type]="mostrarPassword ? 'text' : 'password'" 
+				name="password" 
+				placeholder="Contraseña" 
+				autocomplete="current-password" 
+				[(ngModel)]="password">
+			<button type="button" class="mostrar-password" [attr.aria-label]="mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'" (click)="mostrarPassword = !mostrarPassword">
+				{{ mostrarPassword ? 'Ocultar' : 'Mostrar' }}
+			</button>
+		</div>
+
+		<label class="recordar">
+			<input type="checkbox" name="recordar" [(ngModel)]="recordar">
+			<span>Recordarme</span>
+		</label>
+
+		<p *ngIf="mensajeError" class="mensaje-error" role="alert">{{ mensajeError }}</p>
+		<p *ngIf="mensajeExito" class="mensaje-exito" role="status">{{ mensajeExito }}</p>
 
 		<!-- El botón entrar llama al método entrar -->
-		<button type="submit"> Entrar </button>
+		<button type="submit" [disabled]="accediendo">{{ accediendo ? 'Accediendo…' : 'Entrar' }}</button>
 
 	</form>
 
+	<form *ngIf="vista === 'solicitar'" (ngSubmit)="solicitarRecuperacion()">
+		<div class="titulo">Recuperar contraseña</div>
+		<p class="descripcion-recuperacion">Te enviaremos un enlace de un solo uso, válido durante 30 minutos.</p>
+		<input type="text" name="usuarioRecuperacion" placeholder="Usuario" autocomplete="username" [(ngModel)]="usuario">
+		<input type="email" name="correoRecuperacion" placeholder="Correo electrónico" autocomplete="email" [(ngModel)]="correoRecuperacion">
+		<p *ngIf="mensajeError" class="mensaje-error" role="alert">{{ mensajeError }}</p>
+		<p *ngIf="mensajeExito" class="mensaje-exito" role="status">{{ mensajeExito }}</p>
+		<button type="submit" [disabled]="procesandoRecuperacion">{{ procesandoRecuperacion ? 'Enviando…' : 'Enviar enlace' }}</button>
+		<button type="button" class="boton-secundario" (click)="volverAlAcceso()">Volver al acceso</button>
+	</form>
+
+	<form *ngIf="vista === 'restablecer'" (ngSubmit)="restablecerPassword()">
+		<div class="titulo">Nueva contraseña</div>
+		<p class="descripcion-recuperacion">Utiliza al menos 8 caracteres, con mayúscula, minúscula y número.</p>
+		<input type="password" name="nuevaPassword" placeholder="Nueva contraseña" autocomplete="new-password" [(ngModel)]="nuevaPassword">
+		<input type="password" name="confirmarPassword" placeholder="Confirmar contraseña" autocomplete="new-password" [(ngModel)]="confirmarPassword">
+		<p *ngIf="mensajeError" class="mensaje-error" role="alert">{{ mensajeError }}</p>
+		<button type="submit" [disabled]="procesandoRecuperacion">{{ procesandoRecuperacion ? 'Actualizando…' : 'Actualizar contraseña' }}</button>
+		<button type="button" class="boton-secundario" (click)="volverAlAcceso()">Cancelar</button>
+	</form>
+
 	<!-- Apartado para el cambio de contraseña-->	
-	<div class="opciones-login">
+	<div *ngIf="vista === 'login'" class="opciones-login">
 
     	<a (click)="abrirCambioPassword()"> ¿Ha olvidado la contraseña? </a>
 
@@ -40,13 +73,19 @@
 	<!-- Apartado datos de la empresa y de la aplicación-->
 	<div class="info-login">
 	
-		<img class="logo-jbrempresa" src="assets/logos/logo-jbrempresa.png" alt="jbrempresa">
+		<img class="logo-jbrempresa" src="assets/logos/logo-jbrempresa.svg" alt="jbrempresa">
     
     	<p>GreenSaaS v1.0.0</p>
 
    		<p>© 2026 JBREMPRESA</p>
 
     	<p>Todos los derechos reservados.</p>
+
+		<div class="tecnologias" aria-label="Tecnologías utilizadas">
+			<span class="tecnologia angular"><span class="icono-tecnologia">A</span>Angular</span>
+			<span class="tecnologia spring"><span class="icono-tecnologia">●</span>Spring Boot</span>
+			<span class="tecnologia ia"><span class="icono-tecnologia">✦</span>IA</span>
+		</div>
 
 	</div>
 

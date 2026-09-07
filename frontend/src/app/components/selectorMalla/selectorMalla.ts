@@ -53,10 +53,10 @@ export class SelectorMalla implements AfterViewInit {
     private columnasMalla = 100;
 
     // Fila seleccionada
-    private filaSeleccionada = 1;
+    filaSeleccionada = 1;
 
     // Columna seleccionada
-    private columnaSeleccionada = 1;
+    columnaSeleccionada = 1;
 	
 	// Celda actualmente seleccionada
 	private celdaSeleccionada?: HTMLDivElement;
@@ -131,10 +131,7 @@ export class SelectorMalla implements AfterViewInit {
 	// Construye la malla
 	crearMalla(): void {
 		
-		console.log('contenedor:', this.contenedor);
-
 		if (!this.contenedor) {
-		    console.log('El ViewChild todavía no existe');
 		    return;
 		}
 
@@ -149,6 +146,13 @@ export class SelectorMalla implements AfterViewInit {
 
 	    malla.style.gridTemplateColumns =
 	        `repeat(${this.columnasMalla}, 30px)`;
+
+	    const posicionesOcupadas = new Map(
+	        this.mallas.map(registro => [
+	            `${registro.malFil}-${registro.malCol}`,
+	            registro
+	        ])
+	    );
 
 	    // Crea todas las celdas
 	    for (let fila = 1; fila <= this.filasMalla; fila++) {
@@ -165,10 +169,10 @@ export class SelectorMalla implements AfterViewInit {
 	            celda.classList.add('celda');
 
 	            // Comprueba si la posición está ocupada
-	            const registro = this.mallas.find(m =>
-	                m.malFil === fila &&
-	                m.malCol === columna
-	            );
+	            const registro = posicionesOcupadas.get(`${fila}-${columna}`);
+	            const esSeleccionActual =
+	                fila === this.filaSeleccionada &&
+	                columna === this.columnaSeleccionada;
 
 	            // Si existe un registro en esa posición,
 	            // marca la celda como ocupada
@@ -180,8 +184,7 @@ export class SelectorMalla implements AfterViewInit {
 
 	            // Si es la posición seleccionada,
 	            // la marca automáticamente
-	            if (fila === this.filaSeleccionada &&
-	                columna === this.columnaSeleccionada) {
+	            if (esSeleccionActual) {
 
 	                celda.classList.add('celdaSeleccionada');
 
@@ -190,14 +193,18 @@ export class SelectorMalla implements AfterViewInit {
 	            }
 
 	            // Texto mostrado al pasar el ratón
-	            celda.title = `Fila ${fila} - Columna ${columna}`;
+	            celda.title = registro && !esSeleccionActual
+	                ? `Fila ${fila} - Columna ${columna} · Posición ocupada`
+	                : `Fila ${fila} - Columna ${columna}`;
 
 	            // Evento de selección de la celda
-	            celda.onclick = () => this.seleccionarCelda(
-	                celda,
-	                fila,
-	                columna
-	            );
+	            if (!registro || esSeleccionActual) {
+	                celda.onclick = () => this.seleccionarCelda(
+	                    celda,
+	                    fila,
+	                    columna
+	                );
+	            }
 
 	            // Añade la celda a la malla
 	            malla.appendChild(celda);
