@@ -25,6 +25,8 @@ Opcionalmente puede definirse `CORE_DATA_ENCRYPTION_KEY`. Si no existe, se utili
 
 No deben incluirse valores reales de contraseñas o claves en archivos versionados, capturas o registros.
 
+El inventario local de credenciales puede mantenerse en `backend/docs/SECRETOS.md`. Este archivo está excluido expresamente mediante `.gitignore`; debe permanecer fuera de Git y no sustituye un gestor de secretos con copia de seguridad.
+
 ## Bizum mediante Redsys
 
 La preparación se configura por empresa mediante parámetros del módulo `VENTAS`:

@@ -1,5 +1,11 @@
 # Cambios del backend
 
+## 2026-09-07 - Inventario local de secretos
+
+- Añadido `backend/docs/SECRETOS.md` como inventario exclusivamente local y excluido de Git.
+- Registrados los datos de conexión conocidos, las variables obligatorias, las integraciones sensibles y las credenciales aisladas de pruebas.
+- Los valores reales no disponibles se marcan pendientes, sin inventarlos ni incorporarlos a archivos versionados.
+
 ## 2026-09-07 - Limpieza de diagnósticos Java
 
 - Sustituidos los usos obsoletos de `JsonNode.asText()` por `asString()` en WhatsApp.
