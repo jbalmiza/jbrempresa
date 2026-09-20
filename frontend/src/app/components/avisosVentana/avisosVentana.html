@@ -1,0 +1,6 @@
+<section class="avisos-ventana" [class.integrado]="integrado" [hidden]="!hayVisibles" aria-label="Avisos y alertas de esta ventana">
+  <article *ngFor="let aviso of avisos" [class.alerta]="aviso.tipo==='ALERTA'" [hidden]="ocultos.has(clave(aviso))">
+    <span class="mensaje"><strong>{{aviso.titulo}}</strong> {{aviso.mensaje}}</span>
+    <button type="button" [attr.aria-label]="'Ocultar '+aviso.tipo.toLowerCase()" (click)="ocultar(aviso)">×</button>
+  </article>
+</section>

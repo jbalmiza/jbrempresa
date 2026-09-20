@@ -1,10 +1,11 @@
 <supbar></supbar><div class="menu"><sidebar modulo="recursos"></sidebar><div class="pagina">
 <label class="titulo">{{gestion?'GESTIÓN DE RECURSOS':'REGISTRO DE RECURSOS'}}</label>
 <div barraAcciones *ngIf="vista!=='historico'" class="toolbar">
+ <button *ngIf="gestion&&vista==='tabla'" class="boton boton-accion accion-vista" (click)="alternarTablaGestion()">{{tipoTablaGestion==='EMPLEADO'?'Maquinaria':'Empleados'}}</button>
  <button class="boton boton-accion accion-consultar" (click)="cargar()">Consultar</button>
  <button *ngIf="!gestion" class="boton boton-accion accion-insertar" (click)="insertar()">Insertar</button>
  <button *ngIf="vista==='tabla'&&seleccion" class="boton boton-accion accion-ver" (click)="ver()">Ver</button>
- <button *ngIf="vista==='tabla'&&seleccion&&seleccion.reoTipMov!=='B'" class="boton boton-accion accion-modificar" (click)="modificar()">Modificar</button>
+ <button *ngIf="!gestion&&vista==='tabla'&&seleccion&&seleccion.reoTipMov!=='B'" class="boton boton-accion accion-modificar" (click)="modificar()">Modificar</button>
  <button *ngIf="!gestion&&vista==='tabla'&&seleccion" class="boton boton-accion accion-eliminar" (click)="eliminar()">Eliminar</button>
  <button *ngIf="gestion&&vista==='tabla'&&seleccion&&seleccion.reoTipMov!=='B'" class="boton boton-accion accion-baja" (click)="baja()">Baja</button>
  <button *ngIf="gestion&&vista==='tabla'&&seleccion?.reoTipMov==='B'" class="boton boton-accion accion-reactivar" (click)="reactivar()">Reactivar</button>
@@ -26,10 +27,11 @@
   <div class="form-campo"><label class="label">Operativo</label><input type="checkbox" [(ngModel)]="recurso.reoOpe" disabled></div>
  </datosMovimiento>
  <div barraAcciones *ngIf="modo!=='ver'" class="toolbar"><button class="boton boton-accion accion-guardar" (click)="guardar()">Guardar</button><button class="boton boton-accion accion-cancelar" (click)="cargar()">Cancelar</button></div>
- <div barraAcciones *ngIf="modo==='ver'" class="toolbar"><button class="boton boton-accion accion-volver" (click)="cargar()">Volver a consulta</button></div>
+ <div barraAcciones *ngIf="modo==='ver'" class="toolbar"><button class="boton boton-accion accion-volver" (click)="cargar()">Volver</button></div>
 </div>
 <div *ngIf="vista==='capacidades'" class="form-contenedor"><div class="form-grupo"><label class="titulo">Operatividad · {{recurso.reoNom}}</label><div class="form-fila"><label class="label"><input type="checkbox" [(ngModel)]="recurso.reoOpe" (change)="cambiarOperativo(recurso)"> Recurso operativo</label></div></div><div class="form-grupo"><label class="titulo">Capacidades</label><div class="form-fila"><label *ngFor="let c of tipos" class="label"><input type="checkbox" [checked]="capacidades.has(clave(c.origen,c.tipo))" (change)="alternar(c)"> {{c.origen==='PRODUCTO'?'Producto':'Servicio'}} · {{c.tipo}}</label></div></div><div barraAcciones class="toolbar"><button class="boton boton-accion accion-guardar" (click)="guardarGestion()">Guardar</button><button class="boton boton-accion accion-cancelar" (click)="cargar()">Cancelar</button></div></div>
 <div *ngIf="vista==='agenda'" class="form-contenedor"><agendaRegistros [titulo]="'Agenda empleado · '+recurso.reoNom" [tipoRecurso]="'EMPLEADO'" [referenciaId]="recurso.reoId||0" [nombreRecurso]="recurso.reoNom" [intervaloMinutos]="5"></agendaRegistros><div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="cargar()">Volver a recursos</button></div></div>
 <div *ngIf="vista==='historico'" class="tabla-contenedor"><label class="titulo">HISTÓRICO DE RECURSO · {{seleccion?.reoNom}}</label><div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="cargar()">Volver</button><button *ngIf="(seleccion?.reoIdHis||1)>1" class="boton boton-accion accion-deshacer" (click)="deshacer()">Deshacer</button></div><tabla [columnas]="columnas" [titulosColumnas]="titulos" [incluirBajas]="true" [datos]="datosHistorico"></tabla></div>
-<div *ngIf="vista==='tabla'" class="tabla-contenedor"><tabla titulo="TABLA DE RECURSOS" [columnas]="columnas" [titulosColumnas]="titulos" [datos]="datos" (filaSeleccionada)="seleccion=$event"></tabla><div *ngIf="gestion" class="form-contenedor"><p>Seleccione un recurso para administrarlo.</p></div></div>
+<div *ngIf="vista==='tabla'&&!gestion" class="tabla-contenedor"><tabla titulo="TABLA DE RECURSOS" [columnas]="columnas" [titulosColumnas]="titulos" [datos]="datos" (filtroSolicitado)="cargar()" (filaSeleccionada)="seleccion=$event"></tabla></div>
+<div *ngIf="vista==='tabla'&&gestion" class="tabla-contenedor"><tabla [titulo]="tipoTablaGestion==='EMPLEADO'?'TABLA DE EMPLEADOS':'TABLA DE MAQUINARIA'" [claveConfiguracion]="tipoTablaGestion==='EMPLEADO'?'gestion-recursos-empleados':'gestion-recursos-maquinaria'" [columnas]="columnas" [titulosColumnas]="titulos" [datos]="datosGestion" (filtroSolicitado)="cargar()" (filaSeleccionada)="seleccion=$event"></tabla></div>
 </div></div>

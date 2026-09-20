@@ -23,8 +23,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Busca usuarios del cliente autenticado, con filtros y paginación en base de datos.
     @Query(value = """
             SELECT * FROM usuarios u
-            WHERE u.emp_id = :empresaId
-              AND (:empId IS NULL OR CAST(u.emp_id AS TEXT) ILIKE CONCAT('%', :empId, '%'))
+            WHERE (:empresaId IS NULL OR u.emp_id = :empresaId)
+              AND (:excluirAdministradorGlobal = FALSE OR LOWER(u.usu_usu) <> 'jackalblue')
+              AND (:incluirInactivos = TRUE OR LOWER(u.usu_act) IN ('true','s','a','1'))
+              AND (:empId IS NULL OR (UPPER(TRIM(:empId)) = 'T' AND LOWER(u.usu_usu) = 'jackalblue') OR CAST(u.emp_id AS TEXT) ILIKE CONCAT('%', :empId, '%'))
               AND (:usuId IS NULL OR CAST(u.usu_id AS TEXT) ILIKE CONCAT('%', :usuId, '%'))
               AND (:usuUsu IS NULL OR u.usu_usu ILIKE CONCAT('%', :usuUsu, '%'))
               AND (:perId IS NULL OR CAST(u.per_id AS TEXT) ILIKE CONCAT('%', :perId, '%'))
@@ -36,8 +38,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             """,
             countQuery = """
             SELECT COUNT(*) FROM usuarios u
-            WHERE u.emp_id = :empresaId
-              AND (:empId IS NULL OR CAST(u.emp_id AS TEXT) ILIKE CONCAT('%', :empId, '%'))
+            WHERE (:empresaId IS NULL OR u.emp_id = :empresaId)
+              AND (:excluirAdministradorGlobal = FALSE OR LOWER(u.usu_usu) <> 'jackalblue')
+              AND (:incluirInactivos = TRUE OR LOWER(u.usu_act) IN ('true','s','a','1'))
+              AND (:empId IS NULL OR (UPPER(TRIM(:empId)) = 'T' AND LOWER(u.usu_usu) = 'jackalblue') OR CAST(u.emp_id AS TEXT) ILIKE CONCAT('%', :empId, '%'))
               AND (:usuId IS NULL OR CAST(u.usu_id AS TEXT) ILIKE CONCAT('%', :usuId, '%'))
               AND (:usuUsu IS NULL OR u.usu_usu ILIKE CONCAT('%', :usuUsu, '%'))
               AND (:perId IS NULL OR CAST(u.per_id AS TEXT) ILIKE CONCAT('%', :perId, '%'))
@@ -50,6 +54,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             nativeQuery = true)
     Page<Usuario> buscarPorEmpresa(
             @Param("empresaId") Long empresaId,
+            @Param("excluirAdministradorGlobal") boolean excluirAdministradorGlobal,
+            @Param("incluirInactivos") boolean incluirInactivos,
             @Param("empId") String empId,
             @Param("usuId") String usuId,
             @Param("usuUsu") String usuUsu,

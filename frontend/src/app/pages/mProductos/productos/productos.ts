@@ -17,14 +17,24 @@ import { DocumentacionAdjunta } from '../../../components/documentacionAdjunta/d
 import { SelectorMalla } from '../../../components/selectorMalla/selectorMalla';
 
 import { FechasUtil } from '../../../shared/utils/fechas.util';
+import { PreciosProductoUtil } from '../../../shared/utils/precios-producto.util';
+import { ParametroService } from '../../../services/parametro.service';
 
 import { Producto } from '../../../interfaces/producto.interface';
+import { ProductoComponente } from '../../../interfaces/producto.interface';
+import { Componente } from '../../../interfaces/componente.interface';
+import { ComponenteService } from '../../../services/componente.service';
+import { TablaEdicion } from '../../../components/tablaEdicion/tablaEdicion';
+import { SelectorBusqueda } from '../../../components/selectorBusqueda/selectorBusqueda';
+import { TablaColumna } from '../../../directives/tablaColumna/tablaColumna';
 
 import { FormsModule } from '@angular/forms';
 
 import { ProductoService } from '../../../services/producto.service';
 import { TipoArticulo, TipoArticuloService } from '../../../services/tipo-articulo.service';
 import { PdfService } from '../../../services/pdf.service';
+import { EmpresaRelacionService } from '../../../services/empresa-relacion.service';
+import { OpcionEmpresa } from '../../../interfaces/empresa-relacion.interface';
 
 import { ViewChild } from '@angular/core';
 
@@ -32,7 +42,7 @@ import { ViewChild } from '@angular/core';
 @Component({
   selector: 'Productos',
   standalone: true,
-  imports:[CommonModule, FormsModule, Sidebar, Supbar, Tabla, SelectorMalla, DocumentacionAdjunta,DatosIdentificacion,DatosMovimiento,BarraAcciones],
+  imports:[CommonModule, FormsModule, Sidebar, Supbar, Tabla, TablaEdicion, SelectorBusqueda, TablaColumna, SelectorMalla, DocumentacionAdjunta,DatosIdentificacion,DatosMovimiento,BarraAcciones],
   templateUrl: './productos.html',
   styleUrl: '../../../styles/estiloGeneral.css'
 })
@@ -49,8 +59,10 @@ export class Productos {
 
 	//Variables de la clase
 	vistaActiva: 'malla' | 'registro' | 'tabla' | 'adjuntos' | 'historico' = 'tabla';
-	modoFormulario: 'insertar' | 'modificar' = 'insertar';
+	modoFormulario: 'insertar' | 'modificar' | 'ver' = 'insertar';
 	mostrarObligatorios = false;
+	margenPorEmpresa = new Map<number, number>();
+	get margenObjetivo(): number { return this.margenPorEmpresa?.get(Number(this.producto?.empId)) ?? 20; }
 	
 	// Se crea un objeto producto con datos vacíos
 	producto: Producto = this.crearProductoVacio();
@@ -70,8 +82,13 @@ export class Productos {
 		proMar: 'Marca',
 		proMod: 'Modelo',
 		proPro: 'Proveedor',
-		proPreCom: 'Precio Compra',
-		proPreVen: 'Precio Venta',
+		proPreCom: 'Precio Compra sin IVA',
+		proDesCom: 'Descuento Compra (%)',
+		proIvaCom: 'IVA Compra',
+		proTotCom: 'Total Compra',
+		proPreComEst: 'Coste estimado',
+		proPreVen: 'Base venta sin IVA',
+		proPreVenIva: 'Precio Venta con IVA',
 		proPreDes: 'Descuento',
 		proPreIva: 'I.V.A.',
 		proPreFin: 'Precio Final',
@@ -81,6 +98,8 @@ export class Productos {
 		proConSto: 'Control Stock',
 		proObs: 'Observaciones',
 		proDurMin: 'Duración (min)',
+		proDisLun: 'Disponible lunes', proDisMar: 'Disponible martes', proDisMie: 'Disponible miércoles',
+		proDisJue: 'Disponible jueves', proDisVie: 'Disponible viernes', proDisSab: 'Disponible sábado', proDisDom: 'Disponible domingo',
 		proUbi: 'Ubicación',
 		proFilMal: 'Fila Malla',
 		proColMal: 'Columna Malla',
@@ -93,9 +112,9 @@ export class Productos {
 	columnas: string[] = [ 'empId', 'proId', 'proIdHis', 'proTipMov', 'proCauMov',
 		'proTipPro', 'proNom', 'proDes',
 		'proCat', 'proSubCat', 'proMar', 'proMod', 'proPro',
-		'proPreCom', 'proPreVen', 'proPreDes', 'proPreIva', 'proPreFin', 
+		'proPreCom', 'proDesCom', 'proIvaCom', 'proTotCom', 'proPreComEst', 'proPreVen', 'proPreVenIva', 'proPreDes', 'proPreIva', 'proPreFin',
 		'proStoAct', 'proStoMin', 'proUniMed', 'proConSto',
-		'proObs', 'proDurMin',
+		'proObs', 'proDurMin', 'proDisLun', 'proDisMar', 'proDisMie', 'proDisJue', 'proDisVie', 'proDisSab', 'proDisDom',
 		'proUbi', 'proFilMal', 'proColMal',
 		'proUsuMov', 'proFecMov','proAct'
 
@@ -105,6 +124,11 @@ export class Productos {
 	datos: any[] = [];
 	datosHistorico: Producto[] = [];
 	tiposProducto: TipoArticulo[] = [];
+	proveedoresRelacionados: OpcionEmpresa[] = [];
+	componentesDisponibles: Componente[] = [];
+	columnasComponentes = ['cmpId','prcCan','accion'];
+	titulosComponentes = {cmpId:'Componente',prcCan:'Cantidad',accion:'Acción'};
+	get opcionesComponentes(){return this.componentesDisponibles.filter(c=>c.cmpTipMov!=='B'&&Number(c.empId)===Number(this.producto.empId)).map(c=>({...c,etiqueta:`${c.cmpTip.replace('_',' ')} · ${c.cmpNom}`}));}
 	
 	// Guarda el registro seleccionado de la tabla
 	productoSeleccionado: Producto | null = null;
@@ -115,10 +139,51 @@ export class Productos {
 	  private readonly router: Router,
 	  private productoService: ProductoService,
 	  private pdfService: PdfService,
-	  private tipoArticuloService: TipoArticuloService
+	  private tipoArticuloService: TipoArticuloService,
+	  private relacionesEmpresa: EmpresaRelacionService,
+	  private parametros: ParametroService,
+	  private componenteService: ComponenteService
 	  
-	) { this.tipoArticuloService.listar('PRODUCTO').subscribe({next: tipos => this.tiposProducto = tipos, error: () => avisarAplicacion('No se pudieron cargar los tipos de producto.')}); }
+	) { this.tipoArticuloService.listar('PRODUCTO').subscribe({next: tipos => this.tiposProducto = tipos, error: () => avisarAplicacion('No se pudieron cargar los tipos de producto.')}); this.relacionesEmpresa.proveedores().subscribe({next:r=>this.proveedoresRelacionados=r,error:()=>avisarAplicacion('No se pudieron cargar los proveedores relacionados.')}); this.componenteService.listar().subscribe({next:r=>this.componentesDisponibles=r,error:()=>avisarAplicacion('No se pudieron cargar los componentes.')}); this.cargarMargenes(); }
+
+	private cargarMargenes(): void {
+		this.parametros.consultar('PRODUCTOS').subscribe({next: datos => {
+			this.margenPorEmpresa.clear();
+			for (const p of datos) if (p.parAct && p.parCod.toUpperCase() === 'PORCENTAJE_BENEFICIO') {
+				const valor = Number(p.parVal);
+				if (Number.isFinite(valor) && valor >= 0 && valor < 100) this.margenPorEmpresa.set(Number(p.empId), valor);
+			}
+		}, error: () => avisarAplicacion('No se pudo consultar el margen de productos de la empresa.')});
+	}
+
+	private sincronizarPrecioVenta(): void {
+		if (this.producto.proTotCom == null) PreciosProductoUtil.actualizarCompra(this.producto);
+	}
+	precioCompraCambiado(): void {
+		this.producto.proPreComEst = false;
+		PreciosProductoUtil.actualizarCompra(this.producto);
+	}
+	precioVentaCambiado(): void {
+		PreciosProductoUtil.actualizarFinal(this.producto);
+	}
+	ivaVentaCambiado(): void { this.precioVentaCambiado(); }
+	descuentoCambiado(): void { PreciosProductoUtil.actualizarFinal(this.producto); }
+	aplicarBeneficioAVenta(): void {
+		if (!Number.isFinite(Number(this.producto.proPreCom)) || Number(this.producto.proPreCom) <= 0) {
+			avisarAplicacion('Revise el precio de compra antes de aplicar el beneficio.'); return;
+		}
+		PreciosProductoUtil.desdeCompra(this.producto, this.margenObjetivo);
+	}
+	aplicarBeneficioACompra(): void {
+		if (!Number.isFinite(Number(this.producto.proPreVen)) || Number(this.producto.proPreVen) <= 0) {
+			avisarAplicacion('Revise el precio de venta antes de aplicar el beneficio.'); return;
+		}
+		PreciosProductoUtil.desdeVenta(this.producto, this.margenObjetivo);
+	}
 	
+	insertarComponente(): void { (this.producto.componentes ??= []).push({cmpId:null,prcCan:1}); }
+	eliminarComponente(indice:number): void { this.producto.componentes?.splice(indice,1); }
+
 	// Este método muestra el mapa de datos
 	malla() {
 
@@ -136,7 +201,7 @@ export class Productos {
 
 			next: (respuesta) => {
 
-				this.datos = respuesta;
+				this.datos = respuesta.map(p => ({...p, proPreVenIva: PreciosProductoUtil.ventaConIva(p)}));
 
 			},
 
@@ -198,6 +263,19 @@ export class Productos {
 		
 	}
 	
+	ver() {
+		if (!this.productoSeleccionado) {
+			avisarAplicacion('Debe seleccionar un registro');
+			return;
+		}
+
+		this.producto = { ...this.productoSeleccionado };
+		this.sincronizarPrecioVenta();
+		this.modoFormulario = 'ver';
+		this.mostrarObligatorios = false;
+		this.vistaActiva = 'registro';
+	}
+
 	// Este método modifica	
 	modificar() {
 	  this.modoFormulario = 'modificar';
@@ -247,6 +325,10 @@ export class Productos {
 			proPro: this.productoSeleccionado.proPro,
 			
 			proPreCom: this.productoSeleccionado.proPreCom,
+			proDesCom: this.productoSeleccionado.proDesCom,
+			proIvaCom: this.productoSeleccionado.proIvaCom,
+			proTotCom: this.productoSeleccionado.proTotCom,
+			proPreComEst: this.productoSeleccionado.proPreComEst,
 			proPreVen: this.productoSeleccionado.proPreVen,
 			proPreDes: this.productoSeleccionado.proPreDes,
 			proPreIva: this.productoSeleccionado.proPreIva,
@@ -260,7 +342,15 @@ export class Productos {
 			proObs: this.productoSeleccionado.proObs,
 			proDurMin: this.productoSeleccionado.proDurMin || 0,
 			proVisCat: this.productoSeleccionado.proVisCat || false,
+			proNov: this.productoSeleccionado.proNov || false,
+			proMejPre: this.productoSeleccionado.proMejPre || false,
+			proOut: this.productoSeleccionado.proOut || false,
+			proDisLun: this.productoSeleccionado.proDisLun ?? true, proDisMar: this.productoSeleccionado.proDisMar ?? true,
+			proDisMie: this.productoSeleccionado.proDisMie ?? true, proDisJue: this.productoSeleccionado.proDisJue ?? true,
+			proDisVie: this.productoSeleccionado.proDisVie ?? true, proDisSab: this.productoSeleccionado.proDisSab ?? true,
+			proDisDom: this.productoSeleccionado.proDisDom ?? true,
 			proIma: this.productoSeleccionado.proIma || '',
+			componentes: this.productoSeleccionado.componentes?.map(c=>({...c})) ?? [],
 			
 			proFilMal: this.productoSeleccionado.proFilMal,
 			proColMal: this.productoSeleccionado.proColMal,
@@ -271,6 +361,7 @@ export class Productos {
 			proAct: this.productoSeleccionado.proAct
 
 		};
+		this.sincronizarPrecioVenta();
 
 	  }
 
@@ -391,10 +482,11 @@ export class Productos {
 			!this.producto.proNom ||
 			!this.producto.proCat ||
 			!this.producto.proMar ||
-			!this.producto.proPro ||
 			!this.producto.proPreCom ||
 			!this.producto.proPreVen ||
-			!this.producto.proPreIva 
+			this.producto.proIvaCom == null ||
+			this.producto.proPreIva == null ||
+			this.producto.proDesCom == null
 		) {
 
 			// Muestra el mensaje
@@ -406,6 +498,14 @@ export class Productos {
 		}
 
 		// Indica que el formulario es válido
+		if (Number(this.producto.proPreCom) <= 0 || Number(this.producto.proPreVen) <= 0 ||
+			Number(this.producto.proIvaCom) < 0 || Number(this.producto.proIvaCom) > 100 ||
+			Number(this.producto.proPreIva) < 0 || Number(this.producto.proPreIva) > 100 ||
+			Number(this.producto.proPreDes || 0) < 0 || Number(this.producto.proPreDes || 0) > 100 ||
+			Number(this.producto.proDesCom || 0) < 0 || Number(this.producto.proDesCom || 0) > 100) {
+			avisarAplicacion('Revise los importes, los tipos de IVA y el descuento.');
+			return false;
+		}
 		return true;
 
 	}
@@ -441,6 +541,10 @@ export class Productos {
 			proPro: this.producto.proPro,
 			
 			proPreCom: this.producto.proPreCom,
+			proDesCom: this.producto.proDesCom,
+			proIvaCom: this.producto.proIvaCom,
+			proTotCom: this.producto.proTotCom,
+			proPreComEst: this.producto.proPreComEst,
 			proPreVen: this.producto.proPreVen,
 			proPreDes: this.producto.proPreDes,
 			proPreIva: this.producto.proPreIva,
@@ -454,7 +558,13 @@ export class Productos {
 			proObs: this.producto.proObs,
 			proDurMin: this.producto.proDurMin || 0,
 			proVisCat: this.producto.proVisCat || false,
+			proNov: this.producto.proNov || false,
+			proMejPre: this.producto.proMejPre || false,
+			proOut: this.producto.proOut || false,
+			proDisLun: this.producto.proDisLun ?? true, proDisMar: this.producto.proDisMar ?? true, proDisMie: this.producto.proDisMie ?? true,
+			proDisJue: this.producto.proDisJue ?? true, proDisVie: this.producto.proDisVie ?? true, proDisSab: this.producto.proDisSab ?? true, proDisDom: this.producto.proDisDom ?? true,
 			proIma: this.producto.proIma || '',
+			componentes: this.producto.componentes?.map(c=>({...c})) ?? [],
 			
 			proFilMal: this.producto.proFilMal,
 			proColMal: this.producto.proColMal,
@@ -519,6 +629,10 @@ export class Productos {
 			proPro: this.producto.proPro,
 
 			proPreCom: this.producto.proPreCom,
+			proDesCom: this.producto.proDesCom,
+			proIvaCom: this.producto.proIvaCom,
+			proTotCom: this.producto.proTotCom,
+			proPreComEst: this.producto.proPreComEst,
 			proPreVen: this.producto.proPreVen,
 			proPreDes: this.producto.proPreDes,
 			proPreIva: this.producto.proPreIva,
@@ -532,7 +646,13 @@ export class Productos {
 			proObs: this.producto.proObs,
 			proDurMin: this.producto.proDurMin || 0,
 			proVisCat: this.producto.proVisCat || false,
+			proNov: this.producto.proNov || false,
+			proMejPre: this.producto.proMejPre || false,
+			proOut: this.producto.proOut || false,
+			proDisLun: this.producto.proDisLun ?? true, proDisMar: this.producto.proDisMar ?? true, proDisMie: this.producto.proDisMie ?? true,
+			proDisJue: this.producto.proDisJue ?? true, proDisVie: this.producto.proDisVie ?? true, proDisSab: this.producto.proDisSab ?? true, proDisDom: this.producto.proDisDom ?? true,
 			proIma: this.producto.proIma || '',
+			componentes: this.producto.componentes?.map(c=>({...c})) ?? [],
 			
 			proFilMal: this.producto.proFilMal,
 			proColMal: this.producto.proColMal,
@@ -600,6 +720,10 @@ export class Productos {
 		proPro: '',
 		
 		proPreCom: 0,
+		proDesCom: 0,
+		proIvaCom: 0,
+		proTotCom: 0,
+		proPreComEst: false,
 		proPreVen: 0,
 		proPreDes: 0,
 		proPreIva: 0,
@@ -613,7 +737,12 @@ export class Productos {
 		proObs: '',
 		proDurMin: 0,
 		proVisCat: true,
+		proNov: false,
+		proMejPre: false,
+		proOut: false,
+		proDisLun: true, proDisMar: true, proDisMie: true, proDisJue: true, proDisVie: true, proDisSab: true, proDisDom: true,
 		proIma: 'producto-predeterminado.png',
+		componentes: [],
 		
 		proFilMal: 0,
 		proColMal: 0,
@@ -637,13 +766,13 @@ export class Productos {
 	// Recalcula el campo precio final
 	actualizarPrecioFinal() {
 
-	  const base =
-	      (this.producto.proPreVen || 0)
-	    - (this.producto.proPreDes || 0);
+	  PreciosProductoUtil.actualizarFinal(this.producto);
 
-	  this.producto.proPreFin =
-	      base + (base * (this.producto.proPreIva || 0) / 100);
+	}
 
+	normalizarStock(valor: unknown): number {
+	  const numero = Number(valor);
+	  return Number.isFinite(numero) ? Math.max(0, Math.trunc(numero)) : 0;
 	}
 	
 }

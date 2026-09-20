@@ -7,6 +7,7 @@ La documentación forma parte obligatoria de cada cambio y tiene prioridad máxi
 - Actualizar el registro `CAMBIOS.md` correspondiente con fecha, alcance y verificaciones realizadas.
 - Cuando un cambio afecte al contrato entre frontend y backend, documentarlo en ambos proyectos.
 - Registrar las decisiones funcionales confirmadas, no solo los detalles de implementación.
+- Toda nueva directiva permanente indicada por el usuario debe incorporarse, con identificador consecutivo, al catálogo `frontend/docs/DIRECTIVAS.md`, `backend/docs/DIRECTIVAS.md` o a ambos según su alcance. Los README y documentos temáticos enlazan o explican su aplicación, pero no mantienen catálogos paralelos.
 - No guardar contraseñas, claves JWT, claves de cifrado ni otros secretos reales en archivos versionados.
 - Documentar nombres de variables, requisitos y procedimientos para proporcionar secretos desde el entorno.
 
@@ -19,8 +20,11 @@ La documentación forma parte obligatoria de cada cambio y tiene prioridad máxi
 # Separación entre Registro y Gestión
 
 - Las pantallas de Registro contienen exclusivamente el CRUD del maestro: Consultar, Insertar, Ver/Modificar y Eliminar.
+- `Modificar`, `Eliminar` y cualquier eliminación en cascada son acciones exclusivas de Registro y no se muestran ni se ejecutan desde ninguna pantalla de Gestión.
+- En el módulo de Ventas, `Eliminar cadena` pertenece exclusivamente al Registro del documento correspondiente.
 - Las bajas lógicas, reactivaciones, históricos y acciones operativas pertenecen a las pantallas de Gestión, nunca a Registro.
 - Mantener esta separación en todos los módulos existentes y futuros.
+- Si una petición posterior plantea incluir `Modificar`, `Eliminar` o una eliminación en cascada dentro de Gestión, recordar esta directiva y solicitar confirmación expresa antes de cambiarla.
 
 # Presentación de relaciones con Persona
 
@@ -33,6 +37,13 @@ La documentación forma parte obligatoria de cada cambio y tiene prioridad máxi
 - Toda funcionalidad, control visual o lógica susceptible de reutilizarse debe implementarse como componente, servicio, directiva o utilidad genérica, según corresponda.
 - Las pantallas consumidoras deben configurar y componer esas piezas comunes, evitando implementaciones duplicadas o acopladas innecesariamente a un único módulo.
 - Antes de crear una pieza nueva, revisar los componentes y servicios compartidos existentes y ampliar uno de ellos cuando resulte coherente.
+
+# Integridad de columnas en tablas
+
+- Toda tabla de consulta debe declarar todos los campos funcionales disponibles en el registro que representa.
+- Un campo puede estar oculto en la visualización inicial, pero debe permanecer declarado y disponible desde la configuración común de columnas.
+- Las relaciones se presentan con su descripción funcional en lugar de mostrar únicamente el identificador técnico cuando dicha descripción esté disponible.
+- Esta directiva se aplica a todos los registros y gestiones existentes y futuros.
 
 # Datos Movimiento en Registro y Gestión
 

@@ -42,7 +42,11 @@
         <div class="form-fila">
           <div class="form-campo-500">
             <label class="label">Valor <span class="obligatorio">*</span></label>
-            <input [type]="esParametroSensible() ? 'password' : 'text'" maxlength="2000" [(ngModel)]="parametro.parVal" [placeholder]="esParametroSensible() ? 'Introduzca una nueva clave para sustituirla' : ''">
+            <select *ngIf="esOrigenImagenCatalogo(); else valorLibre" [(ngModel)]="parametro.parVal">
+              <option value="TIPO">Imagen principal del tipo</option>
+              <option value="REGISTRO">Adjunto principal del registro</option>
+            </select>
+            <ng-template #valorLibre><input [type]="esParametroSensible() ? 'password' : 'text'" maxlength="2000" [(ngModel)]="parametro.parVal" [placeholder]="esParametroSensible() ? 'Introduzca una nueva clave para sustituirla' : ''"></ng-template>
             <div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !esParametroSensible() && !parametro.parVal.trim()">Valor obligatorio</div>
           </div>
         </div>
@@ -56,7 +60,7 @@
     </div>
 
     <div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
-      <tabla titulo="TABLA DE PARÁMETROS" [columnas]="columnas" [titulosColumnas]="titulosColumnas" [datos]="datos"
+      <tabla [mostrarEmpresa]="true" titulo="TABLA DE PARÁMETROS" [columnas]="columnas" [titulosColumnas]="titulosColumnas" [datos]="datos" (filtroSolicitado)="consultar()"
              (filaSeleccionada)="parametroSeleccionado = $event"></tabla>
     </div>
   </div>

@@ -8,7 +8,7 @@ describe('GestionAgendas', () => {
     const empleado = {
       recurso: {
         ragId: 9, ragTip: 'EMPLEADO', ragRefId: 1, ragNom: 'Empleado de prueba',
-        ragCap: 1, ragMarPre: 30, ragMarPos: 30, ragHorVis: '19:00'
+        ragCap: 1, ragMarPre: 30, ragMarPos: 30, ragHorVis: '19:00', ragIntVis: 30
       },
       horarios: [{ horDia: 4, horIni: '19:30', horFin: '23:30' }],
       excepciones: [], configurada: true

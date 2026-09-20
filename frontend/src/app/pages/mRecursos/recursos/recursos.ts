@@ -20,10 +20,15 @@ import {DialogosService} from '../../../core/interaccion/dialogos.service';
 @Component({selector:'Recursos',standalone:true,imports:[CommonModule,FormsModule,Sidebar,Supbar,Tabla,AgendaRegistros,DatosPersonaRelacion,DatosIdentificacion,DatosMovimiento,BarraAcciones],templateUrl:'./recursos.html',styleUrl:'../../../styles/estiloGeneral.css'})
 export class Recursos{
  gestion=false;vista:'tabla'|'registro'|'capacidades'|'agenda'|'historico'='tabla';modo:'insertar'|'modificar'|'ver'='insertar';
+ tipoTablaGestion:'EMPLEADO'|'MAQUINARIA'='EMPLEADO';
  datos:Recurso[]=[];datosHistorico:Recurso[]=[];personas:Persona[]=[];seleccion:Recurso|null=null;recurso=this.vacio();tipos:any[]=[];capacidades=new Set<string>();
  columnas=['empId','reoId','reoIdHis','reoTipMov','reoCauMov','reoNom','reoTip','personaNomCom','reoOpe','reoUsuMov','reoFecMov','reoAct'];
  titulos:any={empId:'Empresa',reoId:'Recurso',reoIdHis:'Id Histórico',reoTipMov:'Tipo Movimiento',reoCauMov:'Causa Movimiento',reoNom:'Nombre',reoTip:'Tipo',personaNomCom:'Persona',reoOpe:'Operativo',reoUsuMov:'Usuario Mod.',reoFecMov:'Fecha Mod.',reoAct:'Activo'};
- constructor(private api:RecursoService,private personaApi:PersonaService,private route:ActivatedRoute,private router:Router,private dialogos:DialogosService){this.gestion=!!route.snapshot.data['gestion'];personaApi.obtenerPersonasSelector().subscribe({next:x=>{this.personas=x;this.cargar();},error:e=>this.error(e)});}
+ constructor(private api:RecursoService,private personaApi:PersonaService,private route:ActivatedRoute,private router:Router,private dialogos:DialogosService){this.gestion=!!route.snapshot.data['gestion'];personaApi.obtenerPersonasSelector().subscribe({next:x=>{this.personas=x;this.datos=this.enriquecer(this.datos);},error:e=>this.error(e)});}
+ get empleados(){return this.datos.filter(recurso=>recurso.reoTip==='EMPLEADO');}
+ get maquinaria(){return this.datos.filter(recurso=>recurso.reoTip==='MAQUINARIA');}
+ get datosGestion(){return this.tipoTablaGestion==='EMPLEADO'?this.empleados:this.maquinaria;}
+ alternarTablaGestion(){this.tipoTablaGestion=this.tipoTablaGestion==='EMPLEADO'?'MAQUINARIA':'EMPLEADO';this.seleccion=null;}
  cargar(){this.vista='tabla';this.seleccion=null;this.api.consultar().subscribe({next:x=>this.datos=this.enriquecer(x),error:e=>this.error(e)});}
  insertar(){this.modo='insertar';this.recurso=this.vacio();this.vista='registro';}
  ver(){if(!this.seleccion)return;this.modo='ver';this.recurso={...this.seleccion};this.vista='registro';}

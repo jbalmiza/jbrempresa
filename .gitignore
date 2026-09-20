@@ -6,7 +6,8 @@ frontend/dist-verificacion/
 # Spring Boot
 backend/target/
 backend/*.pid
-backend/docs/SECRETOS.md
+/SECRETOS.md
+/CREDENCIALES_USUARIOS.md
 
 # VS Code
 .vscode/

@@ -1,5 +1,631 @@
 # Cambios del frontend
 
+## 2026-09-20 - Eliminación de Venta Táctil
+
+- Tras comprobar consumidores y dependencias, eliminadas las rutas de Empleados y Ventas, sus accesos de menú, la pantalla Venta Táctil y los componentes exclusivos de teclado, tarjeta y contenedor táctiles.
+- Pedidos por catálogo, Gestión de ventas, agenda, facturación y avisos no dependen de esta pantalla y permanecen operativos. El filtro de destinos de avisos deja de contemplar una ruta inexistente.
+- Verificación: búsqueda completa de referencias activas, compilación Angular y revisión de reutilización, rutas, Directiva 1 y revisión obligatoria.
+
+## 2026-09-20 - Reorganización del menú de Empleados
+
+- El módulo Empleados queda dividido en `Registro`, con Pedidos, Avisos y Alertas y Táctil como última opción, y `Gestión`, con Gestión de agenda y Gestión de ventas.
+- Pedidos reutiliza el catálogo de clientes existente; Gestión de ventas reutiliza la consulta de ventas del empleado. Gestión de agenda continúa siendo la entrada predeterminada del empleado.
+- Verificación: compilación Angular, comprobación de rutas y selección predeterminada, Directiva 1 y revisión obligatoria.
+
+## 2026-09-20 - Separación automática de unidades personalizadas
+
+- Al personalizar una línea con cantidad superior a uno, la cesta separa automáticamente una unidad y aplica los cambios solo a ella. Las unidades restantes conservan la composición anterior.
+- Los controles de cantidad de la cesta actúan sobre su línea concreta y las nuevas unidades añadidas desde el catálogo se agrupan con la línea estándar sin personalización.
+- Verificación: compilación Angular, revisión del flujo de tres unidades con una personalizada, Directiva 1 y revisión obligatoria.
+
+## 2026-09-20 - Resumen de componentes en observaciones
+
+- Al aplicar una personalización, las observaciones de la línea muestran brevemente los componentes quitados y añadidos por nombre. Las observaciones escritas por el cliente se conservan y el resumen se sustituye al volver a personalizar.
+- Verificación: recompilación Angular activa y revisión de facilidad de uso, Directiva 1 y revisión obligatoria.
+
+## 2026-09-20 - Selector de componentes compacto
+
+- La personalización presenta cada componente en una sola fila con selección, nombre, estado incluido y precio adicional visible incluso cuando es cero. Los alérgenos se retiran de este selector y continúan disponibles en la consulta específica del producto.
+- Verificación: recompilación Angular activa y revisión de adaptación móvil, facilidad de uso, Directiva 1 y revisión obligatoria.
+
+## 2026-09-20 - Personalización de componentes en el pedido del catálogo
+
+- Cada producto del pedido incorpora el botón `Personalizar`. La ventana permite buscar, añadir o quitar cualquier componente activo de la empresa, identifica los incluidos, muestra suplementos y alérgenos, permite restablecer la composición y resume los cambios en la línea.
+- El total visible incluye los suplementos de los componentes añadidos; quitar componentes no reduce el precio. La selección se aplica a todas las unidades de la línea.
+- Verificación: compilación Angular, adaptación de la ventana al ancho móvil y revisión de reutilización, facilidad de uso, aislamiento empresarial, Directiva 1 y revisión obligatoria.
+
+## 2026-09-20 - Cabecera compacta del catálogo
+
+- Reducidos la altura, el relleno y la imagen de la cabecera del catálogo en escritorio. La vista móvil real y simulada conserva sus dimensiones anteriores para mantener legibilidad y superficie táctil.
+- Verificación: recompilación Angular activa y revisión de adaptación móvil, coherencia visual, Directiva 1 y revisión obligatoria.
+
+## 2026-09-20 - Táctil como última opción de Ventas en Empleados
+
+- Reordenado el submenú Ventas del módulo Empleados: Catálogo de clientes, Registro de ventas y Táctil.
+- Verificación: recompilación Angular activa y revisión de Directiva 1, coherencia de navegación y revisión obligatoria.
+
+## 2026-09-20 - Consulta de alérgenos en el catálogo
+
+- Los productos con alérgenos heredados de sus componentes muestran un botón compacto `Alérgenos` en su tarjeta y un detalle consultable. Los productos sin alérgenos y los servicios no muestran el control.
+- Verificación: compilación Angular y revisión de las directivas de reutilización, adaptación móvil, funcionalidad general y revisión obligatoria.
+
+## 2026-09-19 - Recálculo inmediato de Total Compra al cambiar IVA
+
+- Alcance: modificar IVA Compra recalcula inmediatamente Total Compra en Registro y Gestión de Productos.
+- Verificación: revisión del enlace del evento y cálculo 10 con descuento 10 % e IVA 20 % = 10,80.
+
+## 2026-09-19 - IVA incluido en Total Compra
+
+- Alcance: Total Compra aplica el descuento y suma el IVA de compra; el beneficio continúa calculándose sobre precios sin IVA.
+- Verificación: prueba dirigida con precio 10, descuento 0 e IVA 21, cuyo total es 12,10.
+
+## 2026-09-19 - Aplicación directa del beneficio en Productos
+
+- Alcance: el IVA de compra no interviene en Total Compra ni en el cálculo del beneficio. Con beneficio 20 %, el botón de compra convierte 10 en venta 12 y el botón de venta convierte 10 en compra 8. Los botones permanecen disponibles con el valor inicial 20 mientras se materializa el parámetro de empresa.
+- Verificación: prueba dirigida de ambos botones y compilación Angular.
+
+## 2026-09-19 - Precios sin IVA y beneficio del 20 % en Productos
+
+- Alcance: Precio Compra y Precio Venta se introducen sin IVA. Ambos descuentos usan el mismo ancho. Los botones aplican o invierten el porcentaje de beneficio de la empresa; con compra 10, descuentos 0 y beneficio 20, la venta resultante es 12. El IVA se aplica únicamente al calcular cada total.
+- Verificación: compilación Angular, prueba dirigida 10 → 12 y cálculo inverso.
+
+## 2026-09-18 - Cálculo de beneficio mediante botones en Productos
+
+- Alcance: Datos Importes Compra muestra Precio, Descuento, IVA y Total Compra; Datos Importes Venta muestra Precio, Descuento, IVA y Total Venta. Los totales se actualizan dentro de cada apartado. El cálculo del margen entre apartados deja de ejecutarse al editar campos: «Aplicar beneficio a venta» calcula desde la compra y «Aplicar beneficio a compra» calcula desde la venta. Los precios pueden fijarse independientemente sin pulsar los botones. El coste calculado desde la venta se identifica como estimado.
+- Verificación: compilación Angular, cálculos directos e inversos con IVA y descuentos distintos, comprobación documental.
+
+## 2026-09-18 - Posición y ancho uniformes de notas en formularios
+
+- Alcance: las notas de Control de stock pasan antes de los campos en Registro y Gestión de Productos y ocupan el ancho del apartado. Se coloca también antes de los campos la información de Publicación del catálogo y Datos Cliente de facturas normales. FE-DIR-051 fija posición, clases, icono, ancho y separación para notas presentes y futuras.
+- Verificación: compilación Angular y comprobación documental.
+
+## 2026-09-18 - Ancho y separación de notas informativas en Productos
+
+- Alcance: las notas de importes y margen ocupan el ancho del apartado y dejan espacio antes de los campos. FE-DIR-051 incorpora el criterio de ancho y separación.
+- Verificación: compilación Angular y comprobación documental.
+
+## 2026-09-18 - Estilo común de la información en formularios
+
+- Alcance: las explicaciones de importes y margen en Registro de Productos utilizan el aviso informativo común. FE-DIR-051 establece este estilo para todos los formularios.
+- Verificación: compilación Angular y comprobación documental.
+
+## 2026-09-18 - Importes de compra y venta de productos con margen objetivo
+
+- Alcance: Registro de Productos separa importes de compra y venta, acepta precios con IVA incluido, muestra IVA de compra y venta y explica que el margen bruto objetivo se calcula sobre la venta neta tras descuento. El parámetro `PRODUCTOS / MARGEN_BRUTO_OBJETIVO` se configura por empresa; con el control activo, cambiar compra calcula venta y cambiar venta estima compra. Al desactivarlo ambos precios son independientes. El origen estimado del coste se indica en el formulario. La base de venta se conserva sin IVA para los flujos existentes y las tablas presentan también su importe con IVA.
+- Verificación: compilación Angular y cálculos directos e inversos con IVA y descuento.
+
+## 2026-09-18 - Directiva de funcionalidad general para todas las empresas
+
+- Alcance: se registra FE-DIR-050 para exigir que las nuevas funciones estén disponibles para todas las empresas, con uso opcional según cada una.
+- Verificación: comprobación documental.
+
+## 2026-09-18 - Modificación y eliminación de ventas propias
+
+- Alcance: el empleado puede modificar y eliminar la cadena de un pedido suyo desde Registro de ventas. Se mantienen la confirmación de eliminación, la propagación a factura y la clave de modificación de cadena cuando esté configurada. No se habilita Insertar ni Eliminar documento aislado.
+- Verificación: compilación Angular, pruebas de autorización backend y comprobación documental.
+
+## 2026-09-18 - Registro de ventas propias en Empleados
+
+- Alcance: Ventas incorpora Registro de ventas junto a Táctil en Empleados. La pantalla reutiliza el registro de pedidos en modo de consulta: muestra solo los pedidos creados por el empleado, permite Ver y Exportar y vuelve a Mi agenda; no muestra acciones de escritura ni Importar.
+- Verificación: compilación Angular, pruebas de filtrado y permisos en backend y comprobación documental.
+
+## 2026-09-18 - Cierre de sesión al caducar el token
+
+- Alcance: la aplicación comprueba la caducidad del JWT con la pantalla abierta y al volver a ella; al vencer, limpia la sesión y lleva al acceso. La renovación sigue asociada a interacción real, no a consultas automáticas.
+- Verificación: prueba dirigida de caducidad del token, compilación Angular y comprobación documental.
+
+## 2026-09-18 - Venta táctil en Empleados
+
+- Alcance: Empleados incorpora Ventas como segunda opción del menú, con acceso a la misma pantalla Táctil de Ventas. Al cerrar, el empleado vuelve a Mi agenda. La pantalla táctil no se ofrece como destino de avisos de Ventana porque no muestra esos avisos.
+- Verificación: compilación Angular y comprobación documental.
+
+## 2026-09-18 - Proveedores fuera de los destinos de Ventana
+
+- Alcance: el selector de ventanas deja de ofrecer las rutas del módulo Proveedores; permanecen sus avisos en Mensajes y en el catálogo de proveedor.
+- Verificación: compilación Angular y comprobación documental.
+
+## 2026-09-18 - Ventanas de Clientes y Proveedores
+
+- Alcance: el selector de ventanas incorpora las rutas reales de Clientes, Proveedores y todas las rutas del menú de Empleados. El catálogo de sesión de Clientes muestra avisos de Ventana y Mi agenda conserva también los dirigidos a la entrada de Empleados.
+- Verificación: compilación Angular, prueba de entrega en Mi agenda y comprobación documental.
+
+## 2026-09-18 - Ventana de Avisos del módulo Empleados
+
+- Alcance: el Administrador puede dirigir un aviso de Ventana a `/empleados/avisosAlertas`; la ruta de Comunicaciones sigue siendo una ventana distinta. Los avisos existentes deben cambiar de ventana si se desean mostrar allí.
+- Verificación: compilación Angular y comprobación documental.
+
+## 2026-09-18 - Avisos para todas las empresas
+
+- Alcance: el Administrador puede elegir «Todas las empresas» al enviar un aviso o alerta de Ventana o Mensajes a Empresa; la tabla muestra ese destino con su nombre.
+- Verificación: compilación Angular y comprobación documental.
+
+## 2026-09-18 - Entrada del empleado en Mi agenda
+
+- Alcance: el acceso del perfil Empleado a `/empleados` abre `/empleados/agenda`; los avisos destinados a la ventana inicial de Empleados se muestran también en esa vista.
+- Verificación: compilación Angular y comprobación documental.
+
+## 2026-09-18 - Fecha final predeterminada de avisos y alertas
+
+- Alcance: al insertar, la fecha final propuesta pasa de mañana a siete días después, a las 23:59:59; la fecha inicial sigue siendo hoy a las 00:00:00.
+- Verificación: compilación Angular y comprobación documental.
+
+## 2026-09-18 - Vista e intervalo independientes en agenda
+
+- Alcance: Vista permite 1 día o 1 semana; Intervalo permite 5, 10, 15 y 30 minutos o 1 hora. Cambiar uno no modifica el otro.
+- Verificación: compilación Angular y prueba dirigida de la agenda.
+
+## 2026-09-18 - Intervalos de agenda de minutos a semana
+
+- Alcance: el selector individual muestra 5, 10, 15 y 30 minutos, 1 hora, 1 día y 1 semana; las opciones de día y semana cambian la vista sin alterar el intervalo de minutos guardado.
+- Verificación: compilación Angular y prueba dirigida del selector.
+
+## 2026-09-18 - Selector combinado de agenda
+
+- Alcance: un único selector reúne Día y Semana con cada intervalo visual y la vista Mes; el intervalo se conserva al pasar por Mes.
+- Verificación: compilación Angular y prueba dirigida de selección de vista e intervalo.
+
+## 2026-09-18 - Vista e intervalo configurables de agenda
+
+- Alcance: Día/Semana/Mes se elige en un selector; la configuración individual y global guarda el intervalo visual por agenda de empleado y lo restaura al abrirla.
+- Verificación: compilación Angular y pruebas dirigidas de agenda.
+
+Historial de cambios: las entradas conservan el estado de su fecha; la especificación vigente está en los documentos temáticos del [índice](README.md).
+
+## 2026-09-18 - Selector de intervalos de agenda
+
+- Alcance: el intervalo visual de las agendas individual y múltiple añade 10 minutos; los botones de intervalo se sustituyen por un selector común con 5, 10, 15, 30 y 60 minutos.
+- Verificación: compilación Angular y prueba de tramo visual de 10 minutos.
+
+## 2026-09-18 - Menús visibles en Empleados y Proveedores
+
+- Alcance: todos los grupos de esos dos módulos permanecen desplegados; el resto conserva su comportamiento de acordeón.
+- Verificación: compilación Angular de componentes y plantillas.
+
+## 2026-09-18 - Navegación de módulos en móvil y tableta
+
+- Alcance: el panel abre módulos en la misma pestaña en pantallas de hasta 1100 px o con puntero táctil. El botón Módulos se oculta al empleado dentro del módulo; para los demás perfiles, la vuelta desde vista compacta permanece en la misma pestaña.
+- Verificación: compilación Angular de componentes y plantillas.
+
+## 2026-09-17 - Empresa visible en cabecera móvil
+
+- Alcance: la cabecera móvil mantiene imagen y empresa en la primera fila y sitúa las acciones en la segunda, evitando que el nombre quede detrás de los botones.
+- Verificación: reglas de distribución y documentación revisadas.
+
+## 2026-09-17 - Selección en Gestión de Avisos y Alertas
+
+- Alcance: se estabilizan las filas de presentación y la selección se vincula al aviso original mediante empresa e identificador.
+- Verificación: compilación Angular de plantillas.
+
+## 2026-09-17 - Filas del formulario de avisos
+
+- Alcance: Tipo, Ubicación y Ventana forman la primera fila; Emisor, Destinatario y Empresa destinataria la segunda; Título y Mensaje la tercera.
+- Verificación: estructura y orden de controles comprobados.
+
+## 2026-09-17 - Orden de campos de avisos
+
+- Alcance: Ubicación se sitúa inmediatamente después de Tipo en el formulario.
+- Verificación: orden de controles y documentación comprobados.
+
+## 2026-09-17 - Precisión de la directiva de trabajo n.º 1
+
+- Alcance: los cambios acotados deben resolverse con la solución y verificación proporcionales, evitando trabajo y explicaciones sin valor; los ajustes visuales requieren comprobación en pantalla cuando sea posible.
+- Verificación: catálogo de directivas y registro documental revisados.
+
+## 2026-09-17 - Título en avisos de ventana
+
+- Alcance: se vuelve a mostrar el título en negrita antes del mensaje, manteniendo la presentación compacta.
+- Verificación: plantilla y documentación revisadas.
+
+## 2026-09-17 - Avisos de ventana compactos
+
+- Alcance: los avisos de ventana se sitúan encima del título y a la derecha del menú, ocupando el ancho del contenido principal. Se corrigió el panel que aparecía en el borde izquierdo: CSS aporta alineación y separación iniciales y el componente las ajusta al tamaño real. Solo el contenido reserva altura; el menú no se desplaza. Se muestra el mensaje y el control para ocultarlo, en una fila cuando hay espacio suficiente.
+- Ajuste de espaciado: 12 px bajo la cabecera y 16 px sobre el título, calculados con la altura visible del aviso.
+- Verificación: compilación del frontend y comprobación documental.
+
+## 2026-09-17 - Disposición y periodo inicial de avisos
+
+- Alcance: Empresa destinataria se sitúa junto a Destinatario y Ubicación comienza la fila siguiente. Los nuevos avisos proponen el día actual completo y el siguiente como periodo de publicación, con segundos conservados al modificar.
+- Corrección visual y funcional: Empresa destinataria y Ventana usan clases de campo con estilo común; Usuario y Fecha Movimiento se rellenan al insertar igual que en el Registro de Usuarios.
+- Verificación: compilación TypeScript, orden y estilo de campos, y comprobación documental correctos.
+
+## 2026-09-17 - Enrutamiento de avisos y alertas
+
+- Alcance: Registro muestra Emisor, Destinatario, Ubicación, Empresa destinataria y Ventana; la tabla y el histórico declaran los nuevos campos. El Jefe de una proveedora puede actuar como Proveedor sin crear un perfil nuevo. Empleados dispone de acceso al Registro de sus avisos. El selector de ventanas incluye el Registro de Compras en su ruta real `/compras/compras`.
+- Entrega: catálogo de clientes y catálogo de proveedor muestran sus propios avisos; las ventanas autorizadas muestran avisos contextuales y la bandeja Mensajes muestra avisos informativos sin respuesta, con lectura individual y contador.
+- Verificación: compilación Angular, 9 pruebas dirigidas de mensajería y catálogo y comprobador documental correctos; `/empleados/avisosAlertas` responde HTTP 200 en el servidor de desarrollo. Se mantienen los avisos de presupuesto de paquete y CSS de la compilación.
+
+## 2026-09-17 - Mi catálogo en el menú de Proveedores
+
+- Alcance: Proveedores muestra al entrar el menú del módulo, como Empleados; el grupo Catálogo incorpora la opción Mi catálogo, que abre la pantalla existente en `/proveedores/catalogo`.
+- Decisión funcional: la pantalla conserva la selección de proveedor y el flujo de pedido compartido; solo cambia su acceso y el título visible.
+- Verificación: compilación Angular y comprobador documental.
+
+## 2026-09-17 - Directiva de trabajo n.º 1
+
+- Alcance: incorporada la directiva permanente FE-DIR-049, identificada como directiva de trabajo n.º 1 y aplicable a todos los desarrollos. Exige autonomía, análisis y cambios completos, corrección de causas raíz y verificaciones proporcionales al riesgo; evita únicamente trabajo redundante sin reducir la calidad.
+- Decisión funcional confirmada: si este modo de trabajo provoca un problema, se comunica al usuario para revisarlo. El cierre de cada tarea incluye un resumen breve de cambios, comprobaciones y pendientes relevantes.
+- Verificación: revisión de la secuencia de directivas y del formato documental; no se modifica código funcional.
+
+## 2026-09-15 · Consolidación integral de documentación
+
+- Alcance: revisión de toda la documentación frontend/backend y general; contratos, configuración, operación, seguridad, modelo, módulos, uso, integraciones y pruebas.
+- Consolidación de referencias IA, preservando visión y decisiones temáticas sin catálogos permanentes paralelos. Actualizados README y enlaces.
+- Inventarios generados desde fuentes: 266 endpoints, 54 entidades y rutas Angular. Nuevo verificador `docs/verificar-documentacion.mjs`, ejecutable desde la raíz.
+- Verificaciones: comprobador documental correcto para 62 Markdown, índices, enlaces locales explícitos, secuencias de 48 directivas FE y 40 BE e inventarios. Revisión de formato con `git diff --check`. No se repiten tests de negocio por este cambio documental.
+- La auditoría se cierra documentalmente y se rectifica la existencia del inicializador de relaciones. Compras, histórico/movimiento de relaciones y demás diferencias siguen identificadas en LIMITACIONES; no se modifica código funcional ni datos por esta consolidación.
+
+## 2026-09-15 - Auditoría de documentación
+
+- Informe de diagnóstico de documentación frontend, backend y general, con 13 hallazgos y prioridades. No se modifica código ni datos funcionales.
+- Verificación: inventario inicial de 48 Markdown; enlaces locales explícitos; 48 directivas FE y 40 BE sin saltos ni duplicados; contraste dirigido con rutas, controladores, servicios, plantillas, entidades y configuración. No se vuelve a ejecutar la suite funcional completa.
+- Los hallazgos permanecen pendientes: el informe no equivale a corregir los documentos señalados.
+
+## 2026-09-15 - Catálogos de proveedores relacionados
+
+- Proveedores reutiliza el catálogo de Clientes y su flujo de pedidos, con selección de proveedor y autorización por relación activa en consulta, imágenes y envío. Sin relaciones no hay acceso desde el módulo. Directivas FE-DIR-048 y BE-DIR-040.
+- Verificación: compilación Angular correcta; 9 pruebas Maven y 3 pruebas Vitest correctas. Backend reiniciado. API: empresas 1 y 3 acceden al proveedor 4 con 12 artículos e imágenes HTTP 200; empresa 2 sin proveedores recibe 403 en catálogo, imágenes y pedido. Acceso anónimo denegado (403). Frontend /proveedores responde 200. No se generan pedidos de prueba reales.
+
+## 2026-09-15 - Eliminar relaciones de empresa
+
+- Eliminación definitiva de la pareja desde Registro, con confirmación, validación de empresa y transacción. Nuevo endpoint DELETE /empresas-relaciones/{id}. Gestión conserva exclusivamente Baja y Reactivar.
+- Verificación: compilación Angular correcta y 3 pruebas Maven correctas (eliminación de pareja, restricción por empresa y pareja incoherente). Backend reiniciado en 8080; DELETE sobre id inexistente responde 400. Las cuatro relaciones originales permanecen registradas. Frontend disponible con HTTP 200.
+
+## 2026-09-15 - Relaciones del proveedor hostelero
+
+- El 2026-09-15 se registraron mediante la API dos relaciones activas: Pizzeria La Esquina (empresa 1) y Restaurante Cándida (empresa 3) tienen como PROVEEDOR a Proveedor Hostelero Central (empresa 4). En la empresa 4 se crearon automáticamente las relaciones CLIENTE correspondientes. Parejas de identificadores: 1 ↔ 2 y 3 ↔ 4. Fecha de inicio: 2026-09-15; sin fecha fin. Verificación: consulta posterior de las tres empresas confirma los cuatro registros activos y sus enlaces inversos.
+
+## 2026-09-15 - Tabla común de Relaciones de Empresa
+
+- Registro y Gestión sustituyen la tabla HTML particular por el componente común de Productos, con filtros, paginación y configuración de todos los campos. Se reutiliza la barra de acciones y se respeta la consulta inicial vacía.
+- Verificación: compilación Angular de desarrollo correcta, recompilación del servidor local correcta y revisión de los 13 campos del contrato y de la selección del registro original.
+
+## 2026-09-15 - Mensajería administrativa y cabecera
+
+- Arranque local: el frontend estaba detenido; se inicia Angular en el puerto 4200. Verificada la pantalla `/accesoLogin` con HTTP 200; backend disponible en 8080 (HTTP 403 sin autenticación).
+
+- Mensajes se traslada de Comunicaciones a Administración, con rutas y menús exclusivos del Administrador. La cabecera solo ofrece Nuevo mensaje y Responder, además de consulta y navegación. Registro elimina bajas individualmente o hasta una fecha; Gestión da de baja y reactiva. Directiva FE-DIR-047.
+- Verificación: Compilación Angular de desarrollo correcta. Vitest: 5 pruebas de permisos y separación de contextos correctas. El primer intento falló al iniciar el proceso de pruebas; el segundo terminó correctamente.
+
+## 2026-09-14 - Acciones de tareas en Gestión de Agendas
+
+- Los pedidos ocupados dejan de utilizar rojo de error y pasan a amarillo ámbar de aviso, también en la leyenda; la franja aplica `box-sizing` y anchura máxima para permanecer completamente dentro de su celda.
+- Alineadas las acciones de cada tarea como un grupo compacto a la derecha: pago y cambio de estado quedan contiguos, con anchura y separación uniformes; en móvil se distribuyen debajo de la información.
+- Eliminado el desplazamiento vertical interno de la agenda común tanto en modo individual como múltiple; la agenda crece en altura y el modo múltiple conserva únicamente la barra horizontal cuando sea necesaria.
+- Ajustado el tratamiento independiente de los ejes: el eje vertical usa `clip` para impedir que el navegador transforme `visible` en `auto` al habilitar el desplazamiento horizontal.
+- Reforzada la compatibilidad entre navegadores eliminando cualquier límite de altura heredado y fijando altura automática con el desbordamiento vertical oculto; las filas determinan siempre la altura total de la agenda.
+- Reiniciado y verificado el servidor de desarrollo: el proceso anterior no había incorporado la nueva hoja `agendaMultiple.css`; la respuesta activa de `http://localhost:4200/main.js` contiene ya las reglas sin desplazamiento vertical.
+- Corregido el modo múltiple para que la primera franja dependa exclusivamente de la hora inicial de visualización configurada (`ragHorVis`) y no retroceda hasta el inicio del horario laboral; si las columnas tienen valores distintos, se utiliza el más temprano para conservar su alineación.
+- Eliminado el redondeo de `ragHorVis` al intervalo: una hora inicial `19:15` comienza exactamente a las `19:15`, también cuando el intervalo visual es de 30 o 60 minutos.
+- Gestión de Agendas deja de renderizar una agenda propia y consume el componente común `AgendaRegistros`, igual que `Mi agenda`; el componente admite una o varias columnas de recursos sin cambiar el bloque de tareas ni sus acciones.
+- En modo múltiple, `Tareas` permanece siempre visible debajo de la malla, muestra el empleado responsable y ofrece las mismas transiciones de estado y pago que la agenda individual.
+- La malla limita su altura y dispone de desplazamiento propio para mantener visible el panel inferior de información y acciones; al seleccionar un tramo, el enfoque se mueve de forma inmediata al panel dentro del contenedor real.
+
+- Al seleccionar un tramo ocupado, el detalle muestra todas las tareas de las reservas incluidas.
+- Cada tarea ofrece las acciones que corresponden a su estado: `Iniciar`/`Recoger`, `Finalizar`/`Entregar` y `Marcar pagado` cuando pertenece a un pedido.
+- Tras una acción se actualiza la malla completa para reflejar de inmediato los nuevos estados.
+- Las franjas rojas son ahora botones reales: al pulsarlas se abre y desplaza a la vista el detalle interactivo.
+- Corregida la repetición visual de una misma reserva en varios intervalos: el estilo del botón anulaba el atributo `hidden`; ahora solo se crea la franja correspondiente al inicio real.
+- El detalle y sus acciones se presentan debajo de la agenda, igual que en la vista individual; al pulsar una franja, el componente desplaza y enfoca automáticamente ese detalle.
+- Una tarea `En curso` o `Finalizada` puede volver a `Pendiente` con confirmación, y un pedido pagado puede desmarcarse también con confirmación.
+- Verificación: compilación Angular de producción correcta.
+
+## 2026-09-13 - Contexto global de empleado para el Administrador
+
+- La barra superior muestra al Administrador un selector con las agendas de empleados de la empresa elegida.
+- La selección se conserva como contexto global reutilizable por Agenda y por futuros procesos de otras ventanas.
+- `Mi agenda` consume ese contexto sin incorporar un selector particular en la ventana.
+- Cambiar de empleado reutiliza el componente común de Agenda y recarga sus horarios, reservas y tareas sin recargar la aplicación.
+- Si está seleccionada `Todas las empresas`, se solicita elegir primero una empresa; nunca se conserva un empleado de otro contexto empresarial.
+- El acceso concedido a una agenda incluye sus acciones: Administrador, Jefe o empleado titular pueden avanzar tareas y marcar el pago cuando tienen acceso a esa agenda.
+- En la vista personal tampoco se presentan las acciones genéricas de edición o reprogramación de reservas.
+- Jefes y empleados mantienen el acceso directo a su propia agenda sin selector.
+
+## 2026-09-13 - Integridad de campos en tablas
+
+- Se establece como directiva que toda tabla declara todos los campos funcionales de su registro, aunque algunos permanezcan ocultos inicialmente.
+- El componente común `tabla` incorpora `columnasOcultasPorDefecto`; estos campos siguen disponibles en la configuración de columnas.
+- La tabla de Empresas incorpora nombre comercial, razón social, NIF/CIF, actividad, teléfono, correo, web, domicilio fiscal, imagen y todos los datos de movimiento.
+- Imagen, tipo de movimiento y causa de movimiento quedan ocultos por defecto, pero pueden habilitarse desde la configuración.
+- El domicilio fiscal se presenta mediante la dirección completa y no mediante `dom_id`.
+- Verificación: compilación Angular de producción correcta; permanecen los avisos de presupuesto y dependencias CommonJS ya existentes.
+
+## 2026-09-11 - Ampliación del Registro de Empresas
+
+- El formulario mantiene `Datos Identificación` y añade los apartados `Datos Empresa`, `Datos Contacto` y `Datos Domicilio`.
+- Datos Empresa contiene nombre comercial, razón social, NIF/CIF y actividad; Datos Contacto contiene teléfono, correo electrónico y página web.
+- El domicilio fiscal se selecciona mediante el componente común `selectorBusqueda` y solo presenta domicilios pertenecientes a la empresa del registro.
+- Los campos nuevos están disponibles en alta, consulta y modificación del Registro; Gestión conserva exclusivamente sus acciones operativas.
+- Verificación: compilación Angular de producción correcta; permanecen los avisos de presupuesto y dependencias CommonJS ya existentes.
+
+## 2026-09-13 - Título del centro de módulos
+
+- El encabezado del centro de acceso se simplifica a `Módulos de Gestión`.
+- Verificación: compilación Angular de producción correcta.
+
+## 2026-09-11 - Recarga de imagen al cambiar la empresa global
+
+- La imagen principal de la cabecera se resuelve con el mismo contexto `X-Empresa-Seleccionada` que utiliza el resto de consultas del administrador.
+- Al cambiar de empresa y recargar el contexto, la cabecera muestra el adjunto principal de la nueva empresa; con `Todas las empresas` no se presenta una imagen concreta.
+
+## 2026-09-11 - Imágenes principales propias para las empresas
+
+- Pizzeria La Esquina, Taller Bosco de coches, Restaurante Cándida y Proveedor Hostelero Central disponen de ilustraciones 3D raster diferenciadas, con transparencia real y sin texto incrustado.
+- Las imágenes se consumen mediante el mecanismo común de adjuntos principales de Empresa y la ruta general configurada, sin incorporar recursos gráficos en componentes funcionales.
+- Enfoque de generación: ilustración 3D profesional, composición cuadrada compacta, iluminación de estudio y elementos representativos de cada actividad; generación realizada con la herramienta integrada de imágenes.
+
+## 2026-09-11 - Modificación y eliminación exclusivas de Registro
+
+- Se establece como directiva funcional permanente que ninguna pantalla de Gestión muestra las acciones `Modificar`, `Eliminar` ni eliminaciones en cascada.
+- Se retiran estas acciones de Gestión de Personas, Productos, Servicios, Recursos, Domicilios, Avisos/Alertas y documentos de Ventas.
+- En Ventas, `Eliminar cadena` se traslada a Registro y queda disponible junto a la eliminación individual; Gestión conserva Ver, bajas, reactivaciones, históricos, adjuntos y acciones operativas.
+- Si una petición futura contradice esta separación, debe recordarse la directiva antes de realizar cambios.
+- Verificación: compilación Angular de producción correcta; permanecen los avisos de presupuesto y dependencias CommonJS ya existentes.
+
+## 2026-09-11 - Módulos por ámbito y estilos de Comunicaciones
+
+- La ventana de acceso sustituye `Productos contratados` por `Módulos de Empresa Gestión`.
+- Clientes, Empleados y Proveedores se presentan en un segundo apartado independiente denominado `Módulos de Personas`, conservando dentro de cada grupo el orden configurado por empresa.
+- La imagen predeterminada de Proveedores se sustituye por una ilustración 3D raster de la misma familia visual, protagonizada por una persona y acompañada de referencias discretas al suministro y la logística. El PNG utiliza transparencia alfa real.
+- Bandeja, Contactos de canal y Avisos/Alertas normalizan sus botones con las clases comunes de consulta, vista, alta, guardado, modificación, eliminación, cancelación, reactivación y vuelta.
+- En la consulta de Avisos/Alertas se corrige la clase inexistente `accion-alta` por la acción común `accion-reactivar`; en modo de consulta, el cierre del formulario pasa a mostrarse como `Volver`.
+- Verificación: transparencia alfa comprobada en el PNG y compilación Angular de producción correcta; permanecen los avisos de presupuesto y dependencias CommonJS ya existentes.
+
+## 2026-09-11 - Confirmación para modificar pedidos en cadena
+
+- La modificación encadenada de Pedidos se inicia desde Registro; ninguna pantalla de Gestión presenta la acción `Modificar`.
+- Antes de abrir un pedido para modificarlo, se informa de que la factura y, cuando está habilitado, el albarán se modificarán conjuntamente.
+- Si el usuario responde `No`, se muestra el aviso de que el pedido no puede modificarse sin sus documentos asociados y la operación queda cancelada.
+- Cuando la empresa exige clave, esta se solicita mediante el sistema común de diálogos y se envía exclusivamente al guardar la modificación.
+- El sistema común de diálogos incorpora una solicitud reutilizable de texto o contraseña, evitando controles particulares y avisos nativos.
+- Verificación: compilación Angular de producción correcta; permanecen los avisos de presupuesto y dependencias CommonJS ya existentes.
+
+## 2026-09-10 - Cabecera común en Gestión de Agendas
+
+- Gestión de Agendas utiliza la clase común de título y alinea sus acciones principales a la derecha en la misma fila.
+- Eliminado el estilo particular del título para mantener el mismo comportamiento visual y adaptable que el resto de ventanas.
+
+## 2026-09-10 - Anchura uniforme de tarjetas del catálogo
+
+- La cuadrícula común del catálogo conserva las columnas vacías cuando una categoría contiene pocos registros.
+- Una tarjeta única de producto o servicio mantiene la misma anchura que las tarjetas de una categoría con varios elementos, evitando que se extienda por toda la fila.
+- El comportamiento se aplica por igual a productos y servicios y conserva la presentación de una sola columna en móvil.
+
+## 2026-09-10 - Tarjetas de módulos más compactas
+
+- Reducidos la altura, el espaciado y el tamaño de imagen de las tarjetas del panel de módulos.
+- Eliminado el recuadro gris de los iconos para aprovechar directamente la transparencia de los nuevos PNG.
+- Se conserva una sombra ligera aplicada únicamente a la ilustración para separarla del fondo blanco sin añadir otro panel visual.
+- Verificación: compilación Angular de producción correcta.
+
+## 2026-09-10 - Renovación visual de imágenes de módulos
+
+- Sustituidas las trece imágenes predeterminadas de los módulos por una familia gráfica raster coherente, con acabado tridimensional suave y una paleta común azul marino, azul, dorado y verde.
+- Los recursos transparentes se han normalizado a PNG de 512 × 512 píxeles para conservar detalle y nitidez en pantallas de distinta densidad.
+- Las tarjetas amplían y realzan la imagen mediante un contenedor neutro, sombra ligera y una animación discreta, manteniendo el comportamiento adaptable en móvil.
+- La imagen principal configurada mediante `Adjuntos` continúa teniendo prioridad sobre la imagen predeterminada del módulo.
+- Verificación: inspección visual de los recursos finales y compilación Angular de producción.
+
+## 2026-09-10 - Selector global de empresa
+
+- La cabecera del Administrador sustituye el texto `Todas las empresas` por un selector con el conjunto global y cada empresa activa.
+- La selección se conserva en el navegador, mantiene la ruta abierta y recarga la pantalla con el nuevo contexto.
+- El interceptor HTTP incorpora automáticamente `X-Empresa-Seleccionada` en todas las peticiones autenticadas del Administrador, evitando implementaciones particulares por pantalla.
+- La imagen de cabecera también se obtiene de la empresa seleccionada; el resto de perfiles conserva la cabecera anterior sin selector.
+
+## 2026-09-10 - Empresa visible para el Administrador global
+
+- El componente común de tabla mantiene visible la columna Empresa en cualquier módulo cuando la sesión pertenece al Administrador.
+- El filtro ordinario de esa columna permite limitar localmente la consulta global a una empresa sin crear variantes de tabla por pantalla.
+- Jefe, Empleado y Cliente conservan la visibilidad y el ámbito configurados para su empresa.
+
+## 2026-09-10 - Fase 5: acciones de reparto
+
+- La agenda común identifica las tareas con habilidad `REPARTO` sin crear una pantalla especial para repartidores.
+- Sus acciones se presentan como `Recoger` y `Entregar`, conservando internamente la secuencia común `PENDIENTE → EN_CURSO → FINALIZADO`.
+- Las tareas de elaboración mantienen las acciones `Iniciar` y `Finalizar`.
+- Cada tarea de pedido no cobrado permite `Marcar pagado`; después se muestra la marca `Pagado` sin alterar el estado de elaboración o reparto.
+- Verificación: compilación Angular de producción correcta; permanecen únicamente las advertencias previas de presupuesto y dependencias CommonJS.
+
+## 2026-09-10 - Fase 4: tareas automáticas de pedidos
+
+- Al confirmar un pedido del catálogo, sus líneas quedan disponibles automáticamente en la agenda del empleado asignado por el backend.
+- No se añade una agenda alternativa: las tareas se muestran y gestionan mediante el componente común `AgendaRegistros` ya utilizado por Empleado y Jefe.
+- La cantidad completa de cada línea permanece agrupada en una única tarea.
+- Verificación del contrato: pruebas completas del backend correctas y servicio actualizado en ejecución.
+
+## 2026-09-10 - Módulo inicial de Proveedores
+
+- Incorporada la tarjeta y la ruta autenticada del módulo `Proveedores`.
+- El módulo parte vacío y reutiliza la pantalla común de módulos sin opciones funcionales.
+- Añadido un icono vectorial coherente con el estilo de los módulos actuales.
+- Verificación: compilación Angular de producción correcta; permanecen las advertencias previas de presupuesto y dependencias CommonJS.
+
+## 2026-09-10 - Navegación diaria de Mi agenda
+
+- `Mi agenda` abre en la fecha actual y muestra siempre el panel del día, aunque no existan tareas.
+- Incorporados día anterior, Hoy, selector de fecha y día siguiente para consultar tareas pasadas o futuras.
+- Las tareas se ordenan por hora prevista y mantienen visibles el tipo y los estados Pendiente, En curso y Finalizado.
+- La ausencia de tareas se representa como una agenda diaria vacía, no como ausencia de agenda.
+- Verificación: compilación de producción Angular correcta.
+- Refactorización: `Mi agenda` ya no implementa una agenda propia; compone directamente el componente común `AgendaRegistros`.
+- El componente común incorpora las tareas y sus cambios de estado, además de reservas, disponibilidad, navegación Día/Semana/Mes y configuración cuando el consumidor la permite.
+- La portada del módulo Empleados no carga la agenda; esta se consulta únicamente al pulsar la opción `Mi agenda` del menú.
+- Eliminado el botón redundante `Consultar` de Mi agenda, ya que la entrada a la opción realiza la carga automáticamente.
+- El botón `Calendario` se oculta cuando es la única vista disponible y solo aparece si permite regresar desde Reserva o Configuración.
+
+## 2026-09-10 - Mi agenda para el perfil Jefe
+
+- El Jefe utiliza la misma pantalla personal de agenda que el Empleado.
+- Su agenda puede contener tareas generales aunque no tenga habilidades de elaboración o reparto.
+- El mantenimiento del recurso y del horario continúa en Gestión de Recursos, evitando duplicar pantallas.
+
+## 2026-09-10 - Cabecera compacta de usuario y mensajes
+
+- Eliminadas del panel de módulos las tarjetas independientes de Bandeja, Revisión y número de módulos disponibles.
+- La barra superior incorpora un único botón `Mensajes` con contador y un desplegable compacto que reúne mensajes de Bandeja y conversaciones pendientes de Revisión.
+- Los textos permanentes de Usuario y Perfil se sustituyen por un botón `Usuario` cuyo desplegable es exclusivamente informativo.
+- La empresa y la fecha continúan visibles; los botones `Módulos` y `Salir` conservan su ubicación y comportamiento.
+- La solución pertenece al componente común de cabecera y se aplica a Empleado, Jefe y Administrador en todas sus ventanas.
+- Verificación: compilación de producción Angular correcta.
+- Ajuste posterior: el grupo derecho queda ordenado como `Módulos`, `Mensajes`, `Usuario` y `Salir`, situando Usuario entre Mensajes y Salir.
+- Los botones Usuario y Mensajes adoptan un diseño compacto con icono, fondo suave y estado desplegado visible.
+- Ajuste de color: Módulos usa morado suave, Usuario azul suave, Salir gris y Mensajes cambia de verde a rojo suave según existan pendientes.
+- El contador de Mensajes sustituye al icono y aparece a la izquierda. El botón de usuario presenta el identificador de acceso de la tabla Usuarios; el desplegable muestra Nombre y Perfil.
+- Módulos incorpora un icono a la izquierda, Usuario un icono a la izquierda y Salir un icono a la derecha.
+- En anchos reducidos desaparecen los textos de estos tres botones y permanecen los iconos con etiquetas accesibles.
+- Ajustados los iconos: Usuario utiliza una silueta de persona y Salir reutiliza la forma de flecha de Volver invertida hacia la derecha, situada antes del texto.
+- Eliminados los fondos blancos de los iconos y del contador; la silueta de Usuario y la flecha de Salir se compensan ópticamente para mostrar un tamaño aparente uniforme.
+- El contador de Mensajes se presenta como una insignia circular roja o verde con el número centrado en blanco.
+- Eliminada la flecha del botón de usuario; toda su superficie abre y cierra directamente el desplegable informativo.
+
+## 2026-09-10 - Corrección visual de Mi agenda
+
+- La agenda del empleado carga la estructura común de módulo para situar el menú lateral y el contenido en la misma fila.
+- Normalizados tipografía, anchura del contenido y altura del panel vacío para mantener el estilo del resto de ventanas.
+- Verificación: compilación de producción Angular correcta.
+
+## 2026-09-10 - Separación de recursos en Gestión
+
+- Gestión de Recursos utiliza una única tabla y un botón de vista morado para alternar entre empleados y maquinaria.
+- Las dos vistas conservan configuraciones de columnas y filtros independientes aunque nunca aparecen simultáneamente.
+- Registro de Recursos mantiene una única tabla conjunta para el CRUD del maestro.
+- Verificación: compilación de producción Angular correcta.
+
+### Decisión funcional
+
+- Nunca se muestran dos tablas simultáneamente dentro de una misma ventana; cuando existan varios conjuntos tabulares, se alternarán mediante un control de vista.
+
+## 2026-09-10 - Horario semanal en una sola columna
+
+- El componente común de configuración de agendas muestra los siete días uno debajo de otro.
+- Cada día conserva sus franjas horarias alineadas horizontalmente y el comportamiento adaptable en pantallas pequeñas.
+- Verificación: compilación de producción Angular correcta.
+
+## 2026-09-10 - Fase 3: agenda personal del empleado
+
+- El módulo Empleados abre directamente la pantalla `Mi agenda` cuando el trabajador entra con sus credenciales.
+- La pantalla muestra únicamente las tareas devueltas para el usuario autenticado, distinguiendo `Producto` o `Servicio` junto a su estado.
+- Cada tarea permite avanzar de `Pendiente` a `En curso` y posteriormente a `Finalizado`; una tarea finalizada queda solo informativa.
+- La vista es adaptable a móvil y utiliza el sistema común de diálogos para confirmaciones de resultado y errores.
+- Verificación: compilación de producción Angular correcta.
+
+## 2026-09-10 - Fase 1 del modelo de tareas de pedido
+
+- Ampliado el contrato de tareas de Agenda con línea, tipo Producto/Servicio, habilidad, cantidad, duraciones y tiempos previstos y reales.
+- Definidos los estados de tarea `PENDIENTE`, `EN_CURSO` y `FINALIZADO` como valores independientes del tipo.
+- Esta fase prepara el contrato; no cambia todavía la pantalla ni el acceso del empleado.
+- Verificación: compilación Angular de producción correcta.
+
+## 2026-09-08 - Acción Ver en Registro de Usuarios
+
+- Añadida la acción `Ver`, visible únicamente tras seleccionar un usuario y situada antes de `Modificar`.
+- El formulario de consulta reutiliza el modo común de solo lectura y no muestra acciones de guardado.
+- `Modificar` y `Eliminar` también permanecen ocultas mientras no exista una selección.
+
+## 2026-09-08 - Limpieza de Gestión de Recursos
+
+- Eliminado el bloque informativo sin funcionalidad situado bajo la tabla con el texto `Seleccione un recurso para administrarlo`.
+
+## 2026-09-08 - Homogeneización de Gestión de Catálogo
+
+- Sustituidos los paneles y controles particulares por contenedores, grupos, campos y barras comunes.
+- Corregido el gran espacio vertical alineando al inicio las filas de la cabecera común.
+- Añadidas acciones semánticas con iconos para Configuración, Códigos QR y Vista previa.
+
+## 2026-09-08 - Cabeceras de ventana en una sola fila
+
+- El título y la barra principal de acciones se alinean en la misma fila mediante el estilo común de `.pagina`.
+- El contenido posterior conserva el ancho completo y los botones pueden distribuirse dentro del espacio restante.
+- En pantallas estrechas la cabecera vuelve a apilarse para conservar legibilidad y áreas táctiles adecuadas.
+- En escritorio, la barra principal queda alineada al extremo derecho de la cabecera.
+
+## 2026-09-08 - Consulta coherente de bajas
+
+- Corregida Gestión de Avisos y Alertas para ocultar las bajas en la consulta ordinaria, igual que el resto de maestros versionados.
+- Las bajas se recuperan explícitamente filtrando `Tipo Movimiento` por `B`; `incluirBajas` queda reservado para vistas de histórico.
+- Revisadas todas las apariciones de `incluirBajas`: no existen otras tablas principales que fuercen su visualización.
+
+## 2026-09-08 - Cierre de avisos y ayuda de stock
+
+- Cada aviso o alerta del catálogo incorpora una X visible que lo oculta durante la visita actual.
+- Productos muestra una nota contextual cuando `Control Stock` está marcado, indicando la obligación de informar existencias y el comportamiento al llegar a cero.
+- La nota utiliza el estilo común destacado `nota-informativa`, con fondo azul suave, borde lateral, icono y contraste accesible para reutilizarlo en otros formularios.
+- La ayuda de stock permanece visible tanto si el control está marcado como si no, usa una variante compacta y los checkbox comunes se ajustan a 20 px para integrarse con el resto del formulario.
+
+## 2026-09-08 - Edición fiable del stock actual
+
+- Los formularios de Registro y Gestión normalizan explícitamente el stock como entero no negativo antes de enviarlo.
+- Se evita que un campo numérico vacío o inválido genere una confirmación engañosa.
+
+## 2026-09-08 - Registro y Gestión de Avisos/Alertas
+
+- Renombrado `Operación` de Comunicaciones como `Registro`.
+- Añadidas pantallas de Registro y Gestión con sus acciones e histórico correspondientes.
+- Añadidos avisos amarillos y alertas rojas suaves antes del menú del catálogo.
+- Verificado mediante compilación de producción de Angular.
+
+## 2026-09-08 - Imagen de Tipos gestionada solo mediante Adjuntos
+
+- Retirada la columna técnica `Imagen genérica` de las tablas de Tipos de Producto y Tipos de Servicio.
+- La imagen continúa administrándose exclusivamente mediante `Adjuntos`; la marcada como principal es la consumida por el catálogo.
+
+## 2026-09-08 - Distintivos comerciales del catálogo
+
+- Añadidos `Novedad`, `Mejor precio` y `Outlet` a Datos Adicionales de Productos y Servicios.
+- Los indicadores se conservan también al operar desde Gestión de Productos y Gestión de Servicios.
+- El catálogo los muestra como etiquetas diferenciadas sobre la imagen, junto al identificador y al posible estado `Agotado`.
+- Verificado con `npm.cmd run build`.
+
+## 2026-09-08 - Consulta progresiva desde Mapa y Malla
+
+- En Gestión de Personas, Productos, Domicilios y Pedidos, la primera acción `Consultar` desde Mapa/Malla abre la Tabla vacía y la segunda carga todos los registros.
+- El componente compartido de Tabla solicita la carga al escribir un filtro cuando todavía no existen datos; al recibirlos conserva el filtro y presenta solo las coincidencias.
+- Las tablas con consulta remota actualizan la consulta tras una breve espera de escritura.
+- Las tablas vacías de los CRUD se han conectado al mismo mecanismo reutilizable.
+- Verificado con `npm.cmd run build`.
+
+## 2026-09-08 - Carga inicial de Registro y Gestión
+
+- Aplicada la regla de vista inicial: Malla tiene prioridad sobre Mapa y ambas cargan automáticamente; una Tabla sin esas vistas abre vacía hasta pulsar `Consultar`.
+- Eliminada la consulta automática inicial en Tipos de Producto/Servicio, Servicios, Cajas, Recursos, catálogos territoriales y registros complementarios de Personas.
+- Registro y Gestión de documentos de venta con tabla también abren sin datos; Gestión de Pedidos conserva la Malla predeterminada con carga automática.
+- Verificado con `npm.cmd run build`.
+
+## 2026-09-08 - Baja de Servicios condicionada a selección
+
+- Corregida la barra de Gestión de Servicios para que `Baja` solo aparezca en la tabla cuando existe un servicio seleccionado y no está dado de baja.
+- Revisadas las condiciones opcionales equivalentes del resto de barras; no se encontraron otras acciones operativas que aparecieran sin selección.
+- Verificado con `npm.cmd run build`.
+
+## 2026-09-08 - Visibilidad coherente de la acción Ver
+
+- Revisadas todas las acciones `Ver` de los CRUD del frontend.
+- Corregido Tipos de Producto y Tipos de Servicio para mostrar `Ver` únicamente cuando existe una fila seleccionada.
+- Gestión de Productos y Gestión de Domicilios limitan además la acción a la vista de tabla, evitando conservarla visualmente al abrir el formulario, los adjuntos, la malla o el mapa.
+- El resto de registros ya condicionaba correctamente la acción a una selección en su vista correspondiente.
+- Verificado con `npm.cmd run build`.
+
+## 2026-09-08 - Acción Ver en Registro de Productos
+
+- Incorporada la acción `Ver` a la barra del Registro de Productos, disponible al seleccionar una fila.
+- El formulario se abre en modo de consulta, impide modificar sus campos y oculta las acciones de guardado y actualización.
+- La salida del modo de consulta se identifica como `Volver a consulta`.
+- Verificado con `npm.cmd run build`.
+
+## 2026-09-08 - Columnas técnicas ocultas por defecto
+
+- `Id Empresa`, `Tipo Movimiento` y `Causa Movimiento` quedan ocultas inicialmente en todas las tablas mediante una regla única del componente compartido.
+- Se conserva su presencia en `Configurar tabla`, donde cada usuario puede mostrarlas y guardar su decisión.
+- `Id Histórico` continúa oculto por defecto según el comportamiento existente.
+- Las preferencias anteriormente guardadas reciben el nuevo valor inicial mediante una migración única, sin impedir cambios posteriores del usuario.
+- Verificado con `npm.cmd run build`.
+
+## 2026-09-08 - Selección de imágenes del catálogo
+
+- El parámetro `IMAGEN_CATALOGO_ORIGEN` muestra un selector con `Imagen principal del tipo` y `Adjunto principal del registro`.
+- Productos y Servicios mantienen parámetros independientes, permitiendo combinar criterios distintos en el mismo catálogo.
+- Verificado con `npm.cmd run build`.
+
 ## 2026-09-07 - Identificación de servicios y cierre del catálogo
 
 - Los botones correspondientes a tipos de servicio utilizan un color verde azulado propio para diferenciarlos de los tipos de producto.
@@ -541,3 +1167,206 @@
 - Los botones de tipos se ordenan siempre con todos los productos a la izquierda y todos los servicios a continuación.
 - Los conceptos visibles dentro de cada tipo se ordenan por identificador ascendente.
 - Verificación: compilación Angular de producción correcta; permanecen únicamente los avisos previos de presupuesto CSS y dependencias CommonJS.
+## 2026-09-08 - Reordenación del menú de Administración
+
+- El grupo `Utilidades` se presenta antes de `Parametrización` en el menú lateral de Administración.
+- Se elimina de `Utilidades` el acceso duplicado a `Parámetros`; el acceso se mantiene exclusivamente dentro de `Parametrización`.
+- La definición de perfiles y permisos por operación queda pendiente de confirmación funcional y no se modifica en este cambio.
+## 2026-09-09 - Módulos iniciales de Empleados y Clientes
+
+- Se incorporan las tarjetas de acceso y las rutas autenticadas de los módulos `Empleados` y `Clientes`.
+- Ambos módulos parten vacíos: muestran únicamente su título y un menú lateral sin opciones, sin incorporar todavía CRUD, datos ni permisos específicos.
+- La pantalla inicial vacía se implementa como componente reutilizable y se configura mediante los datos de cada ruta.
+- Se añaden iconos vectoriales coherentes con el estilo visual de los módulos existentes.
+- Decisión funcional: cualquier función futura se analizará y validará antes de incorporarla a estos módulos.
+- Verificación: compilación Angular de producción correcta mediante `npm.cmd run build`; permanecen únicamente los avisos previos de presupuesto y dependencias CommonJS.
+## 2026-09-09 - Maestro y Gestión de módulos
+
+- Añadido `Módulos` en Registro con CRUD, vista de consulta y gestión de imagen mediante Adjuntos.
+- Añadida `Gestión de Módulos`, limitada a disponibilidad y orden para la empresa activa.
+- El panel pasa a consumir obligatoriamente la disponibilidad y el orden persistidos para la empresa.
+- Verificación: compilación Angular de producción correcta mediante `npm.cmd run build`; permanecen únicamente advertencias previas de presupuesto y CommonJS.
+## 2026-09-09 - Orden de módulos obligatorio por empresa
+
+- Eliminados el arrastre de módulos y la acción `Restablecer orden` del panel principal.
+- El panel aplica siempre el orden establecido en Gestión de Módulos para la empresa activa y el usuario no puede alterarlo.
+- Eliminado el servicio de persistencia del orden individual.
+## 2026-09-09 - Registro y Gestión en el menú de Administración
+
+- Añadido el grupo `Registro` inmediatamente debajo de `Seguridad`.
+- `Módulos`, `Áreas Organizativas` y `Personal de Área` se agrupan dentro de Registro.
+- `Gestión de Módulos` permanece como operación independiente dentro de Gestión.
+- Eliminado el grupo `Estructura Organizativa` y retirado el acceso duplicado a Módulos desde Parametrización.
+## 2026-09-09 - Acciones de confirmación de Gestión de Módulos
+
+- `Guardar` se traslada desde la cabecera al pie del formulario de disponibilidad y orden.
+- Añadida la acción inferior `Cancelar`, que vuelve al módulo de Administración sin guardar los cambios.
+- La cabecera conserva únicamente las acciones de consulta y navegación.
+## 2026-09-09 - Persistencia verificable del orden de módulos
+
+- Gestión envía posiciones consecutivas según el orden visible y, después de guardar, sustituye la lista por la configuración devuelta por el backend.
+- Los errores de persistencia muestran el detalle recibido mediante el sistema común de diálogos.
+## 2026-09-09 - Menú y Gestión de Usuarios
+
+- Eliminado el grupo Seguridad; Usuarios, Perfiles, Empresas y Auditoría pasan al grupo Registro.
+- Añadida Gestión de Usuarios con Ver, Baja, Reactivar e Histórico según la selección y el estado.
+- Baja y Reactivación solicitan causa en un formulario y sitúan Confirmar y Cancelar al pie.
+- El formulario de Gestión muestra Tipo y Causa dentro de Datos Movimiento; Registro conserva únicamente Usuario, Fecha y Activo.
+- Verificación: compilación Angular de producción correcta mediante `npm.cmd run build`.
+## 2026-09-09 - Limpieza de opciones de Administración
+
+- Eliminada la opción sin acceso funcional `Auditoría` del grupo Registro.
+- Eliminada la opción sin acceso funcional `Selectores` del grupo Parametrización.
+## 2026-09-09 - Homogeneización del formulario y navegación de retorno
+
+- El formulario de Módulos muestra en `Id Empresa` el identificador numérico de la empresa activa, eliminando el texto incorrecto `Configuración general`.
+- Los campos Descripción y Posición de Módulos adoptan los anchos y estilos comunes de formulario.
+- Todas las acciones que regresan desde una consulta, histórico o adjuntos se muestran con el texto uniforme `Volver`; `Cancelar` se conserva en los formularios de edición y alta.
+- Verificación: compilación Angular de producción y comprobación de diferencias sin errores.
+## 2026-09-09 - Acceso a módulos por perfil
+
+- Administrador y Jefe pueden entrar en todos los módulos disponibles para su empresa.
+- Cliente solo visualiza y puede navegar al módulo Clientes; Empleado solo al módulo Empleados.
+- La protección se aplica tanto al panel como a la navegación directa mediante URL.
+- Las pantallas vacías de Clientes y Empleados se mantienen como punto de partida para su definición progresiva.
+## 2026-09-09 - Empresa visible en Administración
+
+- Todas las tablas con datos por empresa del módulo Administración fuerzan visible la columna `Empresa`.
+- La regla prevalece sobre configuraciones antiguas que hubieran ocultado `Id Empresa`.
+- Se conserva el comportamiento común: una tabla vacía permite informar el filtro antes de Consultar y mantiene ese filtro al recibir los resultados.
+- Verificación: compilación Angular de producción correcta.
+## 2026-09-09 - Representación del ámbito Administrador
+
+- La cabecera del Administrador muestra `Todas las empresas` en lugar de la empresa técnica asociada internamente.
+- En las columnas Empresa se conservan los identificadores numéricos y se representa con `T` únicamente el ámbito global del Administrador.
+- La exportación de la tabla utiliza la misma representación visible.
+## 2026-09-09 - Apertura vacía de tablas remotas
+
+- Corregido el componente común de tabla para que la inicialización de columnas no lance automáticamente una consulta remota.
+- Registro y Gestión de Usuarios abren con la tabla vacía hasta pulsar `Consultar` o informar un filtro.
+- Si se elimina un filtro que ya había provocado una consulta, la tabla vuelve a solicitar el conjunto sin ese filtro.
+## 2026-09-09 - Configuración empresarial de módulos
+
+- Gestión de Módulos incorpora un selector de Empresa para que el Administrador consulte y configure cada panel por separado.
+- Cambiar la empresa vacía los resultados; es necesario pulsar `Consultar`, respetando la regla general de carga de vistas sin mapa ni malla.
+- La opción Gestión de Módulos se oculta para Jefe, Cliente y Empleado, y la ruta directa redirige fuera de la pantalla.
+- Guardar persiste tanto los módulos habilitados como el orden mostrado para la empresa seleccionada.
+
+## 2026-09-09 - Maestros exclusivos del Administrador
+
+- Registro y Gestión de Módulos, Perfiles y Empresas se ocultan a Jefe, Cliente y Empleado.
+- La navegación directa a esas rutas también queda bloqueada para perfiles distintos de Administrador.
+- El selector de Perfil del formulario de Usuarios muestra una sola vez los perfiles pertenecientes a la empresa del usuario editado.
+- El formulario usa la consulta auxiliar `GET /perfiles/selector` para usuarios no administradores.
+- Verificación: compilación Angular de producción correcta; se mantienen únicamente los avisos de presupuesto y dependencias CommonJS ya existentes.
+
+## 2026-09-09 - Acciones contextuales en Registro de Perfiles
+
+- Ver, Modificar y Eliminar permanecen ocultas hasta seleccionar un perfil en la tabla.
+- Incorporada la acción Ver en modo de solo lectura y un retorno uniforme mediante `Volver`.
+- Una consulta nueva limpia la selección anterior para evitar acciones sobre un registro que ya no esté visible.
+
+## 2026-09-09 - Registro y Gestión de Empresas
+
+- Registro de Empresas incorpora Consultar, Ver, Insertar, Modificar, Eliminar y Adjuntos con visibilidad contextual.
+- Creada Gestión de Empresas, exclusiva del Administrador, con Ver, Baja, Reactivar, Histórico y Adjuntos.
+- Las consultas ordinarias excluyen empresas de baja; solo se incluyen cuando se informa el filtro Activo.
+- La directiva común de barras sitúa siempre Mapa, Malla o Árbol a la izquierda y Volver en el extremo derecho.
+- Los botones Árbol usan la paleta y el icono comunes de acciones visuales.
+- Mapa, Malla y Árbol comparten una misma paleta morada suave para identificarlos como vistas visuales.
+
+## 2026-09-09 - Enlace corto de pedidos por empresa
+
+- Cada empresa dispone de un alias único y legible para compartir su catálogo mediante `/catalogo/{alias}`.
+- El alias se genera inicialmente a partir del nombre de empresa y puede editarse en Gestión de Catálogo.
+- Los enlaces generales muestran la dirección corta; los tokens existentes y los QR de posiciones continúan siendo compatibles.
+- Verificación: compilación Angular de producción correcta.
+- Verificación: compilación Angular de producción correcta.
+## 2026-09-10 - Catálogo en el módulo Clientes
+
+- El módulo Clientes muestra el mismo catálogo común de productos y servicios que se ofrece mediante el enlace público.
+- Al acceder con una sesión de Cliente, el catálogo obtiene automáticamente el alias configurado para su empresa; no se mantiene una segunda vista ni una segunda fuente de datos.
+- La presentación móvil se activa automáticamente en pantallas estrechas y continúa siendo compatible con el parámetro `vista=movil`.
+- Verificación: compilación Angular de producción correcta; permanecen las advertencias previas de presupuesto y dependencias CommonJS.
+# 2026-09-11 — Documentos de venta y completitud de Personas
+
+- El menú de Ventas oculta Registro y Gestión de presupuestos y albaranes según los parámetros de la empresa activa.
+- Registro y Gestión de facturas utilizan una única pantalla para facturas normales y simplificadas, muestran el tipo y permiten convertir una simplificada en normal.
+- Los datos fiscales se muestran para la factura normal y se informa de que deben completarse exclusivamente desde Personas antes de emitirla.
+- Personas muestra en tabla y formulario si sus datos están completos o incompletos.
+- El catálogo admite correo electrónico y lo remite junto al teléfono para identificar correctamente al cliente.
+- Verificación: `npm.cmd run build` correcto; permanecen únicamente los avisos previos de tamaño y dependencias CommonJS.
+- Ajuste posterior: el aviso extenso de completitud se sustituye por un campo deshabilitado `Estado de los datos`, actualizado en tiempo real, y el teléfono se presenta y valida como obligatorio.
+- Para personas jurídicas, la razón social corta pasa a ser obligatoria y la razón social larga queda opcional.
+- Gestión de Pedidos oculta la acción `Convertir a albarán` cuando `MOSTRAR_ALBARANES` está desactivado para la empresa activa; el backend mantiene la misma restricción ante accesos directos.
+- La barra común sitúa siempre `Histórico` inmediatamente antes de `Volver`, y mantiene `Volver` como última acción a la derecha en todas las ventanas.
+- `Adjuntos` se sitúa siempre a la izquierda de `Histórico`, dejando como cierre común `Adjuntos · Histórico · Volver`.
+- Presupuestos, pedidos, albaranes y facturas sustituyen su bloque particular `Datos Cliente` por el componente común `datosPersonaRelacion`, idéntico al utilizado en Recursos para empleados. Se eliminan los campos de teléfono y correo duplicados.
+- Las pantallas de Gestión de presupuestos, pedidos, albaranes y facturas incorporan la acción `Modificar`; permanece oculta sin selección y en documentos ya convertidos.
+# 2026-09-13 - Catálogo central de directivas
+
+- Se crea `DIRECTIVAS.md` como catálogo único, numerado y estable de las directivas funcionales y visuales del frontend.
+- `README.md` deja de duplicar reglas concretas y pasa a enlazar el catálogo; `CAMBIOS.md` conserva únicamente el histórico.
+- Se recopilan las decisiones transversales confirmadas sobre Registro/Gestión, tablas, barras, componentes, personas, adjuntos, perfiles, módulos, agendas, catálogo y ventas.
+
+## 2026-09-13 - Coherencia del precio público
+
+- Se fija en el contrato del catálogo que el precio final mostrado es el importe unitario cobrado al cliente.
+- La confirmación del pedido coincide exactamente con precio visible por cantidad; el backend deriva base e IVA sin introducir diferencias de céntimos.
+- Verificación real con diez pedidos de la empresa 1 y cantidades simples y múltiples.
+# 2026-09-14 — Chat y mensajería interna
+
+- Se incorpora el componente reutilizable `chatInterno` en la barra superior y en Registro/Gestión de Comunicaciones.
+- Se añaden conversación, respuesta, lectura/no lectura, contador de pendientes, modificación, eliminación y clasificación Normal/Aviso/Alerta.
+- Se sustituye la selección por casillas por un selector único con destinatarios colectivos e individuales según el perfil y la empresa activa.
+- Se ordena el formulario como Destinatario, Tipo, Asunto y Mensaje para mantener Asunto inmediatamente encima del contenido.
+- El selector recibe todos los empleados activos de las cuatro empresas al garantizarse una cuenta vinculada para cada uno en backend.
+- Cada mensaje de la bandeja y del hilo muestra Fecha, Hora, Emisor y Destinatarios.
+- Se compactan los cajones y el área de respuesta; Normal usa contorno neutro, Aviso amarillo y Alerta rojo, manteniendo el texto y el fondo sin color de clasificación.
+- Se eliminan los controles de reclasificación de los mensajes ya enviados; el tipo solo se establece al enviar cada mensaje o respuesta.
+- Al abrir una conversación, el hilo se posiciona automáticamente al final para mostrar el mensaje más reciente.
+- Se incorpora la baja lógica global de conversaciones y la administración de bajas con consulta, reactivación, eliminación definitiva individual y purga hasta una fecha.
+- El alta de conversaciones permite dejar vacío el campo Mensaje; únicamente exige destinatario y Asunto.
+- Se corrige el aviso superior para excluir completamente las conversaciones dadas de baja, aunque sus participantes conserven la relación histórica.
+- Administración incorpora Registro y Gestión de Relaciones de Empresa; Productos sustituye el proveedor obligatorio de texto libre por un selector opcional de proveedores relacionados.
+- Se añade refresco periódico sin recarga completa de la página.
+- Verificación: compilación de producción de Angular.
+# 2026-09-19 - Cálculo de beneficio basado solo en el precio
+
+- Los botones de beneficio de Productos toman exclusivamente el precio sin IVA de compra o de venta como origen.
+- Los descuentos, IVA y totales quedan fuera del cálculo del precio de destino y conservan su función para calcular cada total.
+- Verificado el cálculo con un beneficio del 20 %: compra 10 genera venta 12 y venta 12 genera compra 9,60, aunque existan otros porcentajes en el formulario.
+# 2026-09-19 - Disponibilidad de productos y componentes
+
+- Añadido `Datos Disponibilidad` al Producto con selección independiente de los siete días de la semana.
+- Incorporados Registro y Gestión de Componentes al módulo Productos, con tipo, identificación, importes, los 14 alérgenos oficiales de la UE y datos de movimiento. Los tipos disponibles son Ingrediente, Materia prima, Pieza, Material, Envase y Accesorio.
+- Añadida FE-DIR-052 para normalizar el nombre de los apartados nuevos de formularios.
+# 2026-09-19 - Componentes de ejemplo para la pizzería
+
+- El Registro de Componentes dispone de 20 ejemplos de hostelería para Pizzeria La Esquina, clasificados por tipo y con sus datos económicos y alérgenos.
+# 2026-09-20 - Consulta bajo demanda en Componentes
+
+- Registro y Gestión de Componentes se abren sin ejecutar búsquedas; los datos se cargan únicamente al pulsar `Consultar`.
+# 2026-09-20 - Igualdad entre Registro y Gestión de Productos
+
+- Gestión de Productos adopta los apartados `Datos Importes Compra`, `Datos Importes Venta` y `Datos Disponibilidad` del formulario de Registro, manteniendo sus campos informativos en modo lectura.
+- Añadidas FE-DIR-053 para exigir formularios equivalentes entre Registro y Gestión y FE-DIR-054 para revisar las directivas aplicables en cada desarrollo.
+- Revisión de directivas: cumple separación Registro/Gestión, Datos Movimiento, nombres de apartados, notas informativas, integridad de columnas y reutilización de la utilidad común de precios.
+# 2026-09-20 - Componentes de productos
+
+- Añadido `Datos Componentes` a Productos mediante la tabla de edición común usada en ventas, con inserción de líneas, selector de componente, cantidad y eliminación.
+- Gestión presenta el mismo apartado y contenido en modo informativo.
+- Revisión de directivas: cumple igualdad Registro/Gestión, nombres de apartados, reutilización, aislamiento de componentes por empresa y revisión obligatoria de directivas.
+# 2026-09-20 - Avisos compactos en el catálogo
+
+- Reducidos el espaciado, la altura y el botón de cierre de los avisos del catálogo; en escritorio título, emisor y mensaje aprovechan una sola fila y en móvil conservan la disposición vertical.
+- Revisión de directivas: cumple Directiva 1, adaptación móvil, estilo común de avisos y revisión obligatoria de directivas.
+# 2026-09-20 - Catálogo de clientes en Empleados
+
+- Añadida `Catálogo de clientes` al menú Ventas del módulo Empleados reutilizando la misma ventana del módulo Clientes.
+- El botón `Cerrar` vuelve al módulo Empleados cuando el catálogo se abre desde este menú.
+- Revisión de directivas: cumple reutilización obligatoria, igualdad funcional de la ventana, navegación móvil en la misma pestaña, Directiva 1 y revisión obligatoria de directivas.
+# 2026-09-20 - Avisos del catálogo sin emisor
+
+- Retirado el emisor de los avisos y alertas visibles en el catálogo; la fila compacta muestra únicamente título, mensaje y cierre.
+- Revisión de directivas: cumple Directiva 1, adaptación móvil, coherencia visual y revisión obligatoria.

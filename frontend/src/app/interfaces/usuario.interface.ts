@@ -16,5 +16,7 @@ export interface Usuario {
   	usuUsuMov: string;
   	usuFecMov: string;
 	usuAct: boolean;
+	usuTipMov?: string;
+	usuCauMov?: string;
 
 }

@@ -38,11 +38,12 @@ export class EmpresaService {
   }
 
   // Obtiene los empresas.
-  obtenerEmpresas() {
+  obtenerEmpresas(incluirBajas = false) {
 
     // Envía la petición.
     return this.http.get<any[]>(
-      this.apiUrl
+      this.apiUrl,
+      { params: { incluirBajas } }
     );
 
   }
@@ -78,6 +79,10 @@ export class EmpresaService {
 
   }
 
+  baja(id: number, causa: string) { return this.http.put<Empresa>(`${this.apiUrl}/${id}/baja`, { causa }); }
+  reactivar(id: number, causa: string) { return this.http.put<Empresa>(`${this.apiUrl}/${id}/reactivacion`, { causa }); }
+  historico(id: number) { return this.http.get<MovimientoEmpresa[]>(`${this.apiUrl}/${id}/historico`); }
+
   subirImagen(id: number, archivo: File): Observable<Empresa> {
     const datos = new FormData(); datos.append('archivo', archivo);
     return this.http.post<Empresa>(`${this.apiUrl}/${id}/imagen`, datos);
@@ -88,3 +93,5 @@ export class EmpresaService {
   }
 
 }
+
+export interface MovimientoEmpresa { id:number; empresaId:number; tipo:string; causa:string; usuario:string; fecha:string; activo:boolean; }

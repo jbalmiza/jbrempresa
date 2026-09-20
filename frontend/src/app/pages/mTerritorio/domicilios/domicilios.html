@@ -212,7 +212,7 @@
 			[registroId]="domicilioSeleccionado?.domId || 0" [codigoRuta]="'RUTA_DOCUMENTOS_DOMICILIOS'">
 		</documentacionAdjunta>
 	</div>
-	<div barraAcciones class="toolbar"><button class="boton" (click)="volverAConsulta()">Volver a consulta</button></div>
+	<div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="volverAConsulta()">Volver</button></div>
 </div>
 
 <div *ngIf="vistaActiva === 'historico'" class="tabla-contenedor">
@@ -235,7 +235,8 @@
 		(exportarSolicitado)="exportar()"
   		[columnas]="columnas" 
   		[titulosColumnas]="titulosColumnas"
-  		[datos]="datos" 
+		[datos]="datos"
+		(filtroSolicitado)="consultar()"
 		(filaSeleccionada)="domicilioSeleccionado = $event"> 
   		
   	</tabla>

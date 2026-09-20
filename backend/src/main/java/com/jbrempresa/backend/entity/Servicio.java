@@ -23,6 +23,9 @@ public class Servicio {
  @Column(name="ser_pre_fin") private BigDecimal serPreFin;
  @Column(name="ser_obs") private String serObs;
  @Column(name="ser_vis_cat") private Boolean serVisCat = true;
+ @Column(name="ser_nov") private Boolean serNov = false;
+ @Column(name="ser_mej_pre") private Boolean serMejPre = false;
+ @Column(name="ser_out") private Boolean serOut = false;
  @Column(name="ser_ima", length=255) private String serIma;
  @Column(name="ser_usu_mov") private String serUsuMov;
  @JsonFormat(pattern="dd/MM/yyyy HH:mm:ss") @Column(name="ser_fec_mov") private LocalDateTime serFecMov;
@@ -44,6 +47,9 @@ public class Servicio {
  public BigDecimal getSerPreFin(){return serPreFin;} public void setSerPreFin(BigDecimal v){serPreFin=v;}
  public String getSerObs(){return serObs;} public void setSerObs(String v){serObs=v;}
  public Boolean getSerVisCat(){return serVisCat;} public void setSerVisCat(Boolean v){serVisCat=v;}
+ public Boolean getSerNov(){return serNov;} public void setSerNov(Boolean v){serNov=v;}
+ public Boolean getSerMejPre(){return serMejPre;} public void setSerMejPre(Boolean v){serMejPre=v;}
+ public Boolean getSerOut(){return serOut;} public void setSerOut(Boolean v){serOut=v;}
  public String getSerIma(){return serIma;} public void setSerIma(String v){serIma=v;}
  public String getSerUsuMov(){return serUsuMov;} public void setSerUsuMov(String v){serUsuMov=v;}
  public LocalDateTime getSerFecMov(){return serFecMov;} public void setSerFecMov(LocalDateTime v){serFecMov=v;}

@@ -68,27 +68,36 @@
 }
 
 .controles-calendario,
-.selector-zoom {
+.selector-zoom,
+.selector-vista {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.selector-zoom span {
+.selector-zoom span,
+.selector-vista span {
   margin-right: 2px;
   color: #64748b;
   font-size: 12px;
 }
 
-.selector-zoom button.activo {
-  border-color: #315b91;
-  background: #315b91;
-  color: #fff;
+.selector-zoom select,
+.selector-vista select {
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid #cbd8e6;
+  border-radius: 7px;
+  background: #fff;
+  color: #234f86;
+  cursor: pointer;
 }
 
 .agenda-tiempo {
-  max-height: 650px;
-  overflow: auto;
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: auto;
+  overflow-y: hidden !important;
   background: #fff;
 }
 
@@ -159,7 +168,7 @@
 }
 
 .tramo.ocupado {
-  background: #fca5a5;
+  background: #f8e4ad;
 }
 
 .tramo:hover,
@@ -196,7 +205,7 @@
 }
 
 .leyenda-tiempo .muestra.disponible { background: #b7e4c1; }
-.leyenda-tiempo .muestra.ocupado { background: #fca5a5; }
+.leyenda-tiempo .muestra.ocupado { background: #f8e4ad; }
 .leyenda-tiempo .muestra.margen { background: #93c5fd; }
 .leyenda-tiempo .muestra.no-disponible { background: #d9dde3; }
 
@@ -208,8 +217,9 @@
   margin: 1px 2px;
   padding: 2px 5px !important;
   border-color: #4479b2 !important;
-  background: #dc2626 !important;
-  color: #fff !important;
+  box-sizing: border-box;
+  background: #e3ad38 !important;
+  color: #3f2b05 !important;
   overflow: hidden;
   text-align: left;
   text-overflow: ellipsis;

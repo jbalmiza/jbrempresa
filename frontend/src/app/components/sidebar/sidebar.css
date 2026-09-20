@@ -101,6 +101,8 @@ ul { margin: 0; padding: 0; list-style: none; }
 .submenu li.inactivo { color:#94a3b8; cursor:default; }
 .submenu li.inactivo:hover { border-color:transparent; background:#eef3f8; color:#94a3b8; transform:none; }
 .menu-title.abierto::after { transform:translateY(-52%) rotate(90deg); }
+.menu-title.fijo { cursor:default; }
+.menu-title.fijo::after { display:none; }
 
 @media (max-width: 900px) {
   :host { flex: 0 0 0; }

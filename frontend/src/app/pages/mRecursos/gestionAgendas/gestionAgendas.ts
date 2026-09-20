@@ -5,11 +5,12 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
-import { ExcepcionAgenda, HorarioAgenda, RecursoAgenda, ReservaAgenda } from '../../../interfaces/agenda.interface';
+import { ExcepcionAgenda, HorarioAgenda, RecursoAgenda, ReservaAgenda, TareaAgendaEmpleado, TareaReserva } from '../../../interfaces/agenda.interface';
 import { AgendaService } from '../../../services/agenda.service';
 import { RecursoService } from '../../../services/recurso.service';
 import { ConfiguracionAgenda } from '../../../components/configuracionAgenda/configuracionAgenda';
-import { avisarAplicacion } from '../../../core/interaccion/dialogos.service';
+import { avisarAplicacion, confirmarAplicacion } from '../../../core/interaccion/dialogos.service';
+import { AgendaRegistros } from '../../../components/agendaRegistros/agendaRegistros';
 
 interface AgendaEmpleado {
   recurso: RecursoAgenda;
@@ -35,13 +36,13 @@ interface SeleccionAgenda {
 @Component({
   selector: 'gestionAgendas',
   standalone: true,
-  imports: [CommonModule, FormsModule, Sidebar, Supbar, ConfiguracionAgenda],
+  imports: [CommonModule, FormsModule, Sidebar, Supbar, ConfiguracionAgenda, AgendaRegistros],
   templateUrl: './gestionAgendas.html',
   styleUrls: ['../../../styles/estiloGeneral.css', './gestionAgendas.css', './gestionAgendasConfig.css']
 })
 export class GestionAgendas implements OnInit {
   fecha = this.fechaLocal(new Date());
-  intervalo: 5 | 15 | 30 | 60 = 30;
+  intervalo: 5 | 10 | 15 | 30 | 60 = 30;
   buscar = '';
   cargando = false;
   mensaje = '';
@@ -123,7 +124,7 @@ export class GestionAgendas implements OnInit {
           .filter(e => e.reoTip === 'EMPLEADO' && e.reoAct && e.reoTipMov !== 'B' && e.reoId)
           .map(e => agendasPorEmpleado.get(e.reoId!) ?? ({
             ragId: -e.reoId!, ragTip: 'EMPLEADO', ragRefId: e.reoId!, ragNom: e.reoNom,
-            ragCap: 1, ragMarPre: 0, ragMarPos: 0, ragHorVis: '08:00'
+            ragCap: 1, ragMarPre: 0, ragMarPos: 0, ragHorVis: '08:00', ragIntVis: 30
           } as RecursoAgenda));
         this.reservas = reservas;
         if (!empleados.length) {
@@ -163,9 +164,29 @@ export class GestionAgendas implements OnInit {
     this.cargar();
   }
 
-  cambiarIntervalo(intervalo: 5 | 15 | 30 | 60): void {
+  cambiarIntervalo(intervalo: 5 | 10 | 15 | 30 | 60): void {
     this.intervalo = intervalo;
     this.seleccion = null;
+  }
+
+  cambiarFechaComun(fecha: string): void {
+    this.fecha = fecha;
+    this.cargar();
+  }
+
+  cambiarEstadoComun(evento: { tarea: TareaAgendaEmpleado; estado: 'PENDIENTE' | 'EN_CURSO' | 'FINALIZADO' }): void {
+    if (evento.estado === 'PENDIENTE') {
+      this.volverPendiente({ tarId: evento.tarea.tarId } as TareaReserva);
+      return;
+    }
+    this.agendaService.estadoTareaPropia(evento.tarea.tarId, evento.estado).subscribe({
+      next: () => { avisarAplicacion(evento.estado === 'EN_CURSO' ? 'Tarea iniciada correctamente.' : 'Tarea finalizada correctamente.'); this.cargar(); },
+      error: error => avisarAplicacion(error?.error?.mensaje || error?.error?.message || 'No se pudo cambiar el estado de la tarea.')
+    });
+  }
+
+  cambiarPagoComun(evento: { tarea: TareaAgendaEmpleado; pagado: boolean }): void {
+    this.cambiarPago({ tarId: evento.tarea.tarId } as TareaReserva, evento.pagado);
   }
 
   abrirConfiguracion(): void {
@@ -222,6 +243,15 @@ export class GestionAgendas implements OnInit {
     this.seleccion = { empleado, inicio, fin, estado, reservas, detalle };
   }
 
+  seleccionarYMostrar(empleado: AgendaEmpleado, inicio: number): void {
+    this.seleccionar(empleado, inicio);
+    setTimeout(() => {
+      const detalle = document.querySelector<HTMLElement>('.detalle');
+      detalle?.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+      detalle?.focus({ preventScroll: false });
+    }, 0);
+  }
+
   seleccionada(empleado: AgendaEmpleado, inicio: number): boolean {
     return this.seleccion?.empleado.recurso.ragId === empleado.recurso.ragId && this.seleccion.inicio === inicio;
   }
@@ -232,6 +262,32 @@ export class GestionAgendas implements OnInit {
 
   horaReserva(reserva: ReservaAgenda): string {
     return `${reserva.resIni.slice(11, 16)}–${reserva.resFin.slice(11, 16)}`;
+  }
+
+  avanzarTarea(tarea: TareaReserva): void {
+    if (!tarea.tarId || !tarea.tarEst || !['PENDIENTE', 'EN_CURSO'].includes(tarea.tarEst)) return;
+    const estado = tarea.tarEst === 'PENDIENTE' ? 'EN_CURSO' : 'FINALIZADO';
+    this.agendaService.estadoTareaPropia(tarea.tarId, estado).subscribe({
+      next: () => { avisarAplicacion(estado === 'EN_CURSO' ? 'Tarea iniciada correctamente.' : 'Tarea finalizada correctamente.'); this.cargar(); },
+      error: error => avisarAplicacion(error?.error?.mensaje || error?.error?.message || 'No se pudo cambiar el estado de la tarea.')
+    });
+  }
+
+  async volverPendiente(tarea: TareaReserva): Promise<void> {
+    if (!tarea.tarId || !await confirmarAplicacion('¿Desea devolver esta tarea al estado Pendiente?')) return;
+    this.agendaService.estadoTareaPropia(tarea.tarId, 'PENDIENTE').subscribe({
+      next: () => { avisarAplicacion('La tarea vuelve a estar pendiente.'); this.cargar(); },
+      error: error => avisarAplicacion(error?.error?.mensaje || error?.error?.message || 'No se pudo devolver la tarea a Pendiente.')
+    });
+  }
+
+  async cambiarPago(tarea: TareaReserva, pagado: boolean): Promise<void> {
+    if (!tarea.tarId) return;
+    if (!pagado && !await confirmarAplicacion('¿Desea desmarcar el pedido como pagado?')) return;
+    this.agendaService.marcarPedidoPagado(tarea.tarId, pagado).subscribe({
+      next: () => { avisarAplicacion(pagado ? 'Pedido marcado como pagado.' : 'Se ha desmarcado el pago del pedido.'); this.cargar(); },
+      error: error => avisarAplicacion(error?.error?.mensaje || error?.error?.message || 'No se pudo actualizar el pago del pedido.')
+    });
   }
 
   private disponible(agenda: AgendaEmpleado, inicio: number): boolean {

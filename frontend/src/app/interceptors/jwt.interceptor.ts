@@ -18,6 +18,8 @@ export const jwtInterceptor: HttpInterceptorFn = (
 
   // Obtiene el token almacenado
   const token = localStorage.getItem('token');
+  const administrador = (localStorage.getItem('perfil') || '').trim().toUpperCase() === 'ADMINISTRADOR';
+  const empresaSeleccionada = localStorage.getItem('contexto.empresaId') || '0';
 
   // Si existe token añade la cabecera Authorization
   if (token) {
@@ -25,9 +27,8 @@ export const jwtInterceptor: HttpInterceptorFn = (
     req = req.clone({
 
       setHeaders: {
-
-        Authorization: `Bearer ${token}`
-
+        Authorization: `Bearer ${token}`,
+        ...(administrador ? { 'X-Empresa-Seleccionada': empresaSeleccionada } : {})
       }
 
     });

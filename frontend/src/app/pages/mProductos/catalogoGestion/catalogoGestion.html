@@ -1,8 +1,45 @@
-<supbar></supbar><div class="menu"><sidebar [modulo]="moduloOrigen"></sidebar><main class="pagina catalogo-admin">
-  <label class="titulo">GESTIÓN DE CATÁLOGO</label>
-  <nav class="toolbar tabs" aria-label="Opciones de Gestión de Catálogo"><button class="boton boton-accion accion-consultar" [class.activa]="vista==='configuracion'" (click)="vista='configuracion'">Configuración</button><button class="boton boton-accion accion-volver" (click)="volver()">Volver</button><button class="boton boton-accion opcion-catalogo" [class.activa]="vista==='qr'" (click)="vista='qr'">Códigos QR</button><button class="boton boton-accion opcion-catalogo" [class.activa]="vista==='preview'" (click)="vista='preview'">Vista previa</button></nav>
-  <p *ngIf="mensaje" class="mensaje">{{mensaje}}</p>
-  <section *ngIf="vista==='configuracion'" class="panel"><h2>Publicación</h2><label class="interruptor"><input type="checkbox" [(ngModel)]="config.publicado"><span>Catálogo publicado</span></label><label class="interruptor"><input type="checkbox" [(ngModel)]="config.permitirDomicilio"><span>Permitir pedidos a domicilio</span></label><p class="estado-imagen" [class.correcto]="config.empresaConImagen">Imagen de empresa: {{config.empresaConImagen?'configurada':'pendiente'}}</p><button class="boton boton-accion accion-guardar" (click)="guardarConfig()">Guardar configuración</button></section>
-  <section *ngIf="vista==='qr'" class="panel"><h2>Posiciones</h2><div class="form-posicion"><label>Ubicación<input maxlength="100" [(ngModel)]="posicion.capUbi" placeholder="Zona principal 12"></label><label>Fila<input type="number" min="1" [(ngModel)]="posicion.capFil"></label><label>Columna<input type="number" min="1" [(ngModel)]="posicion.capCol"></label><button class="primario" (click)="guardarPosicion()">{{posicion.capId?'Actualizar':'Añadir'}}</button></div><div class="lista"><article *ngFor="let p of posiciones"><div><strong>{{p.capUbi}}</strong><span>Fila {{p.capFil}} · Columna {{p.capCol}}</span></div><div class="acciones"><button title="Abrir catálogo" (click)="abrirPosicion(p)">Abrir</button><button title="Descargar QR" (click)="descargar(p)">Descargar QR</button><button title="Editar" (click)="editar(p)">Editar</button><button title="Regenerar código" (click)="regenerar(p)">Regenerar</button></div></article></div></section>
-  <section *ngIf="vista==='preview'" class="panel preview"><h2>Catálogo general</h2><p>Este enlace genera pedidos a domicilio cuando esa modalidad está habilitada.</p><code>{{enlaceGeneral}}</code><div class="acciones-preview"><button class="boton boton-accion accion-ver" (click)="abrirGeneral()">Vista normal del catálogo</button><button class="boton" (click)="abrirGeneralMovil()">Vista móvil</button></div></section>
-</main></div>
+<supbar></supbar>
+<div class="menu">
+  <sidebar [modulo]="moduloOrigen"></sidebar>
+  <main class="pagina catalogo-admin">
+    <label class="titulo">GESTIÓN DE CATÁLOGO</label>
+    <nav barraAcciones class="toolbar" aria-label="Opciones de Gestión de Catálogo">
+      <button class="boton boton-accion accion-configuracion" [class.activa]="vista==='configuracion'" (click)="vista='configuracion'">Configuración</button>
+      <button class="boton boton-accion accion-qr" [class.activa]="vista==='qr'" (click)="vista='qr'">Códigos QR</button>
+      <button class="boton boton-accion accion-preview" [class.activa]="vista==='preview'" (click)="vista='preview'">Vista previa</button>
+      <button class="boton boton-accion accion-volver" (click)="volver()">Volver</button>
+    </nav>
+    <p *ngIf="mensaje" class="mensaje">{{mensaje}}</p>
+
+    <section *ngIf="vista==='configuracion'" class="form-contenedor">
+      <div class="form-grupo">
+        <label class="titulo">Datos Publicación</label>
+        <div class="nota-informativa nota-informativa-compacta" role="note"><span class="nota-informativa-icono" aria-hidden="true">i</span><div><strong>Imagen de empresa:</strong><p>{{config.empresaConImagen?'configurada correctamente.':'pendiente de configurar mediante Adjuntos.'}}</p></div></div>
+        <div class="form-fila">
+          <label class="opcion-check"><input type="checkbox" [(ngModel)]="config.publicado"><span>Catálogo publicado</span></label>
+          <label class="opcion-check"><input type="checkbox" [(ngModel)]="config.permitirDomicilio"><span>Permitir pedidos a domicilio</span></label>
+        </div>
+        <div class="form-fila"><div class="form-campo-500"><label class="label">Enlace corto para clientes</label><div class="entrada-prefijo"><span>/catalogo/</span><input maxlength="80" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" [(ngModel)]="config.alias"></div></div></div>
+      </div>
+      <div barraAcciones class="toolbar"><button class="boton boton-accion accion-guardar" (click)="guardarConfig()">Guardar configuración</button></div>
+    </section>
+
+    <section *ngIf="vista==='qr'" class="form-contenedor">
+      <div class="form-grupo">
+        <label class="titulo">Datos Posición</label>
+        <div class="form-fila alinear-final">
+          <div class="form-campo-500"><label class="label">Ubicación</label><input maxlength="100" [(ngModel)]="posicion.capUbi" placeholder="Zona principal 12"></div>
+          <div class="form-campo"><label class="label">Fila</label><input type="number" min="1" [(ngModel)]="posicion.capFil"></div>
+          <div class="form-campo"><label class="label">Columna</label><input type="number" min="1" [(ngModel)]="posicion.capCol"></div>
+          <button class="boton boton-accion accion-guardar" (click)="guardarPosicion()">{{posicion.capId?'Actualizar':'Añadir'}}</button>
+        </div>
+      </div>
+      <div class="form-grupo lista-posiciones"><label class="titulo">Posiciones registradas</label><article *ngFor="let p of posiciones"><div><strong>{{p.capUbi}}</strong><span>Fila {{p.capFil}} · Columna {{p.capCol}}</span></div><div class="acciones"><button class="boton" (click)="abrirPosicion(p)">Abrir</button><button class="boton" (click)="descargar(p)">Descargar QR</button><button class="boton" (click)="editar(p)">Editar</button><button class="boton" (click)="regenerar(p)">Regenerar</button></div></article></div>
+    </section>
+
+    <section *ngIf="vista==='preview'" class="form-contenedor">
+      <div class="form-grupo"><label class="titulo">Catálogo general</label><div class="nota-informativa nota-informativa-compacta" role="note"><span class="nota-informativa-icono" aria-hidden="true">i</span><div><p>Este enlace genera pedidos a domicilio cuando esa modalidad está habilitada.</p></div></div><code class="enlace-catalogo">{{enlaceGeneral}}</code></div>
+      <div barraAcciones class="toolbar"><button class="boton boton-accion accion-ver" (click)="abrirGeneral()">Vista normal</button><button class="boton boton-accion accion-preview" (click)="abrirGeneralMovil()">Vista móvil</button></div>
+    </section>
+  </main>
+</div>

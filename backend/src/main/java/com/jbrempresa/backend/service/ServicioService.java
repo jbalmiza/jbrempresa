@@ -16,6 +16,7 @@ public class ServicioService {
  @Transactional public Servicio guardar(Long cli,String usuario,Servicio s){s.setEmpId(cli);s.setSerId(repository.obtenerSiguienteId(cli));s.setSerIdHis(1L);if(s.getSerVisCat()==null)s.setSerVisCat(true);if(s.getSerIma()==null||s.getSerIma().isBlank())s.setSerIma("servicio-predeterminado.png");movimiento(s,"A",usuario);return repository.save(s);}
  @Transactional public Servicio actualizar(Long cli,String usuario,Servicio s){Servicio anterior=vigente(cli,s.getSerId());comprobar(anterior);anterior.setSerAct(false);repository.saveAndFlush(anterior);s.setEmpId(cli);s.setSerIdHis(anterior.getSerIdHis()+1);movimiento(s,"M",usuario);return repository.save(s);}
  public List<Servicio> consultar(Long cli){return repository.findByEmpIdAndSerActTrueOrderBySerId(cli);}
+ public List<Servicio> consultarGlobal(){return repository.findBySerActTrueOrderByEmpIdAscSerIdAsc();}
  public Long siguienteId(Long cli){return repository.obtenerSiguienteId(cli);}
  public List<Servicio> historico(Long cli,Long id){vigente(cli,id);return repository.findByEmpIdAndSerIdOrderBySerFecMovDesc(cli,id);}
  @Transactional public void eliminar(Long cli,Long id){vigente(cli,id);repository.deleteAll(repository.findByEmpIdAndSerIdOrderBySerFecMovDesc(cli,id));}

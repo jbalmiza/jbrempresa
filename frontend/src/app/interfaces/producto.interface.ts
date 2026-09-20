@@ -17,6 +17,10 @@ export interface Producto {
 	proPro: string;
 	
 	proPreCom: number;
+	proIvaCom?: number;
+	proDesCom?: number;
+	proTotCom?: number;
+	proPreComEst?: boolean;
 	proPreVen: number;
 	proPreDes: number;
 	proPreIva: number;
@@ -29,6 +33,16 @@ export interface Producto {
 	proObs: string;
 	proDurMin: number;
 	proVisCat?: boolean;
+	proNov?: boolean;
+	proMejPre?: boolean;
+	proOut?: boolean;
+	proDisLun?: boolean;
+	proDisMar?: boolean;
+	proDisMie?: boolean;
+	proDisJue?: boolean;
+	proDisVie?: boolean;
+	proDisSab?: boolean;
+	proDisDom?: boolean;
 	proIma?: string;
 
 	proUbi: string;	
@@ -38,5 +52,8 @@ export interface Producto {
   	proUsuMov: string;
   	proFecMov: string;
 	proAct: boolean;
+	componentes?: ProductoComponente[];
 
 }
+
+export interface ProductoComponente { prcId?: number; empId?: number; proId?: number; proIdHis?: number; cmpId: number | null; prcCan: number; }

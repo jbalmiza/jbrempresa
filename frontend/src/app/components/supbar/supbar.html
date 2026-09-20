@@ -1,17 +1,23 @@
 <header class="barra-superior">
   <img *ngIf="imagenEmpresaUrl" class="imagen-empresa" [src]="imagenEmpresaUrl" alt="Imagen de la empresa">
   <div class="contexto-sesion" aria-label="Contexto de la sesión">
-    <span><small>Empresa</small><strong>{{ usuarioEmpresa }}</strong></span>
-    <i aria-hidden="true"></i>
-    <span><small>Usuario</small><strong>{{ usuarioUsuario }}</strong></span>
-    <i aria-hidden="true"></i>
-    <span><small>Perfil</small><strong>{{ usuarioPerfil }}</strong></span>
+    <span><small>Empresa</small><strong *ngIf="!esAdministrador">{{ usuarioEmpresa }}</strong><select *ngIf="esAdministrador" class="selector-empresa" [(ngModel)]="empresaSeleccionada" (change)="cambiarEmpresa()" aria-label="Empresa de trabajo"><option [ngValue]="0">Todas las empresas</option><option *ngFor="let empresa of empresas" [ngValue]="empresa.empId">{{empresa.empNom}}</option></select></span>
+    <span *ngIf="esAdministrador&&empresaSeleccionada"><small>Empleado</small><select class="selector-empleado-global" [(ngModel)]="empleadoSeleccionado" (change)="cambiarEmpleado()" aria-label="Empleado de trabajo"><option [ngValue]="0">Todos los empleados</option><option *ngFor="let empleado of empleados" [ngValue]="empleado.ragId">{{empleado.ragNom}}</option></select></span>
   </div>
 
   <div class="fecha-actual"><span>Hoy: <strong>{{diaSemana}}</strong></span><small>{{fechaActual}}</small></div>
 
   <div class="barra-acciones">
-    <button *ngIf="mostrarBotonModulos" type="button" class="boton-modulos" (click)="modulos()">Módulos</button>
-    <button type="button" class="boton-salir" (click)="salir()">Salir</button>
+    <button *ngIf="mostrarBotonModulos" type="button" class="boton-modulos" aria-label="Módulos" title="Módulos" (click)="modulos()"><span class="icono-accion icono-modulos" aria-hidden="true">▦</span><span class="texto-boton">Módulos</span></button>
+    <div class="desplegable-contenedor">
+      <button type="button" class="boton-cabecera boton-mensajes" [class.con-mensajes]="contadorMensajes>0" [class.sin-mensajes]="contadorMensajes===0" (click)="toggle('mensajes',$event)" [attr.aria-expanded]="desplegable==='mensajes'"><b>{{contadorMensajes}}</b> Mensajes</button>
+	  <section *ngIf="desplegable==='mensajes'" class="desplegable lista-mensajes" (click)="$event.stopPropagation()"><chatInterno [compacto]="true" modo="CHAT" (contadorCambio)="contadorMensajes=$event"></chatInterno></section>
+    </div>
+    <div class="desplegable-contenedor">
+      <button type="button" class="boton-cabecera boton-usuario" aria-label="Usuario" title="Usuario" (click)="toggle('usuario',$event)" [attr.aria-expanded]="desplegable==='usuario'"><span class="icono-accion icono-usuario" aria-hidden="true"></span><span class="texto-boton">{{usuarioAcceso}}</span></button>
+      <section *ngIf="desplegable==='usuario'" class="desplegable usuario-info" (click)="$event.stopPropagation()"><small>Nombre</small><strong>{{usuarioUsuario}}</strong><small>Perfil</small><strong>{{usuarioPerfil}}</strong></section>
+    </div>
+    <button type="button" class="boton-salir" aria-label="Salir" title="Salir" (click)="salir()"><span class="icono-accion icono-salir" aria-hidden="true"></span><span class="texto-boton">Salir</span></button>
   </div>
 </header>
+<avisosVentana></avisosVentana>

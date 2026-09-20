@@ -1,0 +1,10 @@
+<supbar></supbar>
+<div class="menu"><sidebar modulo="proveedores"></sidebar><main class="pagina">
+  <h1 class="titulo">MI CATÁLOGO</h1>
+  <div class="toolbar"><button class="boton boton-accion accion-volver" (click)="volver()">Volver</button></div>
+  <div *ngIf="proveedores.length>1" class="form-fila"><div class="form-campo-300">
+    <label for="proveedor-catalogo">Proveedor</label>
+    <select id="proveedor-catalogo" [(ngModel)]="proveedorId"><option [ngValue]="0">Seleccione un proveedor</option><option *ngFor="let p of proveedores" [ngValue]="p.id">{{p.nombre}}</option></select>
+  </div></div>
+  <catalogo-publico *ngIf="proveedorId" [proveedorId]="proveedorId" (cerrado)="volver()"></catalogo-publico>
+</main></div>

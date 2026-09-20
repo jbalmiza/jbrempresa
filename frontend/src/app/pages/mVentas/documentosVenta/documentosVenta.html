@@ -1,12 +1,12 @@
 <supbar></supbar>
 <div class="menu">
-  <sidebar modulo="ventas"></sidebar>
+  <sidebar [modulo]="registroEmpleado ? 'empleados' : 'ventas'"></sidebar>
   <div class="pagina">
-    <label class="titulo">{{ modoGestion ? 'GESTIÓN DE ' + nombre : 'REGISTRO DE ' + nombre }}</label>
+    <label class="titulo">{{ registroEmpleado ? 'REGISTRO DE VENTAS' : modoGestion ? 'GESTIÓN DE ' + nombre : 'REGISTRO DE ' + nombre }}</label>
     <div barraAcciones class="toolbar">
       <button *ngIf="modoGestion && tipo === 'PED'" class="boton boton-accion accion-malla" (click)="malla()">Malla</button>
       <button class="boton boton-accion accion-consultar" (click)="consultar()">Consultar</button
-      ><button *ngIf="!modoGestion" class="boton boton-accion accion-insertar" (click)="insertar()">
+      ><button *ngIf="!modoGestion && !registroEmpleado" class="boton boton-accion accion-insertar" (click)="insertar()">
         Insertar
       </button>
       <button
@@ -23,14 +23,14 @@
       >
         Modificar
       </button>
-      <button *ngIf="!modoGestion && vista === 'tabla' && seleccionado" class="boton boton-accion accion-eliminar" (click)="eliminar()">
+      <button *ngIf="!modoGestion && !registroEmpleado && vista === 'tabla' && seleccionado" class="boton boton-accion accion-eliminar" (click)="eliminar()">
         Eliminar documento</button
-      ><button *ngIf="modoGestion && vista === 'tabla' && seleccionado" class="boton boton-accion accion-eliminar-completo" (click)="eliminarCompleto()">
+      ><button *ngIf="!modoGestion && vista === 'tabla' && seleccionado" class="boton boton-accion accion-eliminar-completo" (click)="eliminarCompleto()">
         Eliminar cadena
       </button>
       <button
         *ngIf="
-          modoGestion && tipo !== 'FAC' &&
+          modoGestion && tipo !== 'FAC' && (tipo !== 'PED' || albaranesHabilitados) &&
           vista === 'tabla' &&
           seleccionado &&
           seleccionado.dovEst !== 'CONVERTIDO'
@@ -45,6 +45,7 @@
               ? 'Convertir a albarán'
               : 'Convertir a factura'
         }}</button>
+      <button *ngIf="modoGestion && tipo === 'FAC' && vista === 'tabla' && seleccionado?.dovTipFac === 'SIMPLIFICADA'" class="boton boton-accion accion-modificar" (click)="convertirFacturaNormal()">Convertir a normal</button>
       <button *ngIf="modoGestion && vista === 'tabla' && seleccionado?.dovAct" class="boton boton-accion accion-baja" (click)="baja()">Baja</button>
       <button *ngIf="modoGestion && vista === 'tabla' && seleccionado && !seleccionado.dovAct" class="boton boton-accion accion-reactivar" (click)="reactivar()">Reactivar</button>
       <button *ngIf="modoGestion && vista === 'tabla' && seleccionado" class="boton boton-accion accion-adjuntos" (click)="adjuntos()">Adjuntos</button>
@@ -70,11 +71,11 @@
         <label class="titulo">Documentación adjunta · {{ seleccionado?.dovNum }}</label>
         <documentacionAdjunta modulo="VENTAS" [tipoRegistro]="tipo" [registroId]="seleccionado?.dovId || 0" codigoRuta="RUTA_DOCUMENTOS_VENTAS"></documentacionAdjunta>
       </div>
-      <div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="consultar()">Volver a consulta</button></div>
+      <div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="consultar()">Volver</button></div>
     </div>
     <div *ngIf="vista === 'historico'" class="tabla-contenedor">
       <label class="titulo">HISTÓRICO · {{ seleccionado?.dovNum }}</label>
-      <div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="consultar()">Volver a consulta</button></div>
+      <div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="consultar()">Volver</button></div>
       <tabla [columnas]="columnasHistorico" [titulosColumnas]="titulosHistorico" [datos]="datosHistorico"></tabla>
     </div>
     <div *ngIf="vista === 'registro'" class="form-contenedor" [class.solo-lectura]="modo === 'ver'">
@@ -98,21 +99,13 @@
               <option>PAGADO</option>
             </select>
           </div>
+          <div *ngIf="tipo === 'FAC'" class="form-campo-200"><label class="label">Tipo factura *</label><select [(ngModel)]="documento.dovTipFac"><option value="SIMPLIFICADA">Simplificada</option><option value="NORMAL">Normal</option></select></div>
         </div>
       </div>
       <div class="form-grupo">
         <label class="titulo">Datos Cliente</label>
-        <div class="form-fila">
-          <div class="form-campo-500"><label class="label">Persona *</label><selectorBusqueda [datos]="personas" [idSeleccionado]="documento.perId" campoDescripcion="perNomCom" campoId="perId" (valorSeleccionado)="seleccionarPersona($event)"></selectorBusqueda></div>
-          <div class="form-campo-200"><label class="label">Documento</label><input [value]="personaSeleccionada?.perDoc || ''" disabled /></div>
-          <div class="form-campo-500"><label class="label">Dirección postal</label><input [value]="direccionPostal" disabled /></div>
-          <div class="form-campo-200"><label class="label">Teléfono</label><input [value]="personaSeleccionada?.perTel || ''" disabled /></div>
-          <div class="form-campo-500"><label class="label">Correo</label><input [value]="personaSeleccionada?.perEma || ''" disabled /></div>
-        </div>
-        <div class="form-fila">
-          <div class="form-campo-200"><label class="label">Teléfono</label><input [value]="personaSeleccionada?.perTel || ''" disabled /></div>
-          <div class="form-campo-500"><label class="label">Correo</label><input [value]="personaSeleccionada?.perEma || ''" disabled /></div>
-        </div>
+        <div *ngIf="tipo === 'FAC' && documento.dovTipFac === 'NORMAL'" class="nota-informativa nota-informativa-compacta" role="note"><span class="nota-informativa-icono" aria-hidden="true">i</span><div><p>La factura normal solo puede emitirse cuando la persona tenga sus datos completos. La información se completa exclusivamente desde Personas.</p></div></div>
+        <datosPersonaRelacion [personas]="personas" [personaId]="documento.perId" etiqueta="Persona *" (personaIdChange)="seleccionarPersona($event)"></datosPersonaRelacion>
       </div>
       <div class="form-grupo">
         <tablaEdicion
@@ -226,17 +219,18 @@
       </div>
       <div barraAcciones class="toolbar">
         <button *ngIf="modo !== 'ver'" class="boton boton-accion accion-guardar" (click)="guardar()">Guardar</button
-        ><button class="boton boton-accion" [class.accion-cancelar]="modo !== 'ver'" [class.accion-volver]="modo === 'ver'" (click)="consultar()">{{ modo === 'ver' ? 'Volver a consulta' : 'Cancelar' }}</button>
+        ><button class="boton boton-accion" [class.accion-cancelar]="modo !== 'ver'" [class.accion-volver]="modo === 'ver'" (click)="consultar()">{{ modo === 'ver' ? 'Volver' : 'Cancelar' }}</button>
       </div>
     </div>
     <div *ngIf="vista === 'tabla'" class="tabla-contenedor">
       <tabla
-        [titulo]="'TABLA DE ' + nombre"
-        [permitirImportar]="true"
+        [titulo]="registroEmpleado ? 'TABLA DE VENTAS' : 'TABLA DE ' + nombre"
+        [permitirImportar]="!registroEmpleado"
         [permitirExportar]="true"
         [columnas]="columnas"
         [titulosColumnas]="titulos"
         [datos]="datos"
+        (filtroSolicitado)="consultar()"
         (filaSeleccionada)="seleccionado = $event"
       ></tabla>
     </div>

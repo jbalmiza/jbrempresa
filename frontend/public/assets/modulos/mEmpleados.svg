@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Empleados">
+  <rect x="8" y="8" width="104" height="104" rx="16" fill="#f1f6fc"/>
+  <g stroke="#24364b" stroke-width="3" stroke-linejoin="round">
+    <circle cx="60" cy="35" r="17" fill="#dceafb"/>
+    <path d="M29 98c1-26 13-40 31-40s30 14 31 40Z" fill="#5b8fd5"/>
+    <path d="M43 65h34l-4 34H47Z" fill="#eef4fb"/>
+    <path d="m53 66 7 10 7-10" fill="none"/>
+  </g>
+</svg>

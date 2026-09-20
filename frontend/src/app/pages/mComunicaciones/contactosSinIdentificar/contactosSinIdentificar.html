@@ -4,10 +4,10 @@
   <div class="pagina">
     <label class="titulo">CONTACTOS DE CANAL</label>
     <div barraAcciones class="toolbar">
-      <button class="boton" (click)="cambiarConsulta(false)" [disabled]="!mostrarTodos">
+      <button class="boton boton-accion accion-vista" (click)="cambiarConsulta(false)" [disabled]="!mostrarTodos">
         Sin identificar</button
-      ><button class="boton" (click)="cambiarConsulta(true)" [disabled]="mostrarTodos">Todos</button
-      ><button class="boton" (click)="volver()">Volver</button>
+      ><button class="boton boton-accion accion-vista" (click)="cambiarConsulta(true)" [disabled]="mostrarTodos">Todos</button
+      ><button class="boton boton-accion accion-volver" (click)="volver()">Volver</button>
     </div>
     <div class="tabla-contenedor">
       <tabla
@@ -32,7 +32,7 @@
             (valorSeleccionado)="personaId = $event"
           ></selectorBusqueda>
         </div>
-        <button class="boton" (click)="identificar()" [disabled]="!personaId">
+        <button class="boton boton-accion accion-guardar" (click)="identificar()" [disabled]="!personaId">
           Confirmar relación
         </button>
       </div>
@@ -43,7 +43,7 @@
           [datos]="relaciones"
           (filaSeleccionada)="relacionSeleccionada = $event"
         ></tabla
-        ><button *ngIf="relacionSeleccionada" class="boton boton-peligro" (click)="revocar()">
+        ><button *ngIf="relacionSeleccionada" class="boton boton-accion accion-eliminar" (click)="revocar()">
           Revocar relación
         </button>
       </div>

@@ -1,0 +1,12 @@
+<supbar></supbar>
+<div class="layout">
+  <sidebar modulo="empleados"></sidebar>
+  <main class="content agenda-empleado">
+    <header class="cabecera">
+      <h1>MI AGENDA</h1>
+    </header>
+    <agendaRegistros *ngIf="agenda as datos" [titulo]="'Agenda · '+datos.empleado" [recursoAgendaId]="datos.ragId" [nombreRecurso]="datos.empleado" [tareas]="datos.tareas" [permitirGestion]="false" [permitirAccionesTarea]="true" (estadoTarea)="cambiarEstado($event)" (pagarPedido)="marcarPagado($event)"></agendaRegistros>
+    <p class="cargando" *ngIf="cargando">Consultando agenda…</p>
+    <p class="cargando" *ngIf="esAdministrador&&!cargando&&!recursoAgendaId">Selecciona una empresa y un empleado en la barra superior para consultar su agenda.</p>
+  </main>
+</div>

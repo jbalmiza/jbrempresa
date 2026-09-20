@@ -1,17 +1,20 @@
 <supbar></supbar>
 <main class="inicio">
-  <section class="resumen" aria-label="Resumen de actividad">
-    <article><span class="indicador azul"></span><div><strong>Bandeja</strong><span>Mensajes recibidos por clasificar</span></div><button type="button" (click)="abrirModulo('comunicaciones/bandeja')">Abrir</button></article>
-    <article><span class="indicador ambar"></span><div><strong>Revisión</strong><span>Conversaciones que requieren atención</span></div><button type="button" (click)="abrirModulo('comunicaciones/pendientes')">Revisar</button></article>
-    <article><span class="indicador verde"></span><div><strong>{{modulos.length}}</strong><span>Módulos disponibles</span></div></article>
-  </section>
-
   <section class="modulos-seccion">
-    <div class="seccion-cabecera"><div><h2>Productos contratados</h2><p>Accede a las áreas de gestión disponibles para tu usuario.</p></div></div>
+    <div class="seccion-cabecera"><div><h2>Módulos de Gestión</h2><p>Accede a los módulos disponibles para tu empresa.</p></div></div>
     <div class="modules-container">
-      <button *ngFor="let modulo of modulos" type="button" class="module-card" (click)="abrirModulo(modulo.ruta)">
-        <span class="icono-contenedor"><img [src]="modulo.icono" class="module-image" [alt]="modulo.nombre"></span>
-        <span class="module-content"><strong>{{modulo.nombre}}</strong><small>{{modulo.descripcion}}</small><span class="acceso">Acceder <b>→</b></span></span>
+      <button *ngFor="let modulo of modulosEmpresa" type="button" class="module-card" (click)="abrirModulo(modulo.ruta)">
+        <span class="icono-contenedor"><img [src]="icono(modulo)" class="module-image" [alt]="modulo.titulo"></span>
+        <span class="module-content"><strong>{{modulo.titulo}}</strong><small>{{modulo.descripcion}}</small><span class="acceso">Acceder <b>→</b></span></span>
+      </button>
+    </div>
+  </section>
+  <section *ngIf="modulosPersonas.length" class="modulos-seccion modulos-personas">
+    <div class="seccion-cabecera"><div><h2>Módulos de Personas</h2></div></div>
+    <div class="modules-container">
+      <button *ngFor="let modulo of modulosPersonas" type="button" class="module-card" (click)="abrirModulo(modulo.ruta)">
+        <span class="icono-contenedor"><img [src]="icono(modulo)" class="module-image" [alt]="modulo.titulo"></span>
+        <span class="module-content"><strong>{{modulo.titulo}}</strong><small>{{modulo.descripcion}}</small><span class="acceso">Acceder <b>→</b></span></span>
       </button>
     </div>
   </section>

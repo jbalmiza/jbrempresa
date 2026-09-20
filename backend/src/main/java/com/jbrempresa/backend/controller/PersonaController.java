@@ -32,6 +32,7 @@ import com.jbrempresa.backend.repository.DomicilioRepository;
 
 // Importa JwtUser.
 import com.jbrempresa.backend.security.JwtUser;
+import com.jbrempresa.backend.core.context.ContextoOperacion;
 
 // Define el controlador.
 @RestController
@@ -48,12 +49,15 @@ public class PersonaController {
 
     // Repositorio de domicilios.
     private final DomicilioRepository domicilioRepository;
+    private final ContextoOperacion contexto;
 
     public PersonaController(
             PersonaRepository personaRepository,
-            DomicilioRepository domicilioRepository) {
+            DomicilioRepository domicilioRepository,
+            ContextoOperacion contexto) {
         this.personaRepository = personaRepository;
         this.domicilioRepository = domicilioRepository;
+        this.contexto = contexto;
     }
 
     // Obtiene el cliente autenticado.
@@ -79,10 +83,12 @@ public class PersonaController {
             Persona persona) {
 
         if (esTextoVacio(persona.getPerTipPer())) persona.setPerTipPer("FISICA");
+        if (esTextoVacio(persona.getPerTel()))
+            throw new IllegalArgumentException("Debe informar el teléfono de la persona.");
         if ("JURIDICA".equals(persona.getPerTipPer())) {
             if (esTextoVacio(persona.getPerTipDoc()) || esTextoVacio(persona.getPerDoc())
-                    || esTextoVacio(persona.getPerRazSocCor()) || esTextoVacio(persona.getPerRazSocLar())) {
-                throw new IllegalArgumentException("Debe informar el documento y las razones sociales de la persona jurídica.");
+                    || esTextoVacio(persona.getPerRazSocCor())) {
+                throw new IllegalArgumentException("Debe informar el documento y la razón social corta de la persona jurídica.");
             }
         } else if (esTextoVacio(persona.getPerTipDoc()) ||
                 esTextoVacio(persona.getPerDoc()) ||
@@ -95,13 +101,24 @@ public class PersonaController {
         }
 
         persona.setPerNomCom(construirNombreCompleto(persona));
+        persona.setPerDatCom(datosCompletos(persona));
 
+    }
+
+    private boolean datosCompletos(Persona persona) {
+        boolean identidad = !esTextoVacio(persona.getPerTipPer())
+                && !esTextoVacio(persona.getPerTipDoc()) && !esTextoVacio(persona.getPerDoc());
+        boolean nombre = "JURIDICA".equals(persona.getPerTipPer())
+                ? !esTextoVacio(persona.getPerRazSocCor())
+                : !esTextoVacio(persona.getPerNom()) && !esTextoVacio(persona.getPerApe1());
+        return !esTextoVacio(persona.getPerTel()) && identidad && nombre
+                && persona.getDomId() != null && persona.getDomId() > 0;
     }
 
     private String construirNombreCompleto(Persona persona) {
         String denominacion;
         if ("JURIDICA".equals(persona.getPerTipPer())) {
-            denominacion = persona.getPerRazSocLar().trim();
+            denominacion = persona.getPerRazSocCor().trim();
         } else {
             denominacion = String.join(" ",
                     persona.getPerNom().trim(),
@@ -253,6 +270,9 @@ public class PersonaController {
         Long empId = obtenerEmpresa();
 
         // Devuelve los registros.
+        if (contexto.administradorGlobal()) {
+            return personaRepository.findAll().stream().filter(p -> Boolean.TRUE.equals(p.getPerAct())).toList();
+        }
         return personaRepository.findByEmpIdAndPerActTrueOrderByPerId(empId);
 
     }
@@ -365,6 +385,7 @@ public class PersonaController {
         copia.setPerCoX(origen.getPerCoX());
         copia.setPerCoY(origen.getPerCoY());
         copia.setPerHus(origen.getPerHus());
+        copia.setPerDatCom(origen.getPerDatCom());
         return copia;
     }
 

@@ -8,18 +8,61 @@
       >
     </div>
     <div class="acciones">
-      <button (click)="panel = 'calendario'" [class.activo]="panel === 'calendario'">
+      <button *ngIf="permitirGestion" (click)="panel = 'calendario'" [class.activo]="panel === 'calendario'">
         Calendario</button
-      ><button (click)="panel = 'reserva'" [class.activo]="panel === 'reserva'">
+      ><button *ngIf="permitirGestion" (click)="panel = 'reserva'" [class.activo]="panel === 'reserva'">
         Nueva reserva</button
-      ><button (click)="panel = 'configuracion'" [class.activo]="panel === 'configuracion'">
+      ><button *ngIf="permitirGestion" (click)="panel = 'configuracion'" [class.activo]="panel === 'configuracion'">
         Configurar
       </button>
     </div>
   </header>
   <p *ngIf="mensaje" class="mensaje" (click)="mensaje = ''">{{ mensaje }}</p>
   <p *ngIf="cargando" class="mensaje">Cargando agenda…</p>
-  <ng-container *ngIf="panel === 'calendario'">
+  <ng-container *ngIf="panel === 'calendario' && modoMultiple">
+    <nav class="agenda-navegacion">
+      <div class="botones-periodo">
+        <button type="button" (click)="moverMultiple(-1)">‹</button><button type="button" (click)="hoyMultiple()">Hoy</button><button type="button" (click)="moverMultiple(1)">›</button>
+        <input type="date" [ngModel]="fechaGestion" (ngModelChange)="seleccionarFechaMultiple($event)">
+      </div>
+      <h3>{{ tituloPeriodo }}</h3>
+      <div class="controles-calendario"><label class="selector-zoom"><span>Intervalo</span><select [(ngModel)]="zoomMinutos"><option *ngFor="let opcion of intervalos" [ngValue]="opcion.minutos">{{opcion.etiqueta}}</option></select></label></div>
+    </nav>
+    <div class="agenda-filtros-multiple">
+      <label>Buscar empleado <input [(ngModel)]="buscarMultiple" (ngModelChange)="paginaMultiple=0" placeholder="Nombre del empleado"></label>
+      <div><button (click)="moverPaginaMultiple(-1)" [disabled]="paginaMultiple===0">‹ Empleados</button><span>{{paginaMultiple+1}} de {{totalPaginasMultiple}}</span><button (click)="moverPaginaMultiple(1)" [disabled]="paginaMultiple>=totalPaginasMultiple-1">Empleados ›</button></div>
+    </div>
+    <div class="leyenda-tiempo"><span class="muestra disponible"></span>Disponible <span class="muestra ocupado"></span>Ocupado <span class="muestra margen"></span>Preparación / limpieza <span class="muestra no-disponible"></span>No disponible</div>
+    <div class="agenda-multiple-scroll">
+      <div class="agenda-multiple" [style.--columnas]="agendasVisiblesMultiple.length">
+        <div class="cabecera-multiple hora">Hora</div>
+        <div *ngFor="let agenda of agendasVisiblesMultiple" class="cabecera-multiple"><strong>{{agenda.recurso.ragNom}}</strong><small>{{agenda.configurada?'Agenda configurada':'Sin configurar'}}</small></div>
+        <ng-container *ngFor="let tramo of tramosMultiple">
+          <time>{{tramo.etiqueta}}</time>
+          <div *ngFor="let agenda of agendasVisiblesMultiple" class="tramo"
+            [class.disponible]="estadoMultiple(agenda,tramo.minutos)==='DISPONIBLE'"
+            [class.ocupado]="estadoMultiple(agenda,tramo.minutos)==='OCUPADO'"
+            [class.margen]="estadoMultiple(agenda,tramo.minutos)==='PREPARACION'||estadoMultiple(agenda,tramo.minutos)==='LIMPIEZA'"
+            [class.no-disponible]="estadoMultiple(agenda,tramo.minutos)==='NO_DISPONIBLE'">
+            <ng-container *ngFor="let reserva of reservasTramoMultiple(agenda,tramo.minutos)"><span *ngIf="mostrarReservaMultiple(reserva,tramo.minutos)" class="reserva-tramo">{{hora(reserva)}} · {{reserva.resTit}}</span></ng-container>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <section class="tareas-agenda">
+      <header><strong>Tareas</strong><span>{{tareasMultiple.length}}</span></header>
+      <p *ngIf="!tareasMultiple.length" class="agenda-dia-vacia">No hay tareas asignadas para este día.</p>
+      <article *ngFor="let tarea of tareasMultiple" [attr.data-estado]="tarea.estado">
+        <div><small>{{tarea.empleado}} · {{tarea.tipo | titlecase}} · {{tarea.estado==='EN_CURSO'?'En curso':(tarea.estado | titlecase)}}<b *ngIf="tarea.pagado"> · Pagado</b></small><strong>{{tarea.titulo}}</strong><span>{{tarea.inicioPrevisto?.slice(11,16)}} · {{tarea.duracionTotal}} min · Cantidad {{tarea.cantidad||1}}</span></div>
+        <button *ngIf="permitirAccionesTarea&&tarea.pedidoId&&!tarea.pagado" type="button" (click)="pagarPedido.emit({tarea:tarea,pagado:true})">Marcar pagado</button>
+        <button *ngIf="permitirAccionesTarea&&tarea.pedidoId&&tarea.pagado" type="button" (click)="pagarPedido.emit({tarea:tarea,pagado:false})">Desmarcar pago</button>
+        <button *ngIf="permitirAccionesTarea&&tarea.estado==='PENDIENTE'" type="button" (click)="avanzarTarea(tarea)">{{tarea.habilidad==='REPARTO'?'Recoger':'Iniciar'}}</button>
+        <button *ngIf="permitirAccionesTarea&&tarea.estado==='EN_CURSO'" type="button" (click)="avanzarTarea(tarea)">{{tarea.habilidad==='REPARTO'?'Entregar':'Finalizar'}}</button>
+        <button *ngIf="permitirAccionesTarea&&(tarea.estado==='EN_CURSO'||tarea.estado==='FINALIZADO')" type="button" (click)="estadoTarea.emit({tarea:tarea,estado:'PENDIENTE'})">Volver a Pendiente</button>
+      </article>
+    </section>
+  </ng-container>
+  <ng-container *ngIf="panel === 'calendario' && !modoMultiple">
     <nav class="agenda-navegacion">
       <div class="botones-periodo">
         <button (click)="mover(-1)">‹</button><button (click)="hoy()">Hoy</button
@@ -27,19 +70,12 @@
       </div>
       <h3>{{ tituloPeriodo }}</h3>
       <div class="controles-calendario">
-        <div *ngIf="vista !== 'mes'" class="selector-zoom">
-          <span>Intervalo</span
-          ><button [class.activo]="zoomMinutos === 5" (click)="zoomMinutos = 5">5 min</button
-          ><button [class.activo]="zoomMinutos === 15" (click)="zoomMinutos = 15">15 min</button
-          ><button [class.activo]="zoomMinutos === 30" (click)="zoomMinutos = 30">30 min</button
-          ><button [class.activo]="zoomMinutos === 60" (click)="zoomMinutos = 60">1 hora</button>
-        </div>
-        <div class="selector-vista">
-          <button [class.activo]="vista === 'dia'" (click)="seleccionarVista('dia')">Día</button
-          ><button [class.activo]="vista === 'semana'" (click)="seleccionarVista('semana')">
-            Semana</button
-          ><button [class.activo]="vista === 'mes'" (click)="seleccionarVista('mes')">Mes</button>
-        </div>
+        <label class="selector-vista"><span>Vista</span><select [ngModel]="vista" (ngModelChange)="seleccionarVista($event)">
+          <option value="dia">1 día</option><option value="semana">1 semana</option>
+        </select></label>
+        <label class="selector-zoom"><span>Intervalo</span><select [(ngModel)]="zoomMinutos">
+          <option *ngFor="let opcion of intervalos" [ngValue]="opcion.minutos">{{opcion.etiqueta}}</option>
+        </select></label>
       </div>
     </nav>
     <div *ngIf="vista !== 'mes'" class="leyenda-tiempo">
@@ -79,6 +115,18 @@
         </div>
       </div>
     </div>
+    <section *ngIf="vista==='dia'" class="tareas-agenda">
+      <header><strong>Tareas</strong><span>{{tareasDia(fechaActual).length}}</span></header>
+      <p *ngIf="!tareasDia(fechaActual).length" class="agenda-dia-vacia">No hay tareas asignadas para este día.</p>
+      <article *ngFor="let tarea of tareasDia(fechaActual)" [attr.data-estado]="tarea.estado">
+        <div><small>{{tarea.tipo | titlecase}} · {{tarea.estado==='EN_CURSO'?'En curso':(tarea.estado | titlecase)}}<b *ngIf="tarea.pagado"> · Pagado</b></small><strong>{{tarea.titulo}}</strong><span>{{tarea.inicioPrevisto?.slice(11,16)}} · {{tarea.duracionTotal}} min · Cantidad {{tarea.cantidad||1}}</span></div>
+        <button *ngIf="permitirAccionesTarea&&tarea.pedidoId&&!tarea.pagado" type="button" (click)="pagarPedido.emit({tarea:tarea,pagado:true})">Marcar pagado</button>
+        <button *ngIf="permitirAccionesTarea&&tarea.pedidoId&&tarea.pagado" type="button" (click)="pagarPedido.emit({tarea:tarea,pagado:false})">Desmarcar pago</button>
+        <button *ngIf="permitirAccionesTarea&&tarea.estado==='PENDIENTE'" type="button" (click)="avanzarTarea(tarea)">{{tarea.habilidad==='REPARTO'?'Recoger':'Iniciar'}}</button>
+        <button *ngIf="permitirAccionesTarea&&tarea.estado==='EN_CURSO'" type="button" (click)="avanzarTarea(tarea)">{{tarea.habilidad==='REPARTO'?'Entregar':'Finalizar'}}</button>
+        <button *ngIf="permitirAccionesTarea&&(tarea.estado==='EN_CURSO'||tarea.estado==='FINALIZADO')" type="button" (click)="estadoTarea.emit({tarea:tarea,estado:'PENDIENTE'})">Volver a Pendiente</button>
+      </article>
+    </section>
     <div *ngIf="vista === 'semana'" class="agenda-tiempo agenda-tiempo-semana">
       <div class="cabecera-tiempo">
         <span></span
@@ -154,7 +202,7 @@
             {{ t.tarTit }} · {{ t.tarDurMin }} min <small>{{ t.tarEst }}</small>
           </li>
         </ul>
-        <div class="acciones-reserva">
+        <div *ngIf="permitirGestion" class="acciones-reserva">
           <button (click)="reprogramar(r)">Reprogramar</button
           ><button *ngIf="r.resEst === 'PENDIENTE'" (click)="cambiarEstado(r, 'CONFIRMADA')">
             Confirmar</button

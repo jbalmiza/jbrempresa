@@ -24,7 +24,7 @@
 	(click)="ver()">Ver</button>
 
   <button
-	*ngIf="(vistaActiva === 'tabla' || (modoGestion && vistaActiva === 'mapa')) && personaSeleccionada && personaSeleccionada.perTipMov !== 'B'"
+	*ngIf="!modoGestion && vistaActiva === 'tabla' && personaSeleccionada && personaSeleccionada.perTipMov !== 'B'"
 	class="boton boton-accion accion-modificar"
 	(click)="modificar()">
 	Modificar
@@ -40,7 +40,7 @@
   <button *ngIf="modoGestion && vistaActiva === 'tabla' && personaSeleccionada?.perTipMov === 'B'" class="boton boton-accion accion-reactivar" (click)="reactivar()">Reactivar</button>
 
   <button
-	*ngIf="(vistaActiva === 'tabla' || vistaActiva === 'mapa') && personaSeleccionada"
+	*ngIf="!modoGestion && vistaActiva === 'tabla' && personaSeleccionada"
 	class="boton boton-accion accion-eliminar"
 	(click)="eliminar()">
 	Eliminar
@@ -73,7 +73,6 @@
   	<div class="form-grupo"> 
   	
 	<label class="titulo"> Datos Persona </label>
-
 		<div class="form-fila">
 			<div class="form-campo-200">
 				<label class="label">Tipo Persona <span class="obligatorio">*</span></label>
@@ -82,6 +81,7 @@
 					<option value="JURIDICA">Jurídica</option>
 				</select>
 			</div>
+			<div class="form-campo-200"><label class="label">Estado de los datos</label><input [value]="estadoDatosPersona" disabled></div>
 		</div>
 
 		<div class="form-fila">
@@ -129,8 +129,8 @@
   		</div>	
 
 		<div class="form-fila">
-			<div class="form-campo-200"><label class="label">Razón Social Corta <span class="obligatorio">*</span></label><input type="text" maxlength="100" [(ngModel)]="persona.perRazSocCor" name="perRazSocCor" [disabled]="persona.perTipPer !== 'JURIDICA' || modoFormulario === 'ver'"></div>
-			<div class="form-campo-500"><label class="label">Razón Social Larga <span class="obligatorio">*</span></label><input type="text" maxlength="250" [(ngModel)]="persona.perRazSocLar" name="perRazSocLar" [disabled]="persona.perTipPer !== 'JURIDICA' || modoFormulario === 'ver'" (ngModelChange)="actualizarNombreCompleto()"></div>
+			<div class="form-campo-200"><label class="label">Razón Social Corta <span class="obligatorio">*</span></label><input type="text" maxlength="100" [(ngModel)]="persona.perRazSocCor" name="perRazSocCor" [disabled]="persona.perTipPer !== 'JURIDICA' || modoFormulario === 'ver'" (ngModelChange)="actualizarNombreCompleto()"><div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && persona.perTipPer === 'JURIDICA' && !persona.perRazSocCor"> Valor Obligatorio </div></div>
+			<div class="form-campo-500"><label class="label">Razón Social Larga</label><input type="text" maxlength="250" [(ngModel)]="persona.perRazSocLar" name="perRazSocLar" [disabled]="persona.perTipPer !== 'JURIDICA' || modoFormulario === 'ver'"></div>
 		</div>
   		
   		<div class="form-fila">
@@ -207,8 +207,9 @@
 		<div class="form-fila">  
 
  			<div class="form-campo-200"> 
-  				<label class="label"> Teléfono </label> 
-  				<input type="number" maxlength="30" [(ngModel)]="persona.perTel" name="perTel"> 
+				<label class="label"> Teléfono <span class="obligatorio">*</span> </label>
+				<input type="number" maxlength="30" [(ngModel)]="persona.perTel" name="perTel">
+				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !persona.perTel"> Valor Obligatorio </div>
   			</div>
   			
   			<div class="form-campo-200"> 
@@ -266,7 +267,7 @@
 	</div>
 
 	<div barraAcciones class="toolbar">
-		<button class="boton boton-accion accion-volver" (click)="volverAConsulta()">Volver a consulta</button>
+		<button class="boton boton-accion accion-volver" (click)="volverAConsulta()">Volver</button>
 	</div>
 
 </div>
@@ -306,7 +307,8 @@
 		(exportarSolicitado)="exportar()"
   		[columnas]="columnas" 
   		[titulosColumnas]="titulosColumnas"
-  		[datos]="datos" 
+		[datos]="datos"
+		(filtroSolicitado)="consultar()"
 		(filaSeleccionada)="personaSeleccionada = $event"> 
   		
   	</tabla>

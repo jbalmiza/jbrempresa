@@ -7,27 +7,37 @@
 	
 <div class="pagina">
 
-<label class="titulo"> REGISTRO DE USUARIOS </label>
+<label class="titulo"> {{gestion?'GESTIÓN DE USUARIOS':'REGISTRO DE USUARIOS'}} </label>
 	
 <!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
 <div barraAcciones class="toolbar">
 
 <button class="boton boton-accion accion-consultar" (click)="consultar()"> Consultar </button>
 
-<button class="boton boton-accion accion-insertar" (click)="insertar()"> Insertar </button>
+<button *ngIf="vistaActiva === 'tabla' && usuarioSeleccionado" class="boton boton-accion accion-ver" (click)="ver()"> Ver </button>
 
-<button class="boton boton-accion accion-modificar" (click)="modificar()"> Modificar </button>
+<button *ngIf="!gestion" class="boton boton-accion accion-insertar" (click)="insertar()"> Insertar </button>
 
-<button class="boton boton-accion accion-eliminar" (click)="eliminar()"> Eliminar </button>
+<button *ngIf="!gestion && vistaActiva === 'tabla' && usuarioSeleccionado" class="boton boton-accion accion-modificar" (click)="modificar()"> Modificar </button>
+
+<button *ngIf="!gestion && vistaActiva === 'tabla' && usuarioSeleccionado" class="boton boton-accion accion-eliminar" (click)="eliminar()"> Eliminar </button>
+
+<button *ngIf="gestion && vistaActiva === 'tabla' && esActivo(usuarioSeleccionado)" class="boton boton-accion accion-baja" (click)="prepararMovimiento('B')"> Baja </button>
+<button *ngIf="gestion && vistaActiva === 'tabla' && usuarioSeleccionado && !esActivo(usuarioSeleccionado)" class="boton boton-accion accion-reactivar" (click)="prepararMovimiento('R')"> Reactivar </button>
+<button *ngIf="gestion && vistaActiva === 'tabla' && usuarioSeleccionado" class="boton boton-accion accion-historico" (click)="verHistorico()"> Histórico </button>
 
 <button class="boton boton-accion accion-volver" (click)="volver()"> Volver </button>
 
 </div>
 
+<div *ngIf="vistaActiva === 'movimiento'" class="form-contenedor"><div class="form-grupo"><label class="titulo">{{tipoMovimiento==='B'?'Baja':'Reactivación'}} de usuario</label><div class="form-fila"><div class="form-campo-500"><label class="label">Causa del movimiento *</label><textarea maxlength="500" rows="3" [(ngModel)]="causaMovimiento"></textarea></div></div></div><div barraAcciones class="toolbar"><button class="boton boton-accion accion-guardar" (click)="guardarMovimiento()">Confirmar</button><button class="boton boton-accion accion-cancelar" (click)="vistaActiva='tabla'">Cancelar</button></div></div>
+
+<div *ngIf="vistaActiva === 'historico'" class="tabla-contenedor"><tabla [mostrarEmpresa]="true" titulo="HISTÓRICO DE USUARIO" [columnas]="historicoColumnas" [titulosColumnas]="historicoTitulos" [datos]="historicoDatos" [incluirBajas]="true"></tabla><div barraAcciones class="toolbar"><button class="boton boton-accion accion-cancelar" (click)="vistaActiva='tabla'">Volver</button></div></div>
+
 		
 
 <!-- FORMULARIO DE REGISTRO -->
-<div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
+<div *ngIf="vistaActiva === 'registro'" class="form-contenedor" [class.solo-lectura]="modoFormulario === 'ver'">
 
   	<datosIdentificacion [campos]="[{etiqueta:'Id Empresa',valor:usuario.empId},{etiqueta:'Id Usuario',valor:usuario.usuId}]"></datosIdentificacion>
   	
@@ -57,7 +67,7 @@
   				<label class="label">Id Perfil <span class="obligatorio">*</span> </label> 
   				<select [(ngModel)]="usuario.perId" name="perId"> 
   					<option [ngValue]="0" hidden>Seleccione...</option>
-					<option *ngFor="let perfil of perfilesLista" [ngValue]="perfil.perId"> {{ perfil.perNom }} </option>
+					<option *ngFor="let perfil of perfilesDisponibles" [ngValue]="perfil.perId"> {{ perfil.perNom }} </option>
 				</select>
 				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !usuario.perId"> Valor Obligatorio </div>
 			</div>
@@ -98,7 +108,7 @@
 
 	</div>
   
-  	<datosMovimiento [mostrarTipo]="false" [mostrarCausa]="false" [usuario]="usuario.usuUsuMov||''" [fecha]="usuario.usuFecMov" [activo]="usuario.usuAct"></datosMovimiento>
+	<datosMovimiento [mostrarTipo]="gestion" [mostrarCausa]="gestion" [tipo]="usuario.usuTipMov||''" [causa]="usuario.usuCauMov||''" [usuario]="usuario.usuUsuMov||''" [fecha]="usuario.usuFecMov" [activo]="usuario.usuAct"></datosMovimiento>
  
 	<div barraAcciones class="toolbar"> 
 	
@@ -107,7 +117,7 @@
 <button *ngIf="modoFormulario === 'modificar'" class="boton boton-accion accion-actualizar" (click)="actualizar()"> Actualizar </button>
 		
 		<!-- Botón Cancelar tiene misma lógica que insertar -->
-<button class="boton boton-accion accion-cancelar" (click)="insertar()"> Cancelar </button>
+<button class="boton boton-accion accion-cancelar" (click)="consultar()"> {{modoFormulario === 'ver' ? 'Volver' : 'Cancelar'}} </button>
 		
 	</div>
 
@@ -116,7 +126,7 @@
 <!-- TABLA DE RESULTADOS-->
 <div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
 
-  	<tabla 
+	<tabla [mostrarEmpresa]="true"
   	
 		titulo="TABLA DE USUARIOS"
 		[permitirImportar]="true"

@@ -14,8 +14,6 @@ import java.util.UUID;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -29,7 +27,7 @@ import com.jbrempresa.backend.repository.ServicioRepository;
 import com.jbrempresa.backend.repository.TipoArticuloRepository;
 import com.jbrempresa.backend.repository.EmpresaRepository;
 import com.jbrempresa.backend.service.ImagenService;
-import com.jbrempresa.backend.security.JwtUser;
+import com.jbrempresa.backend.core.context.ContextoOperacion;
 
 @RestController
 @RequestMapping("/adjuntos")
@@ -46,10 +44,12 @@ public class AdjuntoController {
     private final EmpresaRepository empresaRepository;
     private final TipoArticuloRepository tipoArticuloRepository;
     private final ImagenService imagenService;
+    private final ContextoOperacion contexto;
 
     public AdjuntoController(AdjuntoRepository adjuntoRepository, ParametroRepository parametroRepository,
             ProductoRepository productoRepository, ServicioRepository servicioRepository,
-            EmpresaRepository empresaRepository, TipoArticuloRepository tipoArticuloRepository, ImagenService imagenService) {
+            EmpresaRepository empresaRepository, TipoArticuloRepository tipoArticuloRepository,
+            ImagenService imagenService, ContextoOperacion contexto) {
         this.adjuntoRepository = adjuntoRepository;
         this.parametroRepository = parametroRepository;
         this.productoRepository = productoRepository;
@@ -57,6 +57,7 @@ public class AdjuntoController {
         this.empresaRepository = empresaRepository;
         this.tipoArticuloRepository = tipoArticuloRepository;
         this.imagenService = imagenService;
+        this.contexto = contexto;
     }
 
     @GetMapping
@@ -190,6 +191,12 @@ public class AdjuntoController {
                             seleccionado.getAdjMime(), seleccionado.getAdjTam(), Files.newInputStream(origen)));
                     empresaRepository.save(registro);
                 }
+                case "ADMINISTRACION" -> {
+                    if (!"MODULO".equalsIgnoreCase(seleccionado.getAdjTipReg())) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Este registro no admite una imagen principal.");
+                    }
+                }
                 default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Este módulo no admite una imagen principal.");
             }
@@ -282,10 +289,6 @@ public class AdjuntoController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Adjunto no encontrado."));
     }
 
-    private JwtUser obtenerJwtUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (JwtUser) authentication.getPrincipal();
-    }
-    private Long obtenerEmpresa() { return obtenerJwtUser().getEmpresaId(); }
-    private String obtenerUsuario() { return obtenerJwtUser().getUsername(); }
+    private Long obtenerEmpresa() { return contexto.empresaId(); }
+    private String obtenerUsuario() { return contexto.nombreUsuario(); }
 }

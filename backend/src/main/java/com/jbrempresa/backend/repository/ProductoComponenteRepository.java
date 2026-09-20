@@ -1,0 +1,2 @@
+package com.jbrempresa.backend.repository;import java.util.List;import org.springframework.data.jpa.repository.JpaRepository;import com.jbrempresa.backend.entity.ProductoComponente;
+public interface ProductoComponenteRepository extends JpaRepository<ProductoComponente,Long>{List<ProductoComponente> findByEmpIdOrderByPrcId(Long empId);List<ProductoComponente> findByEmpIdAndProIdAndProIdHisOrderByPrcId(Long empId,Long proId,Long proIdHis);void deleteByEmpIdAndProIdAndProIdHis(Long empId,Long proId,Long proIdHis);void deleteByEmpIdAndProId(Long empId,Long proId);}

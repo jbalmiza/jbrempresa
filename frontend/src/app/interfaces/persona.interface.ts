@@ -30,5 +30,6 @@ export interface Persona {
   	perUsuMov: string;
   	perFecMov: string;
 	perAct: boolean;
+	perDatCom?: boolean;
 
 }

@@ -29,6 +29,7 @@ import com.jbrempresa.backend.security.JwtUser;
 // Importa ProductoService.
 import com.jbrempresa.backend.service.ProductoService;
 import com.jbrempresa.backend.service.ImagenService;
+import com.jbrempresa.backend.core.context.ContextoOperacion;
 
 // Define el controlador.
 @RestController
@@ -43,10 +44,12 @@ public class ProductoController {
     // Servicio de productos.
     private final ProductoService productoService;
     private final ImagenService imagenService;
+    private final ContextoOperacion contexto;
 
-    public ProductoController(ProductoService productoService, ImagenService imagenService) {
+    public ProductoController(ProductoService productoService, ImagenService imagenService, ContextoOperacion contexto) {
         this.productoService = productoService;
         this.imagenService = imagenService;
+        this.contexto = contexto;
     }
 
     // Obtiene el cliente autenticado.
@@ -75,6 +78,10 @@ public class ProductoController {
                 (producto.getProDurMin() < 0 || producto.getProDurMin() % 5 != 0)) {
             throw new IllegalArgumentException("La duración del producto debe ser cero o múltiplo de 5 minutos.");
         }
+        if (Boolean.TRUE.equals(producto.getProConSto()) &&
+                (producto.getProStoAct() == null || producto.getProStoAct() < 0)) {
+            throw new IllegalArgumentException("El stock actual es obligatorio y no puede ser negativo cuando se controla el stock.");
+        }
         if (Boolean.TRUE.equals(producto.getProVisCat()) && esTextoVacio(producto.getProIma())) {
             throw new IllegalArgumentException("La imagen es obligatoria para mostrar el producto en el catálogo.");
         }
@@ -83,7 +90,6 @@ public class ProductoController {
                 esTextoVacio(producto.getProNom()) ||
                 esTextoVacio(producto.getProCat()) ||
                 esTextoVacio(producto.getProMar()) ||
-                esTextoVacio(producto.getProPro()) ||
                 producto.getProPreCom() == null ||
                 producto.getProPreVen() == null ||
                 producto.getProPreIva() == null) {
@@ -91,6 +97,21 @@ public class ProductoController {
             throw new IllegalArgumentException(
                     "Debe informar los campos obligatorios del producto.");
 
+        }
+        if (producto.getProIvaCom() != null &&
+                (producto.getProIvaCom().signum() < 0 || producto.getProIvaCom().compareTo(new java.math.BigDecimal("100")) > 0)) {
+            throw new IllegalArgumentException("El IVA de compra debe estar entre 0 y 100.");
+        }
+        if (producto.getProPreIva().signum() < 0 || producto.getProPreIva().compareTo(new java.math.BigDecimal("100")) > 0) {
+            throw new IllegalArgumentException("El IVA de venta debe estar entre 0 y 100.");
+        }
+        if (producto.getProPreDes() != null &&
+                (producto.getProPreDes().signum() < 0 || producto.getProPreDes().compareTo(new java.math.BigDecimal("100")) > 0)) {
+            throw new IllegalArgumentException("El descuento debe estar entre 0 y 100.");
+        }
+        if (producto.getProDesCom() != null &&
+                (producto.getProDesCom().signum() < 0 || producto.getProDesCom().compareTo(new java.math.BigDecimal("100")) > 0)) {
+            throw new IllegalArgumentException("El descuento de compra debe estar entre 0 y 100.");
         }
 
     }
@@ -187,7 +208,10 @@ public class ProductoController {
         Long empId = obtenerEmpresa();
 
         // Devuelve los registros.
-        return productoService.obtenerProductos(empId);
+        Long empresaConsulta = contexto.empresaConsulta(null);
+        return empresaConsulta == null
+                ? productoService.obtenerProductosGlobales()
+                : productoService.obtenerProductos(empresaConsulta);
 
     }
 

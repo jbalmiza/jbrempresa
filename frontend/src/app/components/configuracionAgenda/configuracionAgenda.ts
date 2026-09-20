@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { avisarAplicacion, confirmarAplicacion } from '../../core/interaccion/dialogos.service';
-import { HorarioAgenda, RecursoAgenda, TipoRecursoAgenda } from '../../interfaces/agenda.interface';
+import { HorarioAgenda, INTERVALOS_AGENDA, IntervaloAgenda, RecursoAgenda, TipoRecursoAgenda } from '../../interfaces/agenda.interface';
 import { AgendaService } from '../../services/agenda.service';
 
 interface Franja { inicio: string; fin: string; }
@@ -19,7 +19,8 @@ export class ConfiguracionAgenda implements OnChanges {
   @Output() guardado = new EventEmitter<void>();
   @Output() cancelar = new EventEmitter<void>();
 
-  horaVisual = '08:00'; preparacion = 0; limpieza = 0; capacidad = 1;
+  readonly intervalos = INTERVALOS_AGENDA;
+  horaVisual = '08:00'; intervaloVisual: IntervaloAgenda = 30; preparacion = 0; limpieza = 0; capacidad = 1;
   cargando = false; mensaje = '';
   dias: DiaConfig[] = this.diasVacios();
 
@@ -29,6 +30,7 @@ export class ConfiguracionAgenda implements OnChanges {
     const primero = this.recursos[0];
     if (!primero) return;
     this.horaVisual = (primero.ragHorVis || '08:00').slice(0, 5);
+    this.intervaloVisual = primero.ragIntVis || 30;
     this.preparacion = primero.ragMarPre || 0;
     this.limpieza = primero.ragMarPos || 0;
     this.capacidad = primero.ragCap || 1;
@@ -40,13 +42,13 @@ export class ConfiguracionAgenda implements OnChanges {
 
   async guardar(): Promise<void> {
     if (!this.recursos.length || !this.validar()) return;
-    if (this.recursos.length > 1 && !await confirmarAplicacion(`Esta configuración sustituirá el horario de ${this.recursos.length} empleados. ¿Desea continuar?`, true)) return;
+    if (this.recursos.length > 1 && !await confirmarAplicacion(`Esta configuración actualizará la agenda de ${this.recursos.length} empleados. ¿Desea continuar?`, true)) return;
     this.cargando = true; this.mensaje = '';
     const horarios = this.horariosEntrada();
     forkJoin(this.recursos.map(recurso => this.service.guardarRecurso({
       ragTip: this.tipoRecurso, ragRefId: recurso.ragRefId, ragNom: recurso.ragNom,
       ragCap: this.tipoRecurso === 'EMPLEADO' ? 1 : this.capacidad,
-      ragMarPre: this.preparacion, ragMarPos: this.limpieza, ragHorVis: this.horaVisual
+      ragMarPre: this.preparacion, ragMarPos: this.limpieza, ragHorVis: this.horaVisual, ragIntVis: this.intervaloVisual
     }))).subscribe({
       next: guardados => forkJoin(guardados.map(recurso => this.service.guardarHorarios(recurso.ragId, horarios))).subscribe({
         next: () => { this.cargando = false; this.guardado.emit(); },

@@ -29,12 +29,16 @@ export class Tabla implements OnChanges {
 
   // Columnas dinámicas
   @Input() columnas: string[] = [];
+  /** Campos declarados y configurables que no se muestran en la vista inicial. */
+  @Input() columnasOcultasPorDefecto: string[] = [];
   @Input() claveConfiguracion = '';
   @Input() titulo = '';
   @Input() permitirImportar = false;
   @Input() permitirExportar = false;
   /** Muestra también movimientos B. Se usa en las vistas de histórico. */
   @Input() incluirBajas = false;
+  /** Mantiene visible la empresa en pantallas multempresa, incluso con configuraciones anteriores. */
+  @Input() mostrarEmpresa = false;
   @Output() importarSolicitado = new EventEmitter<void>();
   @Output() exportarSolicitado = new EventEmitter<void>();
   
@@ -54,6 +58,8 @@ export class Tabla implements OnChanges {
     pagina: number;
     tamanio: number;
   }>();
+  /** Solicita datos cuando el usuario filtra una tabla que todavía está vacía. */
+  @Output() filtroSolicitado = new EventEmitter<Record<string, string>>();
 
   // Datos privados
   private _datos: any[] = [];
@@ -119,6 +125,8 @@ export class Tabla implements OnChanges {
   private claveCargada = '';
   anchosColumnas: Record<string, number> = {};
   private redimensionando: { columna:string; inicioX:number; anchoInicial:number } | null = null;
+  private temporizadorFiltro?: ReturnType<typeof setTimeout>;
+  private ultimaSolicitudFiltro = '';
 
   constructor(private configuracionService:ConfiguracionTablaService) {}
 
@@ -134,8 +142,24 @@ export class Tabla implements OnChanges {
   // Filtra los registros
   filtrar() {
 
-    // En modo remoto, el filtro se aplica al confirmar con Intro.
+    const hayFiltros = Object.values(this.filtros).some(valor => String(valor ?? '').trim());
+
+    // En modo remoto, el filtro solicita una nueva página al servidor.
     if (this.consultaRemota) {
+      // La carga inicial de columnas no debe ejecutar una consulta con la tabla vacía.
+      // Si se limpia un filtro ya utilizado, sí se solicita de nuevo el conjunto completo.
+      if (!hayFiltros && !this.ultimaSolicitudFiltro) return;
+      this.ultimaSolicitudFiltro = hayFiltros ? JSON.stringify(this.filtros) : '';
+      clearTimeout(this.temporizadorFiltro);
+      this.temporizadorFiltro = setTimeout(() => this.solicitarConsulta(1), 300);
+      return;
+    }
+
+    const firmaFiltros = JSON.stringify(this.filtros);
+    if (!hayFiltros) this.ultimaSolicitudFiltro = '';
+    if (!this.datos.length && hayFiltros && firmaFiltros !== this.ultimaSolicitudFiltro) {
+      this.ultimaSolicitudFiltro = firmaFiltros;
+      this.filtroSolicitado.emit({ ...this.filtros });
       return;
     }
 
@@ -160,7 +184,7 @@ export class Tabla implements OnChanges {
 
         }
 
-        const valor = fila[columna];
+        const valor = this.valorCelda(fila,columna);
 
         return String(valor ?? '')
           .toLowerCase()
@@ -310,7 +334,7 @@ export class Tabla implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
 
-    if (changes['columnas'] || changes['claveConfiguracion']) {
+    if (changes['columnas'] || changes['columnasOcultasPorDefecto'] || changes['claveConfiguracion']) {
       this.prepararColumnas();
     }
 
@@ -360,6 +384,15 @@ export class Tabla implements OnChanges {
 
   tituloColumna(campo:string){return this.titulosColumnas[campo]||campo;}
 
+  valorCelda(fila:any,columna:string){
+    if(this.mostrarEmpresaEfectiva()&&this.esColumnaEmpresa(columna)){
+      const administrador=String(fila?.usuUsu??'').toLowerCase()==='jackalblue'
+        ||String(fila?.perNom??'').toUpperCase()==='ADMINISTRADOR';
+      if(administrador)return 'T';
+    }
+    return fila?.[columna];
+  }
+
   tieneTipoMovimiento(){return this.columnaTipoMovimiento() !== null;}
 
   iniciarRedimension(evento:MouseEvent,columna:string,celda:HTMLElement){
@@ -381,7 +414,7 @@ export class Tabla implements OnChanges {
     if(this.exportarSolicitado.observed){this.exportarSolicitado.emit();return;}
     const columnas=this.columnasVisibles;
     const escapar=(valor:any)=>`"${String(valor??'').replace(/"/g,'""')}"`;
-    const lineas=[columnas.map(c=>escapar(this.tituloColumna(c))).join(';'),...this.datosFiltrados.map(f=>columnas.map(c=>escapar(f[c])).join(';'))];
+    const lineas=[columnas.map(c=>escapar(this.tituloColumna(c))).join(';'),...this.datosFiltrados.map(f=>columnas.map(c=>escapar(this.valorCelda(f,c))).join(';'))];
     const blob=new Blob(['\uFEFF'+lineas.join('\r\n')],{type:'text/csv;charset=utf-8'});
     this.blobs.descargar(blob,`${(this.titulo||'tabla').toLowerCase().replace(/[^a-z0-9]+/gi,'-')}.csv`);
   }
@@ -402,6 +435,7 @@ export class Tabla implements OnChanges {
     const validas=(Array.isArray(configuracion)?configuracion:[]).filter(x=>x&&this.columnasOriginales.includes(x.campo));
     const conocidas=new Set(validas.map(x=>x.campo));
     this.columnasOriginales.filter(x=>!conocidas.has(x)).forEach(campo=>validas.push({campo,visible:this.visiblePorDefecto(campo)}));
+    if(this.mostrarEmpresaEfectiva())validas.filter(x=>this.esColumnaEmpresa(x.campo)).forEach(x=>x.visible=true);
     this.configuracionAplicada=validas.map(x=>({...x}));
     this.columnasVisibles=validas.filter(x=>x.visible).map(x=>x.campo);
     Object.keys(this.filtros).filter(x=>!this.columnasVisibles.includes(x)).forEach(x=>delete this.filtros[x]);
@@ -409,7 +443,14 @@ export class Tabla implements OnChanges {
   }
 
   private obtenerClave(){const base=this.claveConfiguracion?.trim()||`${window.location.pathname}|${this.columnasOriginales.join(',')}`;return base.substring(0,500);}
-  private visiblePorDefecto(campo:string){const nombre=campo.toLowerCase();return nombre!=='cliid'&&!nombre.endsWith('idhis');}
+  private visiblePorDefecto(campo:string){
+    const nombre=campo.toLowerCase().replace(/[^a-z0-9]/g,'');
+    const ocultaConfigurada=this.columnasOcultasPorDefecto.some(valor=>valor.toLowerCase()===campo.toLowerCase());
+    const columnaInterna=(!this.mostrarEmpresaEfectiva()&&(nombre==='empid'||nombre==='cliid'))||nombre.endsWith('tipmov')||nombre.endsWith('caumov');
+    return !ocultaConfigurada&&!columnaInterna&&!nombre.endsWith('idhis');
+  }
+  private esColumnaEmpresa(campo:string){const n=campo.toLowerCase().replace(/[^a-z0-9]/g,'');return n==='empid'||n==='cliid'||n==='empnom';}
+  private mostrarEmpresaEfectiva(){return this.mostrarEmpresa||(localStorage.getItem('perfil')||'').trim().toUpperCase()==='ADMINISTRADOR';}
   private configuracionPredeterminada(){return this.columnasOriginales.map(campo=>({campo,visible:this.visiblePorDefecto(campo)}));}
   private aplicarPredeterminada(){this.aplicarConfiguracion(this.configuracionPredeterminada());}
   private columnaTipoMovimiento(){return this.columnasOriginales.find(c=>c.toLowerCase().endsWith('tipmov'))||null;}

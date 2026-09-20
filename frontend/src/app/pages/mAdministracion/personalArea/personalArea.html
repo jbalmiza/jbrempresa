@@ -5,7 +5,7 @@
     <label class="titulo">PERSONAL DE ÁREA</label>
 
     <div barraAcciones class="toolbar">
-      <button class="boton" (click)="arbol()">Árbol</button>
+      <button class="boton boton-accion accion-arbol" (click)="arbol()">Árbol</button>
 <button class="boton boton-accion accion-consultar" (click)="consultar()">Consultar</button>
 <button class="boton boton-accion accion-insertar" (click)="insertar()" [disabled]="vistaActiva === 'arbol' && !areaSeleccionada" title="Seleccione un área para insertar personal">Insertar</button>
 <button *ngIf="seleccionada" class="boton boton-accion accion-modificar" (click)="modificar()">Modificar</button>
@@ -46,7 +46,7 @@
     </div>
 
     <div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
-      <tabla [columnas]="columnas" [titulosColumnas]="titulosColumnas" [datos]="datos" (filaSeleccionada)="seleccionarFila($event)"></tabla>
+      <tabla [mostrarEmpresa]="true" [columnas]="columnas" [titulosColumnas]="titulosColumnas" [datos]="datos" (filaSeleccionada)="seleccionarFila($event)"></tabla>
     </div>
   </div>
 </div>

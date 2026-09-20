@@ -1,4 +1,5 @@
 export interface CompraDetalle {
+ serId?:number|null;nombre?:string|null;observaciones?:string|null;
 
 	// Datos Identificación
 	comDetId: number;

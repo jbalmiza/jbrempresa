@@ -16,9 +16,11 @@
 
 <button class="boton boton-accion accion-insertar" (click)="insertar()"> Insertar </button>
 
-<button class="boton boton-accion accion-modificar" (click)="modificar()"> Modificar </button>
+<button *ngIf="vistaActiva === 'tabla' && perfilSeleccionado" class="boton boton-accion accion-ver" (click)="ver()"> Ver </button>
 
-<button class="boton boton-accion accion-eliminar" (click)="eliminar()"> Eliminar </button>
+<button *ngIf="vistaActiva === 'tabla' && perfilSeleccionado" class="boton boton-accion accion-modificar" (click)="modificar()"> Modificar </button>
+
+<button *ngIf="vistaActiva === 'tabla' && perfilSeleccionado" class="boton boton-accion accion-eliminar" (click)="eliminar()"> Eliminar </button>
 
 <button class="boton boton-accion accion-volver" (click)="volver()"> Volver </button>
 
@@ -27,7 +29,7 @@
 		
 
 <!-- FORMULARIO DE REGISTRO -->
-<div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
+<div *ngIf="vistaActiva === 'registro'" class="form-contenedor" [class.solo-lectura]="modoFormulario === 'ver'">
 
   	<datosIdentificacion [campos]="[{etiqueta:'Id Empresa',valor:perfil.empId},{etiqueta:'Id Perfil',valor:perfil.perId}]"></datosIdentificacion>
   	
@@ -102,7 +104,7 @@
 <button *ngIf="modoFormulario === 'modificar'" class="boton boton-accion accion-actualizar" (click)="actualizar()"> Actualizar </button>
 		
 		<!-- Botón Cancelar tiene misma lógica que insertar -->
-<button class="boton boton-accion accion-cancelar" (click)="insertar()"> Cancelar </button>
+<button class="boton boton-accion accion-cancelar" (click)="vistaActiva = 'tabla'"> {{modoFormulario === 'ver' ? 'Volver' : 'Cancelar'}} </button>
 		
 	</div>
 
@@ -111,7 +113,7 @@
 <!-- TABLA DE RESULTADOS-->
 <div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
 
-  	<tabla 
+	<tabla [mostrarEmpresa]="true"
   	
 		titulo="TABLA DE PERFILES"
 		[permitirImportar]="true"
@@ -119,7 +121,8 @@
 		(exportarSolicitado)="exportar()"
   		[columnas]="columnas" 
   		[titulosColumnas]="titulosColumnas"
-  		[datos]="datos" 
+		[datos]="datos"
+		(filtroSolicitado)="consultar()"
 		(filaSeleccionada)="perfilSeleccionado = $event"> 
   		
   	</tabla>

@@ -141,8 +141,8 @@ public class JwtFilter extends OncePerRequestFilter {
                     .getContext()
                     .setAuthentication(authToken);
 
-            // Renueva el token si está próximo a caducar.
-            if (jwtService.debeRenovarse(token)) {
+            // Solo la señal de actividad real renueva el token.
+            if ("/usuarios/actividad".equals(request.getServletPath())) {
 
                 // Obtiene el usuario autenticado.
                 JwtUser jwtUser =

@@ -1,6 +1,7 @@
 <section class="configuracion">
   <p *ngIf="recursos.length>1" class="aviso">Configuración global: los cambios se aplicarán a los {{recursos.length}} empleados.</p>
   <div class="campos">
+    <label>Intervalo de visualización<select [(ngModel)]="intervaloVisual"><option *ngFor="let opcion of intervalos" [ngValue]="opcion.minutos">{{opcion.etiqueta}}</option></select></label>
     <label *ngIf="tipoRecurso==='DOMICILIO'">Capacidad<input type="number" min="1" [(ngModel)]="capacidad"></label>
     <label>Hora inicial de visualización<input type="time" [(ngModel)]="horaVisual" required></label>
     <label>Preparación (min)<input type="number" min="0" [(ngModel)]="preparacion"></label>

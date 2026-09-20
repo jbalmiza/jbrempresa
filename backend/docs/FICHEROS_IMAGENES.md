@@ -1,52 +1,21 @@
-# Ficheros, adjuntos e imagenes
+# Ficheros, adjuntos e imágenes
 
-## Principio de almacenamiento
+Revisión documental: 2026-09-15. Describe el árbol de trabajo actual.
 
-Cada modulo define mediante Parametros la ruta base de sus imagenes. No hay una unica ruta global impuesta a todos los modulos. Dentro de la ruta se separan los ficheros por empresa, modulo y tipo de entidad, evitando mezclar imagenes de empresas distintas.
+## Criterio y almacenamiento
 
-Estructura conceptual:
+Se aplica el [catálogo de directivas](DIRECTIVAS.md) y [AGENTS.md](../../AGENTS.md): antes de crear o sustituir imágenes se pregunta el enfoque visual si el usuario no lo ha indicado. Los archivos de un registro se gestionan mediante Adjuntos y su imagen principal; no se añaden cargadores particulares.
 
-```text
-<ruta-del-modulo>/empresa-<emp_id>/<modulo>/<entidad>/<archivo>
-```
+La raíz común de imágenes de la empresa se configura mediante RUTA_IMAGENES en ADMINISTRACION, PRODUCTOS y SERVICIOS. El resolver admite valores distintos por módulo; configurar la raíz común mantiene la organización acordada. ImagenService construye la ruta física como raíz/empresa-{id}/tipo/archivo; no añade otro segmento de módulo. Los clientes acceden por API, no mediante rutas locales arbitrarias.
 
-La ruta exacta la resuelve `ImagenService`; los clientes nunca deben enviar una ruta fisica arbitraria para leer un archivo.
+## Adjuntos y principal
 
-## Adjunto
+AdjuntoController lista, carga, sirve, marca principal y elimina archivos de registros. El [inventario REST](API_INVENTARIO.md) contiene rutas y parámetros exactos. La configuración multipart permite 10 MB por archivo y 11 MB por petición. ImagenService limita imágenes a 5 MB y acepta MIME JPEG, PNG y WebP. Esta comprobación usa el tipo declarado; no equivale a una inspección completa del contenido.
 
-`AdjuntoController` trabaja con `modulo`, `entidad` y `registroId`:
+Marcar una imagen principal sustituye la principal anterior y sincroniza la referencia de la entidad compatible. Empresa, Productos y Servicios reutilizan esa imagen en sus vistas y catálogos. Los módulos de aplicación usan su adjunto principal y un recurso incluido si falta.
 
-- `GET /adjuntos`: lista metadatos del registro.
-- `POST /adjuntos`: carga multipart; maximo global 10 MB por archivo y 11 MB por peticion.
-- `PUT /adjuntos/{id}/principal`: marca una imagen como principal.
-- `GET /adjuntos/{id}/contenido`: devuelve el binario con su tipo de contenido.
-- `DELETE /adjuntos/{id}`: elimina la asociacion y el fichero gestionado.
+Los parámetros documentales siguen el tipo de registro; consultar el [manual](../../docs/MANUAL_PARAMETROS_CLIENTE.md). Las imágenes predeterminadas se encuentran en src/main/resources/default-images.
 
-El backend valida empresa, entidad y registro antes de servir o cambiar un adjunto.
+## Acceso y conservación
 
-## Imagen principal
-
-La seleccion se realiza en el apartado Adjuntos, no en los formularios principales. Al marcar una imagen:
-
-1. se verifica que es una imagen y pertenece al registro;
-2. se desmarca la principal anterior;
-3. se marca el adjunto elegido;
-4. se sincroniza la ruta/campo de imagen de empresa, producto, servicio u otra entidad compatible.
-
-La misma imagen se usa en catalogo, cabecera de empresa y tooltip de malla. Productos y servicios sin imagen propia pueden usar los recursos predeterminados incluidos en `src/main/resources/default-images`.
-
-## Reglas de seguridad
-
-- No exponer rutas locales en respuestas publicas.
-- Normalizar nombres y evitar secuencias de traversal.
-- Comprobar el tipo real/permitido y no confiar solo en la extension.
-- Resolver siempre el fichero dentro de la ruta configurada y empresa activa.
-- No reutilizar un adjunto de otra empresa o registro.
-
-## Entidades actuales con imagen
-
-- Empresa: identidad visual de la aplicacion y catalogo.
-- Producto: ficha, catalogo y malla.
-- Servicio: ficha, catalogo y malla cuando corresponda.
-
-Si otro modulo incorpora imagen, debe añadir su propio parametro de ruta y adoptar el mismo flujo de Adjuntos e imagen principal.
+El backend resuelve empresa, registro y archivo y normaliza nombres. El catálogo público solo sirve sus imágenes publicadas; el catálogo de proveedores usa rutas protegidas y valida también la relación. Deben copiarse conjuntamente base de datos, archivos y claves de cifrado en las copias de seguridad. Ver [operación](OPERACION.md) y [seguridad](SEGURIDAD.md).

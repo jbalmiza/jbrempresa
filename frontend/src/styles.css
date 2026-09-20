@@ -16,3 +16,9 @@ app-root {
   display: block;
   min-height: 100%;
 }
+
+/* Reserva inicial para avisos de ventana solo en el contenido, nunca en el menú. */
+supbar:has(avisosVentana .avisos-ventana article:not([hidden])) + .menu > .pagina,
+supbar:has(avisosVentana .avisos-ventana article:not([hidden])) + .layout > .content {
+  margin-top: 26px;
+}

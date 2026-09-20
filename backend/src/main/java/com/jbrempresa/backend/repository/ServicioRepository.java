@@ -8,6 +8,7 @@ import java.util.Optional;
 public interface ServicioRepository extends JpaRepository<Servicio, ServicioId> {
  @Query("select coalesce(max(s.serId),0)+1 from Servicio s where s.empId=:empId") Long obtenerSiguienteId(@org.springframework.data.repository.query.Param("empId") Long empId);
  List<Servicio> findByEmpIdAndSerActTrueOrderBySerId(Long empId);
+ List<Servicio> findBySerActTrueOrderByEmpIdAscSerIdAsc();
  List<Servicio> findByEmpIdAndSerActTrueAndSerVisCatTrueOrderBySerCatAscSerSubCatAscSerNomAsc(Long empId);
  Optional<Servicio> findByEmpIdAndSerIdAndSerActTrue(Long empId,Long serId);
  List<Servicio> findByEmpIdAndSerIdOrderBySerFecMovDesc(Long empId,Long serId);

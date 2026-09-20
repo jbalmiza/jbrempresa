@@ -17,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 // Importa las anotaciones REST.
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 // Importa Perfil.
 import com.jbrempresa.backend.entity.Perfil;
@@ -26,6 +28,7 @@ import com.jbrempresa.backend.repository.PerfilRepository;
 
 // Importa JwtUser.
 import com.jbrempresa.backend.security.JwtUser;
+import com.jbrempresa.backend.core.context.ContextoOperacion;
 
 // Define el controlador.
 @RestController
@@ -39,9 +42,18 @@ public class PerfilController {
 
     // Repositorio de perfiles.
     private final PerfilRepository perfilRepository;
+    private final ContextoOperacion contexto;
 
-    public PerfilController(PerfilRepository perfilRepository) {
+    public PerfilController(PerfilRepository perfilRepository, ContextoOperacion contexto) {
         this.perfilRepository = perfilRepository;
+        this.contexto = contexto;
+    }
+
+    private void soloAdministrador() {
+        if (!contexto.administradorGlobal()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "El Registro y la Gestión de Perfiles son exclusivos del Administrador.");
+        }
     }
 
     // Obtiene el cliente autenticado.
@@ -82,8 +94,10 @@ public class PerfilController {
     public Perfil guardar(
             @RequestBody Perfil perfil) {
 
+        soloAdministrador();
+
         // Obtiene el cliente.
-        Long empId = obtenerEmpresa();
+        Long empId = contexto.administradorGlobal() && perfil.getEmpId() != null ? perfil.getEmpId() : obtenerEmpresa();
 
         // Asigna el cliente.
         perfil.setEmpId(empId);
@@ -112,8 +126,11 @@ public class PerfilController {
             @PathVariable Long id,
             @RequestBody Perfil perfil) {
 
+        soloAdministrador();
+
         // Obtiene el cliente.
-        Long empId = obtenerEmpresa();
+        Perfil existente = perfilRepository.findById(id).orElseThrow(() -> new RuntimeException("Perfil no encontrado."));
+        Long empId = contexto.administradorGlobal() ? existente.getEmpId() : obtenerEmpresa();
 
         // Comprueba el perfil.
         perfilRepository.findByEmpIdAndPerId(empId, id)
@@ -140,17 +157,28 @@ public class PerfilController {
     @GetMapping
     public List<Perfil> obtenerPerfiles() {
 
+        soloAdministrador();
+
         // Obtiene el cliente.
         Long empId = obtenerEmpresa();
 
         // Devuelve los registros.
-        return perfilRepository.findByEmpId(empId);
+        return perfilRepository.findAll();
+
+    }
+
+    // Consulta auxiliar para asignar perfiles al registrar usuarios.
+    @GetMapping("/selector")
+    public List<Perfil> obtenerPerfilesSelector() {
+        return perfilRepository.findByEmpId(obtenerEmpresa());
 
     }
 
     // Obtiene el siguiente ID.
     @GetMapping("/siguiente-id")
     public Long obtenerSiguienteId() {
+
+        soloAdministrador();
 
         // Devuelve el identificador.
         return perfilRepository.obtenerSiguienteId(obtenerEmpresa());
@@ -162,8 +190,11 @@ public class PerfilController {
     public void eliminar(
             @PathVariable Long id) {
 
+        soloAdministrador();
+
         // Obtiene el cliente.
-        Long empId = obtenerEmpresa();
+        Perfil existente = perfilRepository.findById(id).orElseThrow(() -> new RuntimeException("Perfil no encontrado."));
+        Long empId = contexto.administradorGlobal() ? existente.getEmpId() : obtenerEmpresa();
 
         // Busca el perfil.
         Perfil perfil =

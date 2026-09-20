@@ -36,6 +36,21 @@ public class Empresa {
     @Column(name = "emp_ima", length = 500)
     private String empIma;
 
+    @Column(name = "emp_raz_soc", length = 200)
+    private String empRazSoc;
+    @Column(name = "emp_nif", length = 30)
+    private String empNif;
+    @Column(name = "emp_act_eco", length = 200)
+    private String empActEco;
+    @Column(name = "emp_tel", length = 30)
+    private String empTel;
+    @Column(name = "emp_ema", length = 150)
+    private String empEma;
+    @Column(name = "emp_web", length = 250)
+    private String empWeb;
+    @Column(name = "dom_id")
+    private Long domId;
+
     // Activo
     @Column(name = "emp_act")
     private String empAct;
@@ -48,6 +63,12 @@ public class Empresa {
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "emp_fec_mov")
     private LocalDateTime empFecMov;
+
+    @Column(name = "emp_tip_mov", length = 1)
+    private String empTipMov;
+
+    @Column(name = "emp_cau_mov", length = 500)
+    private String empCauMov;
 
     // GETTERS Y SETTERS------------------------------------------------
 
@@ -72,6 +93,20 @@ public class Empresa {
     }
     public String getEmpIma() { return empIma; }
     public void setEmpIma(String empIma) { this.empIma = empIma; }
+    public String getEmpRazSoc() { return empRazSoc; }
+    public void setEmpRazSoc(String empRazSoc) { this.empRazSoc = empRazSoc; }
+    public String getEmpNif() { return empNif; }
+    public void setEmpNif(String empNif) { this.empNif = empNif; }
+    public String getEmpActEco() { return empActEco; }
+    public void setEmpActEco(String empActEco) { this.empActEco = empActEco; }
+    public String getEmpTel() { return empTel; }
+    public void setEmpTel(String empTel) { this.empTel = empTel; }
+    public String getEmpEma() { return empEma; }
+    public void setEmpEma(String empEma) { this.empEma = empEma; }
+    public String getEmpWeb() { return empWeb; }
+    public void setEmpWeb(String empWeb) { this.empWeb = empWeb; }
+    public Long getDomId() { return domId; }
+    public void setDomId(Long domId) { this.domId = domId; }
 
     // Obtiene el estado activo
     public String getEmpAct() {
@@ -102,5 +137,10 @@ public class Empresa {
     public void setEmpFecMov(LocalDateTime empFecMov) {
         this.empFecMov = empFecMov;
     }
+
+    public String getEmpTipMov() { return empTipMov; }
+    public void setEmpTipMov(String empTipMov) { this.empTipMov = empTipMov; }
+    public String getEmpCauMov() { return empCauMov; }
+    public void setEmpCauMov(String empCauMov) { this.empCauMov = empCauMov; }
 
 }

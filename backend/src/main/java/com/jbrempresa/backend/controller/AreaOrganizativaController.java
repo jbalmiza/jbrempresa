@@ -19,19 +19,21 @@ public class AreaOrganizativaController {
     private final ContextoOperacion contexto;
     public AreaOrganizativaController(AreaOrganizativaRepository r, PersonalAreaRepository p, ContextoOperacion c) { repository=r; personalRepository=p; contexto=c; }
 
-    @GetMapping public List<AreaSalida> consultar() { return repository.findByEmpIdOrderByAreNom(contexto.empresaId()).stream().map(area -> AreaSalida.desde(area)).toList(); }
+    @GetMapping public List<AreaSalida> consultar() { return (contexto.administradorGlobal()?repository.findAll():repository.findByEmpIdOrderByAreNom(contexto.empresaId())).stream().map(area -> AreaSalida.desde(area)).toList(); }
     @PostMapping public AreaSalida guardar(@Valid @RequestBody AreaEntrada datos) { AreaOrganizativa area=datos.entidad();area.setAreId(null); preparar(area); validar(area,null); return AreaSalida.desde(repository.save(area)); }
     @PutMapping("/{id}") public AreaSalida actualizar(@PathVariable Long id,@Valid @RequestBody AreaEntrada datos) { AreaOrganizativa area=datos.entidad();
-        repository.findByEmpIdAndAreId(contexto.empresaId(),id).orElseThrow(()->new RuntimeException("Área no encontrada."));
+        AreaOrganizativa existente=areaPermitida(id);
+        area.setEmpId(existente.getEmpId());
         area.setAreId(id); preparar(area); validar(area,id); return AreaSalida.desde(repository.save(area));
     }
     @DeleteMapping("/{id}") public void eliminar(@PathVariable Long id) {
-        Long cli=contexto.empresaId(); AreaOrganizativa area=repository.findByEmpIdAndAreId(cli,id).orElseThrow(()->new RuntimeException("Área no encontrada."));
+        AreaOrganizativa area=areaPermitida(id); Long cli=area.getEmpId();
         if(repository.existsByEmpIdAndAreIdPad(cli,id)) throw new IllegalArgumentException("No se puede eliminar un área con áreas dependientes.");
         if(personalRepository.existsByEmpIdAndAreId(cli,id)) throw new IllegalArgumentException("No se puede eliminar un área con personal asignado.");
         repository.delete(area);
     }
-    private void preparar(AreaOrganizativa a){ a.setEmpId(contexto.empresaId()); a.setAreUsuMov(contexto.nombreUsuario()); a.setAreFecMov(contexto.fechaActual()); if(a.getAreAct()==null)a.setAreAct(true); }
+    private void preparar(AreaOrganizativa a){ if(!contexto.administradorGlobal()||a.getEmpId()==null||a.getEmpId()==0)a.setEmpId(contexto.empresaId()); a.setAreUsuMov(contexto.nombreUsuario()); a.setAreFecMov(contexto.fechaActual()); if(a.getAreAct()==null)a.setAreAct(true); }
+    private AreaOrganizativa areaPermitida(Long id){AreaOrganizativa a=repository.findById(id).orElseThrow(()->new RuntimeException("Área no encontrada."));if(!contexto.administradorGlobal()&&!a.getEmpId().equals(contexto.empresaId()))throw new RuntimeException("Área no encontrada.");return a;}
     private void validar(AreaOrganizativa a,Long id){
         if(a.getAreCod()==null||a.getAreCod().isBlank()||a.getAreNom()==null||a.getAreNom().isBlank()) throw new IllegalArgumentException("Código y nombre del área son obligatorios.");
         boolean repetido=id==null?repository.existsByEmpIdAndAreCodIgnoreCase(a.getEmpId(),a.getAreCod()):repository.existsByEmpIdAndAreCodIgnoreCaseAndAreIdNot(a.getEmpId(),a.getAreCod(),id);

@@ -16,6 +16,7 @@ public class DocumentoVentaMovimiento {
     @Column(name = "per_id", nullable = false) private Long perId;
     @Column(name = "dov_fec", nullable = false) private LocalDate dovFec;
     @Column(name = "dov_est", nullable = false, length = 20) private String dovEst;
+    @Column(name = "dov_tip_fac", length = 15) private String dovTipFac;
     @Column(name = "dov_ubi", length = 100) private String dovUbi;
     @Column(name = "dov_ori", length = 20) private String dovOri;
     @Column(name = "dov_mod", length = 20) private String dovMod;
@@ -36,6 +37,7 @@ public class DocumentoVentaMovimiento {
     public Long getPerId(){return perId;} public void setPerId(Long v){perId=v;}
     public LocalDate getDovFec(){return dovFec;} public void setDovFec(LocalDate v){dovFec=v;}
     public String getDovEst(){return dovEst;} public void setDovEst(String v){dovEst=v;}
+    public String getDovTipFac(){return dovTipFac;} public void setDovTipFac(String v){dovTipFac=v;}
     public String getDovUbi(){return dovUbi;} public void setDovUbi(String v){dovUbi=v;}
     public String getDovOri(){return dovOri;} public void setDovOri(String v){dovOri=v;}
     public String getDovMod(){return dovMod;} public void setDovMod(String v){dovMod=v;}

@@ -102,6 +102,7 @@ export class AccesoLogin {
 
 		  // Guarda el usuario	  
 		  localStorage.setItem( 'usuario', respuesta.usuario );
+		  localStorage.setItem( 'usuarioAcceso', this.usuario.trim() );
 		  
           // Guarda el perfil
           localStorage.setItem( 'perfil', respuesta.perfil );

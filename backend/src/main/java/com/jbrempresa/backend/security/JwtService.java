@@ -36,10 +36,6 @@ public class JwtService {
     private static final long DURACION_TOKEN =
             1000 * 60 * 30;
 
-    // Tiempo restante para renovar el token en milisegundos.
-    private static final long VENTANA_RENOVACION =
-            1000 * 60 * 5;
-
     // Clave secreta obtenida desde la configuracion externa.
     @Value("${JWT_SECRET}")
     private String claveSecreta;
@@ -154,24 +150,6 @@ public class JwtService {
 
         return obtenerClaims(token)
                 .get("perfilId", Long.class);
-
-    }
-
-    // Comprueba si el token debe renovarse.
-    public boolean debeRenovarse(
-            String token) {
-
-        // Obtiene la fecha de expiración.
-        Date expiracion = obtenerClaims(token)
-                .getExpiration();
-
-        // Calcula el tiempo restante.
-        long tiempoRestante =
-                expiracion.getTime()
-                - System.currentTimeMillis();
-
-        // Renueva solo cuando quedan cinco minutos o menos.
-        return tiempoRestante <= VENTANA_RENOVACION;
 
     }
 

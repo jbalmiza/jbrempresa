@@ -174,6 +174,12 @@ export class GestionDomicilios {
 
 	 // Este método muestra la tabla de datos
 	 consultar() {
+		if (this.vistaActiva === 'mapa') {
+			this.vistaActiva = 'tabla';
+			this.domicilioSeleccionado = null;
+			this.datos = [];
+			return;
+		}
 		
 	 	this.vistaActiva = 'tabla';
 		this.domicilioSeleccionado = null;

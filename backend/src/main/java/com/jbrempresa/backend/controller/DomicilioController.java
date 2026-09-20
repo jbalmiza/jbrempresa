@@ -16,6 +16,7 @@ import com.jbrempresa.backend.repository.CodigoPostalRepository;
 import com.jbrempresa.backend.repository.MunicipioRepository;
 import com.jbrempresa.backend.repository.ProvinciaRepository;
 import com.jbrempresa.backend.security.JwtUser;
+import com.jbrempresa.backend.core.context.ContextoOperacion;
 
 @RestController
 @RequestMapping("/domicilio")
@@ -26,18 +27,21 @@ public class DomicilioController {
     private final CodigoPostalRepository codigoPostalRepository;
     private final MunicipioRepository municipioRepository;
     private final ProvinciaRepository provinciaRepository;
+    private final ContextoOperacion contexto;
 
     public DomicilioController(
             DomicilioRepository repository,
             ViaRepository viaRepository,
             CodigoPostalRepository codigoPostalRepository,
             MunicipioRepository municipioRepository,
-            ProvinciaRepository provinciaRepository) {
+            ProvinciaRepository provinciaRepository,
+            ContextoOperacion contexto) {
         this.repository = repository;
         this.viaRepository = viaRepository;
         this.codigoPostalRepository = codigoPostalRepository;
         this.municipioRepository = municipioRepository;
         this.provinciaRepository = provinciaRepository;
+        this.contexto = contexto;
     }
 
     private JwtUser usuario() {
@@ -47,21 +51,21 @@ public class DomicilioController {
 
     @PostMapping @Transactional
     public Domicilio guardar(@RequestBody Domicilio domicilio) {
-        domicilio.setEmpId(usuario().getEmpresaId());
+        domicilio.setEmpId(contexto.empresaId());
         completarTerritorio(domicilio);
-        domicilio.setDomId(repository.obtenerSiguienteId(usuario().getEmpresaId()));
+        domicilio.setDomId(repository.obtenerSiguienteId(contexto.empresaId()));
         domicilio.setDomIdHis(1L);
         domicilio.setDomTipMov("A");
         if (domicilio.getDomCauMov() == null || domicilio.getDomCauMov().isBlank()) domicilio.setDomCauMov("Alta del registro");
         domicilio.setDomAct(true);
-        domicilio.setDomUsuMov(usuario().getUsername());
+        domicilio.setDomUsuMov(contexto.nombreUsuario());
         domicilio.setDomFecMov(LocalDateTime.now());
         return repository.save(domicilio);
     }
 
     @PutMapping("/{id}") @Transactional
     public Domicilio actualizar(@PathVariable Long id, @RequestBody Domicilio domicilio) {
-        Long empId = usuario().getEmpresaId();
+        Long empId = contexto.empresaId();
         Domicilio anterior = vigente(empId, id);
         comprobarModificable(anterior);
         anterior.setDomAct(false);
@@ -73,28 +77,31 @@ public class DomicilioController {
         domicilio.setDomTipMov("M");
         if (domicilio.getDomCauMov() == null || domicilio.getDomCauMov().isBlank()) domicilio.setDomCauMov("Modificación del registro");
         domicilio.setDomAct(true);
-        domicilio.setDomUsuMov(usuario().getUsername());
+        domicilio.setDomUsuMov(contexto.nombreUsuario());
         domicilio.setDomFecMov(LocalDateTime.now());
         return repository.save(domicilio);
     }
 
     @GetMapping
     public List<Domicilio> obtenerDomicilios() {
-        return repository.findByEmpIdAndDomActTrueOrderByDomId(usuario().getEmpresaId());
+        Long empresa = contexto.empresaConsulta(null);
+        return empresa == null
+                ? repository.findByDomActTrueOrderByEmpIdAscDomIdAsc()
+                : repository.findByEmpIdAndDomActTrueOrderByDomId(empresa);
     }
 
-    @GetMapping("/siguiente-id") public Long obtenerSiguienteId() { return repository.obtenerSiguienteId(usuario().getEmpresaId()); }
+    @GetMapping("/siguiente-id") public Long obtenerSiguienteId() { return repository.obtenerSiguienteId(contexto.empresaId()); }
 
     @DeleteMapping("/{id}") @Transactional
     public void eliminar(@PathVariable Long id) {
-        Long empId = usuario().getEmpresaId();
+        Long empId = contexto.empresaId();
         vigente(empId, id);
         repository.deleteAll(repository.findByEmpIdAndDomIdOrderByDomFecMovDesc(empId, id));
     }
 
     @PostMapping("/{id}/baja") @Transactional
     public Domicilio baja(@PathVariable Long id) {
-        Domicilio anterior = vigente(usuario().getEmpresaId(), id);
+        Domicilio anterior = vigente(contexto.empresaId(), id);
         comprobarModificable(anterior);
         anterior.setDomAct(false);
         repository.save(anterior);
@@ -104,21 +111,21 @@ public class DomicilioController {
         baja.setDomTipMov("B");
         baja.setDomCauMov("Baja del registro");
         baja.setDomAct(true);
-        baja.setDomUsuMov(usuario().getUsername());
+        baja.setDomUsuMov(contexto.nombreUsuario());
         baja.setDomFecMov(LocalDateTime.now());
         return repository.save(baja);
     }
 
     @GetMapping("/{id}/historico")
     public List<Domicilio> historico(@PathVariable Long id) {
-        Long empId = usuario().getEmpresaId();
+        Long empId = contexto.empresaId();
         vigente(empId, id);
         return repository.findByEmpIdAndDomIdOrderByDomFecMovDesc(empId, id);
     }
 
     @PostMapping("/{id}/deshacer") @Transactional
     public Domicilio deshacer(@PathVariable Long id) {
-        Long empId = usuario().getEmpresaId();
+        Long empId = contexto.empresaId();
         Domicilio actual = vigente(empId, id);
         if (actual.getDomIdHis() <= 1) conflicto("No existen movimientos anteriores para deshacer.");
         Domicilio anterior = repository.findByEmpIdAndDomIdAndDomIdHis(empId, id, actual.getDomIdHis() - 1)

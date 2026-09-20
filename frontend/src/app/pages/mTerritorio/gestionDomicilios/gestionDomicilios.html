@@ -16,15 +16,13 @@
   	
   	<button class="boton boton-accion accion-consultar" (click)="consultar()"> Consultar </button>
 
-	<button *ngIf="domicilioSeleccionado" class="boton boton-accion accion-ver" (click)="ver()"> Ver </button>
+	<button *ngIf="vistaActiva === 'tabla' && domicilioSeleccionado" class="boton boton-accion accion-ver" (click)="ver()"> Ver </button>
 
-	<button *ngIf="domicilioSeleccionado && domicilioSeleccionado.domTipMov !== 'B'" class="boton boton-accion accion-modificar" (click)="modificar()"> Modificar </button>
 
     <button *ngIf="domicilioSeleccionado && domicilioSeleccionado.domTipMov !== 'B'" class="boton boton-accion accion-baja" (click)="baja()"> Baja </button>
 
 	<button *ngIf="domicilioSeleccionado?.domTipMov === 'B'" class="boton boton-accion accion-reactivar" (click)="reactivar()"> Reactivar </button>
 
-	<button *ngIf="domicilioSeleccionado" class="boton boton-accion accion-eliminar" (click)="eliminar()"> Eliminar </button>
 
 	<button *ngIf="domicilioSeleccionado" class="boton boton-accion accion-adjuntos" (click)="adjuntos()"> Adjuntos </button>
 
@@ -242,7 +240,7 @@
 			[registroId]="domicilioSeleccionado?.domId || 0" [codigoRuta]="'RUTA_DOCUMENTOS_DOMICILIOS'">
 		</documentacionAdjunta>
 	</div>
-	<div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="volverAConsulta()">Volver a consulta</button></div>
+	<div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="volverAConsulta()">Volver</button></div>
 </div>
 
 <div *ngIf="vistaActiva === 'historico'" class="tabla-contenedor">
@@ -265,7 +263,8 @@
 		(exportarSolicitado)="exportar()"
   		[columnas]="columnas" 
   		[titulosColumnas]="titulosColumnas"
-  		[datos]="datos" 
+		[datos]="datos"
+		(filtroSolicitado)="consultar()"
 		(filaSeleccionada)="seleccionarDomicilio($event)"> 
   		
   	</tabla>

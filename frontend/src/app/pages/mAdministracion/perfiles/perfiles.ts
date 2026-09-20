@@ -45,7 +45,7 @@ export class Perfiles {
 
 	//Variables de la clase
 	vistaActiva: 'registro' | 'tabla' = 'tabla';
-	modoFormulario: 'insertar' | 'modificar' = 'insertar';
+	modoFormulario: 'insertar' | 'modificar' | 'ver' = 'insertar';
 	mostrarObligatorios = false;
 	
 	// Se crea un objeto usuario con datos vacíos
@@ -96,7 +96,8 @@ export class Perfiles {
 	// Este método muestra la tabla de datos
 	consultar() {
 			
-		this.vistaActiva = 'tabla';	 
+		this.vistaActiva = 'tabla';
+		this.perfilSeleccionado = null;
 		
 		this.perfilService.obtenerPerfiles().subscribe({
 			
@@ -118,6 +119,18 @@ export class Perfiles {
 
 		});
 			
+	}
+
+	ver() {
+		if (!this.perfilSeleccionado) return;
+		this.copiarPerfilSeleccionado();
+		this.modoFormulario = 'ver';
+		this.vistaActiva = 'registro';
+	}
+
+	private copiarPerfilSeleccionado() {
+		if (!this.perfilSeleccionado) return;
+		this.perfil = { ...this.perfilSeleccionado };
 	}
 		
 	// Este método muestra el formulario de registro y limpia los campos del formulario	
@@ -176,35 +189,7 @@ export class Perfiles {
 	    this.vistaActiva = 'registro';
 		this.modoFormulario = 'modificar';
 
-	    // Copia los datos seleccionados al formulario
-		// Convierte formtato backend usu_id a formato frontend idUsuario
-		this.perfil = {
-
-			empId: this.perfilSeleccionado.empId,			
-			
-			perId: this.perfilSeleccionado.perId,
-			
-			perNom: this.perfilSeleccionado.perNom,
-
-			perTipPer: this.perfilSeleccionado.perTipPer,
-			
-			perModAdm: this.perfilSeleccionado.perModAdm,
-
-			perModTer: this.perfilSeleccionado.perModTer,
-
-			perModPer: this.perfilSeleccionado.perModPer,
-			
-			perModPro: this.perfilSeleccionado.perModPro,
-
-			perModVen: this.perfilSeleccionado.perModVen,
-
-			perUsuMov: this.perfilSeleccionado.perUsuMov,
-
-			perFecMov: this.perfilSeleccionado.perFecMov,
-			
-			perAct: this.perfilSeleccionado.perAct
-
-			};
+		this.copiarPerfilSeleccionado();
 
 		}
 

@@ -1,88 +1,37 @@
-
 <supbar></supbar>
-
-<div class="menu"> 
-
-	<sidebar modulo="administracion"></sidebar> 
-	
-<div class="pagina">
-
-<label class="titulo"> REGISTRO DE EMPRESAS </label>
-	
-<!-- MENU DE ACCIONES SOBRE EL REGISTRO  -->
-<div barraAcciones class="toolbar">
-
-<button class="boton boton-accion accion-consultar" (click)="consultar()"> Consultar </button>
-
-<button *ngIf="empresaSeleccionado" class="boton boton-accion accion-adjuntos" (click)="adjuntos()"> Adjuntos </button>
-
-<button class="boton boton-accion accion-volver" (click)="volver()"> Volver </button>
-
+<div class="menu">
+  <sidebar modulo="administracion"></sidebar>
+  <div class="pagina">
+    <label class="titulo">{{gestion ? 'GESTIÓN DE EMPRESAS' : 'REGISTRO DE EMPRESAS'}}</label>
+    <div barraAcciones class="toolbar">
+      <button class="boton boton-accion accion-consultar" (click)="consultar()">Consultar</button>
+      <button *ngIf="vistaActiva === 'tabla' && empresaSeleccionado" class="boton boton-accion accion-ver" (click)="ver()">Ver</button>
+      <button *ngIf="!gestion" class="boton boton-accion accion-insertar" (click)="insertar()">Insertar</button>
+      <button *ngIf="!gestion && vistaActiva === 'tabla' && empresaSeleccionado" class="boton boton-accion accion-modificar" (click)="modificar()">Modificar</button>
+      <button *ngIf="!gestion && vistaActiva === 'tabla' && empresaSeleccionado" class="boton boton-accion accion-eliminar" (click)="eliminar()">Eliminar</button>
+      <button *ngIf="gestion && vistaActiva === 'tabla' && esActiva(empresaSeleccionado)" class="boton boton-accion accion-baja" (click)="prepararMovimiento('B')">Baja</button>
+      <button *ngIf="gestion && vistaActiva === 'tabla' && empresaSeleccionado && !esActiva(empresaSeleccionado)" class="boton boton-accion accion-reactivar" (click)="prepararMovimiento('R')">Reactivar</button>
+      <button *ngIf="gestion && vistaActiva === 'tabla' && empresaSeleccionado" class="boton boton-accion accion-historico" (click)="verHistorico()">Histórico</button>
+      <button *ngIf="vistaActiva === 'tabla' && empresaSeleccionado" class="boton boton-accion accion-adjuntos" (click)="adjuntos()">Adjuntos</button>
+      <button class="boton boton-accion accion-volver" (click)="volver()">Volver</button>
+    </div>
+    <div *ngIf="vistaActiva === 'movimiento'" class="form-contenedor">
+      <div class="form-grupo"><label class="titulo">{{tipoMovimiento === 'B' ? 'Baja' : 'Reactivación'}} de empresa</label><div class="form-fila"><div class="form-campo-500"><label class="label">Causa del movimiento *</label><textarea maxlength="500" rows="3" [(ngModel)]="causaMovimiento"></textarea></div></div></div>
+      <div barraAcciones class="toolbar"><button class="boton boton-accion accion-guardar" (click)="guardarMovimiento()">Confirmar</button><button class="boton boton-accion accion-cancelar" (click)="vistaActiva = 'tabla'">Cancelar</button></div>
+    </div>
+    <div *ngIf="vistaActiva === 'historico'" class="tabla-contenedor">
+      <tabla [mostrarEmpresa]="true" titulo="HISTÓRICO DE EMPRESA" [columnas]="historicoColumnas" [titulosColumnas]="historicoTitulos" [datos]="historicoDatos" [incluirBajas]="true"></tabla>
+      <div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="vistaActiva = 'tabla'">Volver</button></div>
+    </div>
+    <div *ngIf="vistaActiva === 'registro'" class="form-contenedor" [class.solo-lectura]="modoFormulario === 'ver'">
+      <datosIdentificacion [campos]="[{etiqueta:'Id Empresa',valor:empresa.empId}]"></datosIdentificacion>
+      <div class="form-grupo"><label class="titulo">Datos Empresa</label><div class="form-fila"><div class="form-campo-300"><label class="label">Nombre comercial <span class="obligatorio">*</span></label><input type="text" maxlength="100" [(ngModel)]="empresa.empNom" name="empNom"><div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !empresa.empNom">Valor Obligatorio</div></div><div class="form-campo-500"><label class="label">Razón social</label><input type="text" maxlength="200" [(ngModel)]="empresa.empRazSoc" name="empRazSoc"></div><div class="form-campo-200"><label class="label">NIF/CIF</label><input type="text" maxlength="30" [(ngModel)]="empresa.empNif" name="empNif"></div><div class="form-campo-500"><label class="label">Actividad</label><input type="text" maxlength="200" [(ngModel)]="empresa.empActEco" name="empActEco"></div></div></div>
+      <div class="form-grupo"><label class="titulo">Datos Contacto</label><div class="form-fila"><div class="form-campo-200"><label class="label">Teléfono</label><input type="tel" maxlength="30" [(ngModel)]="empresa.empTel" name="empTel"></div><div class="form-campo-300"><label class="label">Correo electrónico</label><input type="email" maxlength="150" [(ngModel)]="empresa.empEma" name="empEma"></div><div class="form-campo-500"><label class="label">Página web</label><input type="url" maxlength="250" [(ngModel)]="empresa.empWeb" name="empWeb"></div></div></div>
+      <div class="form-grupo"><label class="titulo">Datos Domicilio</label><div class="form-fila"><div class="form-campo-500"><label class="label">Domicilio fiscal</label><selectorBusqueda [datos]="domiciliosEmpresa" [idSeleccionado]="empresa.domId || 0" campoDescripcion="domDir" campoId="domId" [camposBusqueda]="['domCp','domMun','domPro']" (valorSeleccionado)="empresa.domId=$event || null"></selectorBusqueda></div></div></div>
+      <datosMovimiento [mostrarTipo]="gestion" [mostrarCausa]="gestion" [tipo]="empresa.empTipMov||''" [causa]="empresa.empCauMov||''" [usuario]="empresa.empUsuMov||''" [fecha]="empresa.empFecMov" [activo]="empresa.empAct"></datosMovimiento>
+      <div barraAcciones class="toolbar"><button *ngIf="modoFormulario === 'insertar'" class="boton boton-accion accion-guardar" (click)="guardar()">Guardar</button><button *ngIf="modoFormulario === 'modificar'" class="boton boton-accion accion-actualizar" (click)="actualizar()">Actualizar</button><button class="boton boton-accion accion-cancelar" (click)="vistaActiva = 'tabla'">{{modoFormulario === 'ver' ? 'Volver' : 'Cancelar'}}</button></div>
+    </div>
+    <div *ngIf="vistaActiva === 'adjuntos'" class="form-contenedor"><div class="form-grupo"><label class="titulo">Documentación Adjunta · {{empresaSeleccionado?.empNom}}</label><documentacionAdjunta modulo="EMPRESAS" tipoRegistro="EMPRESA" [registroId]="empresaSeleccionado?.empId || 0" codigoRuta="RUTA_DOCUMENTOS_EMPRESAS" [permitirImagenPrincipal]="true"></documentacionAdjunta></div></div>
+    <div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor"><tabla [mostrarEmpresa]="true" titulo="TABLA DE EMPRESAS" [permitirExportar]="true" (exportarSolicitado)="exportar()" [columnas]="columnas" [columnasOcultasPorDefecto]="columnasOcultasPorDefecto" [titulosColumnas]="titulosColumnas" [datos]="datos" (filtroSolicitado)="consultar()" (filaSeleccionada)="empresaSeleccionado = $event"></tabla></div>
+  </div>
 </div>
-
-		
-
-<!-- FORMULARIO DE REGISTRO -->
-<div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
-
-  	<datosIdentificacion [campos]="[{etiqueta:'Id Empresa',valor:empresa.empId}]"></datosIdentificacion>
-  	
-  	<div class="form-grupo"> 
-  			
-  	<label class="titulo"> Datos Empresa </label>
-
-		<div class="form-fila">
-  			
-  			<div class="form-campo-200"> 
-  				<label class="label"> Nombre <span class="obligatorio">*</span> </label> 
-  				<input type="text" maxlength="50" [(ngModel)]="empresa.empNom" name="empNom"> 
-  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !empresa.empNom"> Valor Obligatorio </div>
-  			</div>
-  			
-  			
-  			
-  		</div>
-  		
-  	</div>
-  
-  	<datosMovimiento [mostrarTipo]="false" [mostrarCausa]="false" [usuario]="empresa.empUsuMov||''" [fecha]="empresa.empFecMov" [activo]="empresa.empAct"></datosMovimiento>
- 
-	<div barraAcciones class="toolbar"> 
-	
-<button *ngIf="modoFormulario === 'insertar'" class="boton boton-accion accion-guardar" (click)="guardar()"> Guardar </button>
-		
-<button *ngIf="modoFormulario === 'modificar'" class="boton boton-accion accion-actualizar" (click)="actualizar()"> Actualizar </button>
-		
-		<!-- Botón Cancelar tiene misma lógica que insertar -->
-<button class="boton boton-accion accion-cancelar" (click)="insertar()"> Cancelar </button>
-		
-	</div>
-
-</div>
-
-<div *ngIf="vistaActiva === 'adjuntos'" class="form-contenedor">
-	<div class="form-grupo">
-		<label class="titulo">Documentación Adjunta · {{ empresaSeleccionado?.empNom }}</label>
-		<documentacionAdjunta modulo="EMPRESAS" tipoRegistro="EMPRESA" [registroId]="empresaSeleccionado?.empId || 0" codigoRuta="RUTA_DOCUMENTOS_EMPRESAS" [permitirImagenPrincipal]="true"></documentacionAdjunta>
-	</div>
-</div>
-
-<!-- TABLA DE RESULTADOS-->
-<div *ngIf="vistaActiva === 'tabla'" class="tabla-contenedor">
-
-  	<tabla 
-  	
-		titulo="TABLA DE EMPRESAS"
-		[permitirExportar]="true"
-		(exportarSolicitado)="exportar()"
-  		[columnas]="columnas" 
-  		[titulosColumnas]="titulosColumnas"
-  		[datos]="datos" 
-		(filaSeleccionada)="empresaSeleccionado = $event"> 
-  		
-  	</tabla>
-  	  
-</div>
-
-<!-- Cierres de div class menu y pagina -->
-</div> </div>

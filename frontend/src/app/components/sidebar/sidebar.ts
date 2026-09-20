@@ -2,7 +2,7 @@
 
 // Importa libreria Component para crear componentes Angular
 // Importa libreria Input para recibir datos que son las opciones de menú
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 
 // Importa funcionalidades comunes de Angular.
 import { CommonModule } from '@angular/common';
@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 // Importa Router para navegar entre páginas.
 import { Router } from '@angular/router';
 import { MENUS_MODULOS } from '../../config/menu-modulos.config';
+import { DocumentoVentaService } from '../../services/documento-venta.service';
 
 // Se define la configuración del componente Angular
 @Component({
@@ -21,7 +22,7 @@ import { MENUS_MODULOS } from '../../config/menu-modulos.config';
 })
 
 // Definición de la lógica del componente
-export class Sidebar implements OnChanges {
+export class Sidebar implements OnChanges, OnInit {
   readonly menus=MENUS_MODULOS;
 
   // Nombre del usuario conectado.
@@ -33,6 +34,7 @@ export class Sidebar implements OnChanges {
   // Recibe el módulo actual desde el componente padre.
   @Input() modulo: string = '';
   get menuActual(){return this.menus[this.modulo];}
+  get todosDesplegados(){return this.modulo==='empleados'||this.modulo==='proveedores';}
   ngOnChanges(){
     const grupos = this.menuActual?.grupos ?? [];
 
@@ -57,7 +59,10 @@ export class Sidebar implements OnChanges {
   // Constructor del componente.
   //
   // Angular inyecta automáticamente Router.
-  constructor(private router: Router) {
+  mostrarPresupuestos = false;
+  mostrarAlbaranes = false;
+
+  constructor(private router: Router, private documentosVenta: DocumentoVentaService) {
 
     // Obtiene el nombre del usuario almacenado.
     this.usuarioNombre = localStorage.getItem('usuario') || '';
@@ -69,6 +74,7 @@ export class Sidebar implements OnChanges {
 
   // Abre o cierra un menú.
   toggleMenu(menu: string) {
+    if(this.todosDesplegados)return;
 
     // Si el menú ya está abierto.
     if (this.menuAbierto === menu) {
@@ -109,7 +115,25 @@ export class Sidebar implements OnChanges {
 
   }
 
+  ngOnInit() {
+    if (this.modulo !== 'ventas') return;
+    this.documentosVenta.configuracion().subscribe({next: c => {
+      this.mostrarPresupuestos = c.mostrarPresupuestos;
+      this.mostrarAlbaranes = c.mostrarAlbaranes;
+    }});
+  }
+
   esActiva(submenu?:string):boolean{return !!submenu&&this.router.url.split('?')[0].split('#')[0].replace(/\/$/,'')===`/${this.modulo}/${submenu}`;}
+  opcionesVisibles(opciones:{texto:string;ruta?:string}[]){
+    const exclusivasAdministrador = new Set(['empresas', 'gestionEmpresas', 'perfiles', 'modulos', 'gestionModulos', 'mensajes', 'gestionMensajes']);
+    const administrador = this.usuarioPerfil.trim().toUpperCase() === 'ADMINISTRADOR';
+    return opciones.filter(opcion => {
+      if (!administrador && opcion.ruta && exclusivasAdministrador.has(opcion.ruta)) return false;
+      if (opcion.ruta === 'presupuestos' || opcion.ruta === 'gestionPresupuestos') return this.mostrarPresupuestos;
+      if (opcion.ruta === 'albaranes' || opcion.ruta === 'gestionAlbaranes') return this.mostrarAlbaranes;
+      return true;
+    });
+  }
 
   // Se define el método volver.
   modulos() {

@@ -6,6 +6,7 @@ package com.jbrempresa.backend.entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 // Entidad JPA
@@ -17,6 +18,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 // Clase Producto
 public class Producto {
+
+    @Transient
+    private List<ProductoComponente> componentes;
 
     // Constructor vacío
     public Producto() {
@@ -79,9 +83,21 @@ public class Producto {
     // Precio Compra
     @Column(name = "pro_pre_com")
     private BigDecimal proPreCom;
+
+    @Column(name = "pro_iva_com")
+    private BigDecimal proIvaCom;
+
+    @Column(name = "pro_des_com")
+    private BigDecimal proDesCom;
+
+    @Column(name = "pro_tot_com")
+    private BigDecimal proTotCom;
+
+    @Column(name = "pro_pre_com_est")
+    private Boolean proPreComEst;
     
     // Precio Venta
-    @Column(name = "pro_pre_ven")
+    @Column(name = "pro_pre_ven", precision = 14, scale = 4)
     private BigDecimal proPreVen;
     
     // Precio IVA
@@ -122,6 +138,23 @@ public class Producto {
     @Column(name = "pro_vis_cat")
     private Boolean proVisCat = true;
 
+    @Column(name = "pro_nov")
+    private Boolean proNov = false;
+
+    @Column(name = "pro_mej_pre")
+    private Boolean proMejPre = false;
+
+    @Column(name = "pro_out")
+    private Boolean proOut = false;
+
+    @Column(name = "pro_dis_lun") private Boolean proDisLun = true;
+    @Column(name = "pro_dis_mar") private Boolean proDisMar = true;
+    @Column(name = "pro_dis_mie") private Boolean proDisMie = true;
+    @Column(name = "pro_dis_jue") private Boolean proDisJue = true;
+    @Column(name = "pro_dis_vie") private Boolean proDisVie = true;
+    @Column(name = "pro_dis_sab") private Boolean proDisSab = true;
+    @Column(name = "pro_dis_dom") private Boolean proDisDom = true;
+
     @Column(name = "pro_ima", length = 500)
     private String proIma = "producto-predeterminado.png";
     
@@ -161,6 +194,9 @@ public class Producto {
     public void setProId(Long proId) {
         this.proId = proId;
     }
+
+    public List<ProductoComponente> getComponentes() { return componentes; }
+    public void setComponentes(List<ProductoComponente> componentes) { this.componentes = componentes; }
 
     public Long getProIdHis() { return proIdHis; }
     public void setProIdHis(Long proIdHis) { this.proIdHis = proIdHis; }
@@ -262,6 +298,15 @@ public class Producto {
         this.proPreCom = proPreCom;
     }
 
+    public BigDecimal getProIvaCom() { return proIvaCom; }
+    public void setProIvaCom(BigDecimal proIvaCom) { this.proIvaCom = proIvaCom; }
+    public BigDecimal getProDesCom() { return proDesCom; }
+    public void setProDesCom(BigDecimal proDesCom) { this.proDesCom = proDesCom; }
+    public BigDecimal getProTotCom() { return proTotCom; }
+    public void setProTotCom(BigDecimal proTotCom) { this.proTotCom = proTotCom; }
+    public Boolean getProPreComEst() { return proPreComEst; }
+    public void setProPreComEst(Boolean proPreComEst) { this.proPreComEst = proPreComEst; }
+
     // Precio Venta
     public BigDecimal getProPreVen() {
         return proPreVen;
@@ -347,6 +392,19 @@ public class Producto {
     public void setProDurMin(Integer proDurMin) { this.proDurMin = proDurMin; }
     public Boolean getProVisCat() { return proVisCat; }
     public void setProVisCat(Boolean proVisCat) { this.proVisCat = proVisCat; }
+    public Boolean getProNov() { return proNov; }
+    public void setProNov(Boolean proNov) { this.proNov = proNov; }
+    public Boolean getProMejPre() { return proMejPre; }
+    public void setProMejPre(Boolean proMejPre) { this.proMejPre = proMejPre; }
+    public Boolean getProOut() { return proOut; }
+    public void setProOut(Boolean proOut) { this.proOut = proOut; }
+    public Boolean getProDisLun() { return proDisLun; } public void setProDisLun(Boolean v) { proDisLun=v; }
+    public Boolean getProDisMar() { return proDisMar; } public void setProDisMar(Boolean v) { proDisMar=v; }
+    public Boolean getProDisMie() { return proDisMie; } public void setProDisMie(Boolean v) { proDisMie=v; }
+    public Boolean getProDisJue() { return proDisJue; } public void setProDisJue(Boolean v) { proDisJue=v; }
+    public Boolean getProDisVie() { return proDisVie; } public void setProDisVie(Boolean v) { proDisVie=v; }
+    public Boolean getProDisSab() { return proDisSab; } public void setProDisSab(Boolean v) { proDisSab=v; }
+    public Boolean getProDisDom() { return proDisDom; } public void setProDisDom(Boolean v) { proDisDom=v; }
     public String getProIma() { return proIma; }
     public void setProIma(String proIma) { this.proIma = proIma; }
     

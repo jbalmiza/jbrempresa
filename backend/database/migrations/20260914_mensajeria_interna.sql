@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS conversaciones_internas(cin_id BIGSERIAL PRIMARY KEY,cin_asu VARCHAR(200) NOT NULL,cin_fec_cre TIMESTAMP NOT NULL,cin_fec_ult TIMESTAMP NOT NULL,cin_act BOOLEAN NOT NULL DEFAULT TRUE);
+CREATE TABLE IF NOT EXISTS participantes_conversacion_interna(pci_id BIGSERIAL PRIMARY KEY,cin_id BIGINT NOT NULL REFERENCES conversaciones_internas(cin_id),usu_id BIGINT NOT NULL REFERENCES usuarios(usu_id),pci_fec_lei TIMESTAMP NULL,pci_act BOOLEAN NOT NULL DEFAULT TRUE,CONSTRAINT uk_pci_conversacion_usuario UNIQUE(cin_id,usu_id));
+CREATE TABLE IF NOT EXISTS mensajes_internos(min_id BIGSERIAL PRIMARY KEY,cin_id BIGINT NOT NULL REFERENCES conversaciones_internas(cin_id),usu_id_rem BIGINT NOT NULL REFERENCES usuarios(usu_id),min_con VARCHAR(4000) NOT NULL,min_cla VARCHAR(10) NOT NULL DEFAULT 'NORMAL',min_fec TIMESTAMP NOT NULL,min_fec_mod TIMESTAMP NULL,min_act BOOLEAN NOT NULL DEFAULT TRUE,CONSTRAINT ck_min_cla CHECK(min_cla IN('NORMAL','AVISO','ALERTA')));
+CREATE INDEX IF NOT EXISTS ix_pci_usuario ON participantes_conversacion_interna(usu_id,pci_act);
+CREATE INDEX IF NOT EXISTS ix_min_conversacion ON mensajes_internos(cin_id,min_act,min_fec);

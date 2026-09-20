@@ -102,6 +102,9 @@ public class Persona {
     @Column(name = "per_hus")
     private Long perHus;
 
+    @Column(name = "per_dat_com", nullable = false, columnDefinition = "boolean default false")
+    private Boolean perDatCom = false;
+
     // Activo
     @Column(name = "per_act")
     private Boolean perAct;
@@ -257,6 +260,8 @@ public class Persona {
     public void setPerCoY(Double perCoY) { this.perCoY = perCoY; }
     public Long getPerHus() { return perHus; }
     public void setPerHus(Long perHus) { this.perHus = perHus; }
+    public Boolean getPerDatCom() { return perDatCom; }
+    public void setPerDatCom(Boolean perDatCom) { this.perDatCom = perDatCom; }
 
     // Obtiene el estado activo
     public Boolean getPerAct() {

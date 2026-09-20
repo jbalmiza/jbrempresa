@@ -1,4 +1,7 @@
+import { CompraDetalle } from './compraDetalle.interface';
 export interface Compra {
+ proveedorEmpresaId?: number|null;pedidoVentaId?:number|null;pedidoVentaNumero?:string|null;proveedorNombre?:string|null;
+ detalles?: CompraDetalle[];
 
 	// Datos Identificación
 	empId: number;	
@@ -13,14 +16,14 @@ export interface Compra {
 	comImpDes: number;
 	comImpIva: number;
 	comImpTot: number;
-	comImpCob: number;
+	comImpPag: number;
 	comImpPen: number;
 	
 	comFecPre: string;
 	comFecPed: string;
 	comFecAlb: string;
 	comFecFac: string;
-	comFecCob: string;
+	comFecPag: string;
  
   	comUsuMov: string;
   	comFecMov: string;

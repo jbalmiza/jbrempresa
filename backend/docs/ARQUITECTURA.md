@@ -1,56 +1,29 @@
-# Arquitectura del backend
+# Arquitectura actual
 
-## Proposito
+Revisión: 2026-09-15. Fuentes: [pom.xml](../pom.xml), [controladores](../src/main/java/com/jbrempresa/backend/controller), [servicios](../src/main/java/com/jbrempresa/backend/service), [contexto](../src/main/java/com/jbrempresa/backend/core/context/ContextoOperacion.java).
 
-Backend modular y multiempresa. Una empresa es la organizacion propietaria de los datos; no es un cliente de ventas ni un establecimiento. Actualmente cada empresa es unica y no existe una entidad de establecimientos.
+## Plataforma y capas
 
-## Plataforma
+Backend Spring Boot 4.0.7/Java 21, MVC, JPA/Hibernate, PostgreSQL; H2 en pruebas. Frontend Angular standalone con servicios HTTP, formularios ngModel y componentes compartidos.
 
-- Java 21, Spring Boot 4.0.7 y Spring Web MVC.
-- Spring Security, JWT y Bean Validation.
-- Spring Data JPA e Hibernate; PostgreSQL en ejecucion y H2 en pruebas.
-- ZXing para QR, Java Mail y SDK de Twilio para integraciones.
+controller adapta HTTP y contexto; service aplica reglas y transacciones; repository consulta persistencia; entity y dto separan almacenamiento y contratos cuando existe DTO. Algunos endpoints todavía reciben/devuelven entidades: no se afirma que toda la API esté desacoplada.
 
-## Paquetes
+core contiene contexto, configuración efectiva y seguridad transversal; shared contiene utilidades. No existe un CRUD universal ni un motor único de histórico para todos los maestros. La reutilización sigue las directivas de ambos proyectos.
 
-- `controller`: contratos HTTP y contexto autenticado.
-- `service`: reglas de agenda, catalogo, mallas, productos, servicios y ventas.
-- `service.pagos`: abstraccion de pasarela y preparacion Redsys/Bizum.
-- `repository`: consultas JPA acotadas por empresa.
-- `entity` y `dto`: persistencia y contratos de entrada/salida.
-- `security`: JWT; `core.context`: empresa y usuario de la peticion.
-- `core.config`: configuracion efectiva de SMTP, WhatsApp y pagos.
-- `core.security`: cifrado, proteccion de entradas y recuperacion de contrasena.
-- `core.comunicaciones`: recepcion, clasificacion y envio.
-- `exception`: conversion central de errores HTTP.
+## Autenticación y ámbito
 
-## Flujo autenticado
+JwtFilter valida el bearer y carga JwtUser mediante el servicio de usuarios. ContextoOperacion determina empresa/usuario. El Administrador puede seleccionar empresa o consultar globalmente en endpoints que lo admiten. El resto permanece en su empresa. Catálogo público resuelve la empresa por token; Proveedores autoriza la suministradora mediante relación vigente.
 
-1. `JwtFilter` lee el bearer token.
-2. `JwtService` valida firma y caducidad y crea `JwtUser`.
-3. Spring Security rechaza rutas protegidas sin autenticacion.
-4. El controlador obtiene empresa, usuario y fecha del contexto.
-5. Servicios y repositorios operan solo sobre esa empresa.
-6. La entidad registra auditoria y activo cuando corresponde.
+Estos son accesos distintos: [seguridad y matriz de ámbito](SEGURIDAD.md). No aplicar la regla “toda consulta usa exclusivamente la empresa del JWT” a los casos autorizados de selección global o relación comercial.
 
-## Multiempresa
+## Agregados principales
 
-`emp_id` es el limite de seguridad y negocio. Los identificadores funcionales pueden repetirse entre empresas. Toda consulta y cambio debe combinar empresa e identificador. La empresa procede del JWT, no de un valor libre del cliente. El catalogo publico la deduce de un token QR opaco.
+Empresa posee configuración y datos. Persona identifica terceros de negocio. EmpresaRelacion vincula dos empresas en sentidos PROVEEDOR/CLIENTE. DocumentoVenta y detalle representan PRE/PED/ALB/FAC. Reserva y tareas organizan trabajo; no sustituyen al documento. Mensajería interna y comunicaciones externas tienen modelos diferentes.
 
-## Ciclo de los registros
+El catálogo es común para Clientes y Proveedores. El proveedor recibe un pedido en sus tablas de ventas; no se genera una compra espejo en la compradora. Las imágenes protegidas pasan por HttpClient.
 
-- Muchos maestros usan la clave logica `emp_id + id funcional`.
-- `*_act` representa baja logica cuando existe.
-- `*_usu_mov`, `*_fec_mov`, `*_tip_mov` y `*_cau_mov` auditan cambios.
-- Los CRUD principales ofrecen baja, historico y deshacer.
-- Catalogos auxiliares pueden borrarse fisicamente si no tienen dependencias.
+## Persistencia y operación
 
-## Malla
+Muchos maestros versionan movimientos A/M/B, pero no todos. No interpretar Activo como “no dado de baja” universalmente: en entidades históricas también identifica la versión vigente. El comportamiento concreto está en el controlador/servicio.
 
-La malla es un mapa creado por el usuario, no un almacen ni local fijo. Puede representar cualquier espacio. Una celda combina entidad, fila, columna, color, ubicacion textual y referencia. El negro se usa como camino.
-
-Productos y pedidos pueden ocupar posiciones. La posicion del pedido se conserva al generar albaran y factura. Actualmente se permiten varios pedidos en una misma posicion; no se bloquea de forma unica hasta el pago.
-
-## Transacciones y concurrencia
-
-Los flujos compuestos usan `@Transactional`. La numeracion documental se centraliza en `NumeradorDocumentoVentaService`. Restricciones unicas protegen tokens y posiciones publicas. No hay una estrategia general de bloqueo optimista mediante campo de version.
+Los flujos compuestos usan transacciones; no hay bloqueo optimista uniforme. Hibernate update, inicializadores y SQL manual conviven. [Modelo](MODELO_DATOS.md), [API](API.md), [operación](OPERACION.md) y [limitaciones](LIMITACIONES.md) describen sus límites actuales.

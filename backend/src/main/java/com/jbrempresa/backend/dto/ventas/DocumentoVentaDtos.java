@@ -25,7 +25,7 @@ public final class DocumentoVentaDtos {
             @NotNull @Pattern(regexp = "P|S") String dvdTipLin,
             Long proId,
             Long serId,
-            @Size(max = 250) String dvdObs,
+            @Size(max = 2000) String dvdObs,
             @NotNull @Positive Integer dvdCan,
             @NotNull @PositiveOrZero BigDecimal dvdPre,
             @NotNull @DecimalMin("0") @DecimalMax("100") BigDecimal dvdDes,
@@ -48,7 +48,9 @@ public final class DocumentoVentaDtos {
             @Size(max = 30) String dovNum,
             @NotNull @Positive Long perId,
             @NotNull LocalDate dovFec,
-            @NotNull @Pattern(regexp = "BORRADOR|EMITIDO|PAGADO") String dovEst,
+            @NotNull @Pattern(regexp = "BORRADOR|EMITIDO|EN_CURSO|FINALIZADO|EN_REPARTO|ENTREGADO|CONVERTIDO") String dovEst,
+            Boolean dovPag,
+            @Pattern(regexp = "NORMAL|SIMPLIFICADA") String dovTipFac,
             @Size(max = 100) String dovUbi,
             @Pattern(regexp = "INTERNO|CATALOGO") String dovOri,
             @Pattern(regexp = "EN_POSICION|DOMICILIO") String dovMod,
@@ -63,6 +65,8 @@ public final class DocumentoVentaDtos {
             d.setPerId(perId);
             d.setDovFec(dovFec);
             d.setDovEst(dovEst);
+            d.setDovPag(Boolean.TRUE.equals(dovPag));
+            d.setDovTipFac(dovTipFac);
             d.setDovUbi(dovUbi);
             d.setDovOri(dovOri);
             d.setDovMod(dovMod);
@@ -74,10 +78,6 @@ public final class DocumentoVentaDtos {
             return d;
         }
     }
-
-    public record VentaRapidaEntrada(
-            @Size(max = 500) String observaciones,
-            @NotEmpty List<@Valid DetalleEntrada> detalles) {}
 
     public record DetalleSalida(
             Long dvdId, Long dovId, String dvdTipLin, Long proId, Long serId,
@@ -92,7 +92,7 @@ public final class DocumentoVentaDtos {
 
     public record Salida(
             Long dovId, Long empId, String dovTip, String dovNum, Long perId,
-            LocalDate dovFec, String dovEst, Long dovIdOri, Long dovIdRai,
+            LocalDate dovFec, String dovEst, Boolean dovPag, String dovTipFac, Long dovIdOri, Long dovIdRai,
             String dovUbi, String dovOri, String dovMod, String dovDirEnv, Integer dovFilMal, Integer dovColMal,
             BigDecimal dovImpSub, BigDecimal dovImpDes, BigDecimal dovImpIva, BigDecimal dovImpTot,
             String dovObs, String dovUsuMov, LocalDateTime dovFecMov, Boolean dovAct,
@@ -101,7 +101,7 @@ public final class DocumentoVentaDtos {
             List<DetalleSalida> lineas = d.getDetalles() == null ? List.of()
                     : d.getDetalles().stream().map(detalle -> DetalleSalida.desde(detalle)).toList();
             return new Salida(d.getDovId(), d.getEmpId(), d.getDovTip(), d.getDovNum(), d.getPerId(),
-                    d.getDovFec(), d.getDovEst(), d.getDovIdOri(), d.getDovIdRai(), d.getDovUbi(), d.getDovOri(), d.getDovMod(), d.getDovDirEnv(), d.getDovFilMal(), d.getDovColMal(), d.getDovImpSub(),
+                    d.getDovFec(), d.getDovEst(), Boolean.TRUE.equals(d.getDovPag()), d.getDovTipFac(), d.getDovIdOri(), d.getDovIdRai(), d.getDovUbi(), d.getDovOri(), d.getDovMod(), d.getDovDirEnv(), d.getDovFilMal(), d.getDovColMal(), d.getDovImpSub(),
                     d.getDovImpDes(), d.getDovImpIva(), d.getDovImpTot(), d.getDovObs(), d.getDovUsuMov(),
                     d.getDovFecMov(), d.getDovAct(), lineas);
         }

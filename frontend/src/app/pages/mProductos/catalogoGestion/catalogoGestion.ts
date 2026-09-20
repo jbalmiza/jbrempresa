@@ -7,12 +7,13 @@ import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
 import { CatalogoConfiguracion, CatalogoPosicion, CatalogoService } from '../../../services/catalogo.service';
 import { BlobUrlUtil } from '../../../shared/utils/blob-url.util';
+import { BarraAcciones } from '../../../directives/barraAcciones/barraAcciones';
 
-@Component({selector:'catalogo-gestion',standalone:true,imports:[CommonModule,FormsModule,Sidebar,Supbar],templateUrl:'./catalogoGestion.html',styleUrls:['../../../styles/estiloGeneral.css','./catalogoGestion.css','./catalogoGestionOrganizacion.css']})
+@Component({selector:'catalogo-gestion',standalone:true,imports:[CommonModule,FormsModule,Sidebar,Supbar,BarraAcciones],templateUrl:'./catalogoGestion.html',styleUrls:['../../../styles/estiloGeneral.css','./catalogoGestion.css','./catalogoGestionComun.css']})
 export class CatalogoGestion implements OnInit{
   private readonly blobs = new BlobUrlUtil();
   moduloOrigen:'productos'|'servicios'='productos';
-  vista:'configuracion'|'qr'|'preview'='configuracion';config:CatalogoConfiguracion={publicado:false,permitirDomicilio:false,tokenGeneral:'',empresaConImagen:false};posiciones:CatalogoPosicion[]=[];posicion:CatalogoPosicion=this.vacia();mensaje='';
+  vista:'configuracion'|'qr'|'preview'='configuracion';config:CatalogoConfiguracion={publicado:false,permitirDomicilio:false,tokenGeneral:'',alias:'',empresaConImagen:false};posiciones:CatalogoPosicion[]=[];posicion:CatalogoPosicion=this.vacia();mensaje='';
   constructor(private catalogo:CatalogoService,private router:Router,private route:ActivatedRoute){}
   ngOnInit(){this.moduloOrigen=this.route.snapshot.data['moduloOrigen']==='servicios'?'servicios':'productos';this.cargar();}
   cargar(){this.catalogo.configuracion().subscribe({next:c=>this.config=c,error:e=>this.mensaje=this.textoError(e)});this.catalogo.posiciones().subscribe({next:p=>this.posiciones=p});}
@@ -21,7 +22,7 @@ export class CatalogoGestion implements OnInit{
   editar(p:CatalogoPosicion){this.posicion={...p};}
   async regenerar(p:CatalogoPosicion){if(!await confirmarAplicacion('El QR anterior dejará de funcionar. ¿Desea continuar?',true))return;this.catalogo.regenerar(p.capId!).subscribe(()=>this.cargar());}
   descargar(p:CatalogoPosicion){this.catalogo.qr(p).subscribe(blob=>this.blobs.descargar(blob,`qr-${p.capUbi.replace(/[^a-z0-9]+/gi,'-')}.png`));}
-  get enlaceGeneral(){return `${location.origin}/catalogo/${this.config.tokenGeneral}`;}
+  get enlaceGeneral(){return `${location.origin}/catalogo/${this.config.alias}`;}
   abrirGeneral(){window.open(this.enlaceGeneral,'_blank','noopener');}
   abrirGeneralMovil(){window.open(`${this.enlaceGeneral}?vista=movil`,'_blank','noopener');}
   abrirPosicion(p:CatalogoPosicion){window.open(`${location.origin}/catalogo/${p.capToken}`,'_blank','noopener');}

@@ -3,15 +3,20 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_URL } from '../config/api-url.config';
 
-export interface CatalogoProducto { tipo:'PRODUCTO'|'SERVICIO'; id:number; nombre:string; descripcion:string; categoria:string; subcategoria:string; precio:number; agotado:boolean; imagenUrl:string; }
-export interface CatalogoPublico { empresa:string; empresaImagenUrl:string; domicilioPermitido:boolean; modalidad:'EN_POSICION'|'DOMICILIO'; ubicacion:string|null; productos:CatalogoProducto[]; }
-export interface CatalogoConfiguracion { publicado:boolean; permitirDomicilio:boolean; tokenGeneral:string; empresaConImagen:boolean; }
+export interface CatalogoProducto { tipo:'PRODUCTO'|'SERVICIO'; id:number; nombre:string; descripcion:string; categoria:string; subcategoria:string; precio:number; agotado:boolean; novedad:boolean; mejorPrecio:boolean; outlet:boolean; imagenUrl:string; alergenos:string[]; componentes:number[]; }
+export interface CatalogoComponente { id:number; nombre:string; precioAdicional:number; alergenos:string[]; }
+export interface CatalogoAviso { tipo:'AVISO'|'ALERTA'; titulo:string; mensaje:string; emisor:string; }
+export interface CatalogoPublico { empresa:string; empresaImagenUrl:string; domicilioPermitido:boolean; modalidad:'EN_POSICION'|'DOMICILIO'; ubicacion:string|null; avisos:CatalogoAviso[]; productos:CatalogoProducto[]; componentes:CatalogoComponente[]; }
+export interface CatalogoConfiguracion { publicado:boolean; permitirDomicilio:boolean; tokenGeneral:string; alias:string; empresaConImagen:boolean; }
 export interface CatalogoPosicion { capId:number|null; capFil:number; capCol:number; capUbi:string; capToken:string; capAct:boolean; }
 
 @Injectable({providedIn:'root'})
 export class CatalogoService {
   readonly apiUrl = `${API_URL}/catalogo`;
   constructor(private http:HttpClient){}
+  proveedores(){return this.http.get<{id:number;nombre:string}[]>(this.apiUrl+'/proveedores');}
+  proveedor(id:number){return this.http.get<CatalogoPublico>(this.apiUrl+'/proveedores/'+id);}
+  pedirProveedor(id:number,pedido:any){return this.http.post(this.apiUrl+'/proveedores/'+id+'/pedidos',pedido);}
   publico(token:string):Observable<CatalogoPublico>{return this.http.get<CatalogoPublico>(`${this.apiUrl}/publico/${token}`);}
   pedir(token:string,pedido:any):Observable<any>{return this.http.post(`${this.apiUrl}/publico/${token}/pedidos`,pedido);}
   configuracion():Observable<CatalogoConfiguracion>{return this.http.get<CatalogoConfiguracion>(`${this.apiUrl}/gestion/configuracion`);}

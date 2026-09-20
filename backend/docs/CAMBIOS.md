@@ -1,8 +1,384 @@
 # Cambios del backend
 
+## 2026-09-20 - Retirada del contrato de venta rápida
+
+- Comprobado que `POST /documentos-venta/venta-rapida`, su entrada y la creación de cliente genérico eran consumidos exclusivamente por la pantalla Venta Táctil eliminada. Se retiran sin afectar al alta de pedidos por catálogo, Registro/Gestión documental, facturación ni agenda.
+- Verificación: búsqueda completa de consumidores, compilación backend y revisión de contratos, permisos, Directiva 1 y revisión obligatoria.
+
+## 2026-09-20 - Resumen único de personalización
+
+- El registro del pedido reconoce el resumen de componentes recibido en las observaciones y evita duplicarlo al validar y persistir la personalización.
+- Verificación: compilación backend y revisión del contrato, Directiva 1 y revisión obligatoria.
+
+## 2026-09-20 - Personalización de componentes en pedidos de catálogo
+
+- El contrato del catálogo entrega los componentes activos de la empresa y la composición de cada producto. Cada línea de pedido acepta la composición final elegida por el cliente.
+- El servidor valida que todos los componentes pertenezcan a la empresa, calcula los suplementos con su IVA, mantiene el precio al retirar componentes y registra en las observaciones de preparación los componentes añadidos y eliminados.
+- Ampliada a 2.000 caracteres la observación de detalle para conservar personalizaciones extensas. Los clientes anteriores que no envían componentes mantienen la composición original.
+- Verificación: compilación backend y revisión del contrato, aislamiento empresarial, cálculo económico, compatibilidad, Directiva 1 y revisión obligatoria.
+
+## 2026-09-20 - Componentes de los productos de la empresa 1
+
+- Analizados los 30 productos activos de la empresa 1 y sus descripciones. Se han conservado los 20 componentes existentes, creado 38 componentes ausentes y registrado 128 relaciones con las versiones vigentes de los productos.
+- Se han diferenciado componentes funcionalmente distintos, como tomate fresco y tomate triturado, pan de bocadillo, masa de pizza y pan de hamburguesa. Los alérgenos solo se han informado cuando se deducen del componente; las composiciones indeterminadas quedan sin una atribución inventada.
+- Verificación: los 30 productos activos tienen componentes vinculados, todas las relaciones pertenecen a la empresa 1 y no existen relaciones creadas para otras empresas. Revisión de aislamiento empresarial, datos de desarrollo y Directiva 1 completada.
+
+## 2026-09-20 - Alérgenos de productos en el catálogo
+
+- El contrato del catálogo incorpora la lista consolidada y sin duplicados de alérgenos definidos en los componentes de la versión vigente de cada producto.
+- La consulta carga componentes y relaciones por empresa para evitar consultas repetidas por cada producto. Los productos sin alérgenos y los servicios devuelven una lista vacía.
+- Verificación: compilación backend y revisión de las directivas de aislamiento empresarial, funcionalidad general y revisión obligatoria.
+
+## 2026-09-19 - IVA incluido en Total Compra
+
+- Alcance: el servidor recalcula Total Compra aplicando descuento e IVA de compra.
+- Verificación: compilación Maven y comprobación documental.
+
+## 2026-09-19 - Total de compra sin aplicación de IVA
+
+- Alcance: el servidor calcula Total Compra aplicando únicamente el descuento al precio de compra sin IVA; conserva el IVA de compra como dato informativo.
+- Verificación: compilación Maven y comprobación documental.
+
+## 2026-09-19 - Porcentaje de beneficio inicial para todas las empresas
+
+- Alcance: todas las empresas existentes reciben `PRODUCTOS / PORCENTAJE_BENEFICIO = 20` al iniciar el backend y las nuevas empresas lo reciben al registrarse. La migración permite aplicar el mismo valor directamente en la base existente. Los totales de compra se calculan desde precio sin IVA, descuento e IVA.
+- Verificación: compilación Maven, prueba de fórmula y comprobación documental.
+
+## 2026-09-18 - Descuento y total de compra de productos
+
+- Alcance: Productos incorpora `pro_des_com` y `pro_tot_com`; el servidor calcula el total de compra a partir del precio con IVA y el descuento. Se retira el indicador de control automático del margen, sustituido por dos acciones explícitas en Registro. La migración `20260918_margen_productos.sql` incluye los nuevos campos y elimina el indicador anterior si existe.
+- Verificación: compilación Maven y comprobación documental.
+
+## 2026-09-18 - Campos de IVA de compra y control de margen en productos
+
+- Alcance: Productos conserva IVA de compra, control de margen y origen estimado del coste. La base de venta admite cuatro decimales para conservar los precios finales con IVA introducidos por el usuario. El parámetro `PRODUCTOS / MARGEN_BRUTO_OBJETIVO` acepta porcentajes desde 0 y menores de 100, por empresa. Se incorpora la migración `20260918_margen_productos.sql`.
+- Verificación: compilación Maven y comprobación documental.
+
+## 2026-09-18 - Directiva de funcionalidad general para todas las empresas
+
+- Alcance: se registra BE-DIR-042 para exigir que las nuevas funciones estén disponibles para todas las empresas, con uso opcional según cada una.
+- Verificación: comprobación documental.
+
+## 2026-09-18 - Edición y eliminación de pedidos propios del empleado
+
+- Alcance: el empleado puede modificar y eliminar un pedido creado por él mismo. La API verifica empresa, tipo PED y autor del movimiento de alta antes de tocar el pedido o su cadena. Siguen vedadas las operaciones de Gestión y la creación fuera de Venta Táctil; la modificación conserva la protección de cadena y su clave configurada.
+- Verificación: pruebas dirigidas de controlador y repositorio con H2 y comprobación documental.
+
+## 2026-09-18 - Consulta de pedidos propios del empleado
+
+- Alcance: `GET /documentos-venta/PED` limita la respuesta del perfil Empleado a los pedidos de su empresa cuyo movimiento de alta corresponde a su usuario. El empleado no puede consultar otros tipos documentales ni ejecutar operaciones de registro o gestión; Venta Táctil sigue creando sus pedidos.
+- Verificación: pruebas dirigidas de controlador y repositorio con H2, compilación Maven y comprobación documental.
+
+## 2026-09-18 - Caducidad de sesión con actividad real
+
+- Alcance: el JWT sigue durando 30 minutos y solo se renueva mediante `GET /usuarios/actividad`, enviado tras interacción real. Las consultas periódicas de mensajes ya no prolongan una sesión inactiva.
+- Verificación: prueba dirigida del filtro JWT y compilación Maven.
+
+## 2026-09-18 - Entrega de avisos a todas las empresas
+
+- Alcance: `aviDestEmpId=null` representa todas las empresas para avisos del Administrador dirigidos a Empresa en Ventana o Mensajes. El servidor valida el emisor y distribuye el aviso a cada empresa durante su vigencia.
+- Verificación: compilación Maven, prueba dirigida de permisos y comprobación documental.
+
+## 2026-09-18 - Intervalo visual persistente por agenda
+
+- Alcance: `ragIntVis` en recursos agendables, API y migración SQL; acepta 5, 10, 15, 30 o 60 minutos, con 30 para agendas existentes.
+- Verificación: compilación Maven y comprobación documental.
+
+Historial de cambios: las entradas conservan el estado de su fecha; la especificación vigente está en los documentos temáticos del [índice](README.md).
+
+## 2026-09-17 - Precisión de la directiva de trabajo n.º 1
+
+- Alcance: los cambios acotados deben resolverse con la solución y verificación proporcionales, evitando trabajo y explicaciones sin valor.
+- Verificación: catálogo de directivas y registro documental revisados.
+
+## 2026-09-17 - Destinatarios y ubicaciones de avisos y alertas
+
+- Alcance: ampliados el maestro y la API con emisor, destinatario, empresa y ubicación; consultas separadas para catálogo de clientes, catálogo de proveedor, ventanas y bandeja Mensajes. La lectura por usuario y versión usa `avisos_alertas_lecturas`.
+- Seguridad: el servidor comprueba el perfil del usuario emisor, la relación vigente cuando actúa una empresa proveedora, la empresa destinataria y la propiedad del aviso para gestionarlo. Los datos de prueba anteriores se clasifican como avisos del Jefe para el catálogo de clientes mediante inicialización repetible y migración SQL documentada.
+- Verificación: compilación Maven y 10 pruebas dirigidas de distribución y catálogo; arranque con PostgreSQL y actualización de los avisos de prueba. API: entregas temporales de Jefe a Administrador, Proveedor al Jefe de la compradora y Jefe a la ventana Empleados, con lectura individual y aislamiento de empresa; los registros temporales se eliminaron. Inventarios y comprobador documental correctos.
+
+## 2026-09-17 - Datos iniciales de relaciones
+
+- Alcance: corregido `RELACIONES_EMPRESA.md` para indicar que el código actual no contiene un inicializador de relaciones y que los ejemplos creados manualmente no se reconstruyen automáticamente. Eliminado el enlace a la clase inexistente.
+- Verificación: contraste con las fuentes y ejecución del comprobador documental completo.
+
+## 2026-09-17 - Corrección de LIM-03
+
+- Alcance: `LIMITACIONES.md` refleja que el código actual carece de un inicializador de relaciones de empresa; las relaciones de ejemplo creadas manualmente no se reconstruyen automáticamente en una base nueva. Sustituida la referencia a la clase inexistente por el servicio real.
+- Verificación: búsqueda de la clase y de inicializadores de relaciones en las fuentes; comprobación del enlace corregido y del verificador documental. Queda otro enlace a esa clase en `RELACIONES_EMPRESA.md` para su revisión independiente.
+
+## 2026-09-17 - Actualización del inventario de entidades
+
+- Alcance: regenerado `MODELO_INVENTARIO.md` desde las clases `@Entity` actuales, con 56 entidades. No se modifica el modelo ni la base de datos.
+- Verificación: el comprobador documental deja de señalar este inventario como desactualizado; permanecen dos enlaces documentales rotos, tratados por separado.
+
+## 2026-09-17 - Actualización del inventario de API
+
+- Alcance: regenerado `API_INVENTARIO.md` desde los controladores actuales, con 267 endpoints. No se modifica el contrato ni el código de la API.
+- Verificación: el comprobador documental deja de señalar este inventario como desactualizado; permanecen otros avisos documentales independientes.
+
+## 2026-09-17 - Directiva de trabajo n.º 1
+
+- Alcance: incorporada la directiva permanente BE-DIR-041, identificada como directiva de trabajo n.º 1 y aplicable a todos los desarrollos. Exige autonomía, análisis y cambios completos, corrección de causas raíz y verificaciones proporcionales al riesgo; evita únicamente trabajo redundante sin reducir la calidad.
+- Decisión funcional confirmada: si este modo de trabajo provoca un problema, se comunica al usuario para revisarlo. El cierre de cada tarea incluye un resumen breve de cambios, comprobaciones y pendientes relevantes.
+- Verificación: revisión de la secuencia de directivas y del formato documental; no se modifica código funcional.
+
+## 2026-09-15 · Consolidación integral de documentación
+
+- Alcance: revisión de toda la documentación frontend/backend y general; contratos, configuración, operación, seguridad, modelo, módulos, uso, integraciones y pruebas.
+- Consolidación de referencias IA, preservando visión y decisiones temáticas sin catálogos permanentes paralelos. Actualizados README y enlaces.
+- Inventarios generados desde fuentes: 266 endpoints, 54 entidades y rutas Angular. Nuevo verificador `docs/verificar-documentacion.mjs`, ejecutable desde la raíz.
+- Verificaciones: comprobador documental correcto para 62 Markdown, índices, enlaces locales explícitos, secuencias de 48 directivas FE y 40 BE e inventarios. Revisión de formato con `git diff --check`. No se repiten tests de negocio por este cambio documental.
+- La auditoría se cierra documentalmente y se rectifica la existencia del inicializador de relaciones. Compras, histórico/movimiento de relaciones y demás diferencias siguen identificadas en LIMITACIONES; no se modifica código funcional ni datos por esta consolidación.
+
+## 2026-09-15 - Auditoría de documentación
+
+- Informe de diagnóstico de documentación frontend, backend y general, con 13 hallazgos y prioridades. No se modifica código ni datos funcionales.
+- Verificación: inventario inicial de 48 Markdown; enlaces locales explícitos; 48 directivas FE y 40 BE sin saltos ni duplicados; contraste dirigido con rutas, controladores, servicios, plantillas, entidades y configuración. No se vuelve a ejecutar la suite funcional completa.
+- Los hallazgos permanecen pendientes: el informe no equivale a corregir los documentos señalados.
+
+## 2026-09-15 - Catálogos de proveedores relacionados
+
+- Proveedores reutiliza el catálogo de Clientes y su flujo de pedidos, con selección de proveedor y autorización por relación activa en consulta, imágenes y envío. Sin relaciones no hay acceso desde el módulo. Directivas FE-DIR-048 y BE-DIR-040.
+- Verificación: compilación Angular correcta; 9 pruebas Maven y 3 pruebas Vitest correctas. Backend reiniciado. API: empresas 1 y 3 acceden al proveedor 4 con 12 artículos e imágenes HTTP 200; empresa 2 sin proveedores recibe 403 en catálogo, imágenes y pedido. Acceso anónimo denegado (403). Frontend /proveedores responde 200. No se generan pedidos de prueba reales.
+
+## 2026-09-15 - Eliminar relaciones de empresa
+
+- Eliminación definitiva de la pareja desde Registro, con confirmación, validación de empresa y transacción. Nuevo endpoint DELETE /empresas-relaciones/{id}. Gestión conserva exclusivamente Baja y Reactivar.
+- Verificación: compilación Angular correcta y 3 pruebas Maven correctas (eliminación de pareja, restricción por empresa y pareja incoherente). Backend reiniciado en 8080; DELETE sobre id inexistente responde 400. Las cuatro relaciones originales permanecen registradas. Frontend disponible con HTTP 200.
+
+## 2026-09-15 - Relaciones del proveedor hostelero
+
+- El 2026-09-15 se registraron mediante la API dos relaciones activas: Pizzeria La Esquina (empresa 1) y Restaurante Cándida (empresa 3) tienen como PROVEEDOR a Proveedor Hostelero Central (empresa 4). En la empresa 4 se crearon automáticamente las relaciones CLIENTE correspondientes. Parejas de identificadores: 1 ↔ 2 y 3 ↔ 4. Fecha de inicio: 2026-09-15; sin fecha fin. Verificación: consulta posterior de las tres empresas confirma los cuatro registros activos y sus enlaces inversos.
+
+## 2026-09-15 - Mensajería administrativa y cabecera
+
+- El servicio exige Administrador también para dar de baja conversaciones y modificar mensajes. Se mantienen las restricciones administrativas de consulta de bajas, reactivación y eliminación; no cambian URL ni DTO. Directiva BE-DIR-039.
+- Verificación: Maven: 3 pruebas de permisos correctas para Jefe, Empleado y Cliente, sin acceso ni mutación de repositorios. Backend compilado y arrancado el 2026-09-15 con los cambios: Tomcat en puerto 8080, estado ACCEPTING_TRAFFIC y respuesta HTTP 403 del endpoint protegido de mensajes sin autenticación.
+
+## 2026-09-14 - Acceso integral a las acciones de agenda
+
+- Administrador y Jefe pueden avanzar estados y marcar pagos desde cualquier agenda de empleado a la que tengan acceso dentro de la empresa activa.
+- El Empleado conserva el acceso exclusivamente a su propia agenda.
+- La autorización se valida en el backend sobre la empresa y la agenda de la tarea; no existe un modo de agenda limitado a solo lectura.
+- Verificación: pruebas Maven y comprobación funcional de API.
+- Corregida la restricción `ck_tarea_estado`, que conservaba el valor obsoleto `TERMINADA` y rechazaba el estado funcional `FINALIZADO`.
+- Se incorpora una migración repetible al arranque y el script `20260914_estado_finalizado_tareas.sql` para normalizar datos existentes y el contrato de la base de datos.
+- La API de tareas admite la transición confirmada a `PENDIENTE` desde `EN_CURSO` o `FINALIZADO`, limpiando las fechas reales y sincronizando reserva y pedido.
+- La marca de pago se convierte en una operación booleana para permitir tanto marcar como desmarcar el pedido.
+- El contrato de reservas expone `pagado` para que Gestión de Agendas presente la acción correcta.
+
+## 2026-09-13 - Consulta de agendas de empleados por el Administrador
+
+- `GET /empleados/mi-agenda` admite el parámetro opcional `recursoAgendaId` para la consulta delegada del Administrador.
+- La agenda solicitada debe ser de tipo Empleado, pertenecer a la empresa seleccionada y corresponder a un recurso activo y operativo.
+- Jefes y empleados continúan restringidos a su propia agenda y no pueden consultar la de otro recurso enviando el parámetro.
+
+## 2026-09-13 - Directiva de integridad de columnas
+
+- Toda consulta tabular debe poder proporcionar todos los campos funcionales del registro; la ocultación inicial es una decisión de presentación y no elimina el campo de la tabla configurable.
+- Las relaciones deben acompañarse de su descripción funcional cuando esté disponible, evitando limitar la presentación al identificador técnico.
+
+## 2026-09-11 - Datos de empresa, contacto y domicilio fiscal
+
+- El maestro Empresa incorpora razón social, NIF/CIF, actividad, teléfono, correo electrónico, página web y domicilio fiscal.
+- El domicilio se persiste mediante `dom_id` y, al modificar, se valida que el domicilio activo pertenezca a la propia empresa.
+- El contrato JSON de Empresa expone `empRazSoc`, `empNif`, `empActEco`, `empTel`, `empEma`, `empWeb` y `domId`.
+- La migración `20260911_datos_empresa_contacto_domicilio.sql` amplía la tabla `empresas` de forma repetible.
+- Verificación: migración aplicada en PostgreSQL y pruebas Maven correctas.
+
+## 2026-09-11 - Plantilla operativa del proveedor hostelero
+
+- Se registran tres personas empleadas en Proveedor Hostelero Central: almacén, reparto y mantenimiento.
+- Cada empleado dispone de un usuario propio con perfil `Empleado`, recurso operativo, agenda laboral de lunes a viernes y capacidades acordes a su función.
+- Almacén recibe tareas de productos de Ingredientes, Bebidas, Consumibles y Limpieza; reparto y mantenimiento reciben sus respectivos servicios.
+- Las credenciales locales de prueba se incorporan a `CREDENCIALES_USUARIOS.md`, archivo no versionado destinado a su custodia.
+- Verificación: migración aplicada en PostgreSQL y relaciones Persona–Usuario–Recurso–Agenda comprobadas.
+
+## 2026-09-11 - Adjuntos según la empresa seleccionada por el administrador
+
+- El controlador común de adjuntos deja de tomar directamente la empresa fija incluida en el JWT y utiliza `ContextoOperacion`.
+- Para el administrador global, las consultas, contenidos y operaciones de adjuntos respetan `X-Empresa-Seleccionada`; el resto de perfiles continúa restringido a su empresa del token.
+- Esto permite que la imagen principal de la cabecera corresponda a la empresa elegida en el selector global.
+- Verificación: pruebas Maven del backend correctas.
+
+## 2026-09-11 - Cuarta empresa proveedora y catálogos iniciales
+
+- Se registra la empresa de prueba `Proveedor Hostelero Central` con identificador `4` y acceso inicial a los módulos configurables por el administrador global.
+- Se incorporan diez productos de suministro hostelero en las categorías Ingredientes, Bebidas, Consumibles y Limpieza, destinados a las necesidades habituales de la pizzería y el restaurante.
+- Se incorporan los servicios `Entrega refrigerada programada` y `Mantenimiento de equipamiento hostelero`.
+- Las cuatro empresas disponen de una imagen raster 3D diferenciada, almacenada en la ruta común de imágenes y vinculada también como adjunto principal del registro Empresa.
+- Para los adjuntos de Empresa se normaliza `RUTA_DOCUMENTOS_EMPRESAS` bajo `data/adjuntos/empresa-{id}/Empresas`; el resto de rutas documentales existentes no cambia.
+- La migración `20260911_proveedor_hostelero_empresa_imagenes_catalogo.sql` es repetible: actualiza empresa, rutas e imágenes y evita duplicar módulos, tipos y artículos.
+- Verificación: migración aplicada correctamente en PostgreSQL; existen cuatro empresas, diez productos y dos servicios activos para la empresa `4`, y una única imagen principal por empresa.
+
+## 2026-09-11 - Directiva de acciones de Registro y Gestión
+
+- `Modificar`, `Eliminar` y las eliminaciones en cascada quedan definidas como acciones exclusivas de Registro.
+- Las pantallas de Gestión se reservan para consulta, bajas, reactivaciones, históricos y procesos operativos; no modifican ni eliminan el maestro.
+- En Ventas, la eliminación completa de la cadena documental se inicia exclusivamente desde Registro.
+
+## 2026-09-11 - Repositorio local estable para Maven Wrapper
+
+- El wrapper deja de depender del valor anómalo de `user.home` que dirigía el repositorio Maven a `C:\.m2\repository`.
+- La configuración estándar `.mvn/maven.config` fija la caché de dependencias en `backend/.m2/repository`, una ruta escribible y propia del proyecto.
+- `backend/.m2/` queda excluido de Git porque contiene exclusivamente distribuciones y dependencias descargadas.
+- El procedimiento ordinario vuelve a ser `./mvnw.cmd test` o `./mvnw.cmd package`, sin variables ni argumentos adicionales.
+- Verificación: `./mvnw.cmd -q test` ejecutado directamente, con 8 pruebas correctas y repositorio resuelto en `backend/.m2/repository`.
+
+## 2026-09-11 - Modificación transaccional de pedidos y documentos asociados
+
+- Se incorporan por empresa los parámetros `REQUERIR_CLAVE_MODIFICACION_CADENA` y `CLAVE_MODIFICACION_CADENA`; inicialmente no se exige clave y su valor queda vacío.
+- La clave es un control operativo definido por el Jefe y se conserva como texto en el parámetro, sin hash ni tratamiento como credencial de acceso.
+- La API de modificación de pedidos exige confirmar la propagación cuando existen documentos asociados y, si está configurado, valida la clave recibida.
+- Pedido, factura y, cuando los albaranes están habilitados, albarán se actualizan dentro de una sola transacción. Se sincronizan cliente, ubicación, importes, observaciones y líneas, conservando números, fechas, tipos y estados propios de cada documento.
+- La factura y el albarán registran el movimiento `MODIFICACION_CADENA` en su histórico.
+- Corregida la detección de empresas activas del inicializador para que cree efectivamente ambos parámetros en las empresas actuales y futuras.
+- Verificación: 8 pruebas Maven correctas, parámetros comprobados en las tres empresas y backend reiniciado correctamente en el puerto 8080.
+
+## 2026-09-10 - Fotografías activas en el catálogo
+
+- Los tipos de producto y servicio de demostración que todavía apuntaban a pictogramas SVG pasan a utilizar sus fotografías PNG ya disponibles en el directorio común de imágenes.
+- La actualización incluye los tipos de restauración, reparto, eventos y taller de todas las empresas actuales y se ejecuta de forma idempotente al iniciar el backend.
+- Se mantienen sin cambios las imágenes principales particulares de productos o servicios cuando el parámetro de catálogo selecciona el origen `REGISTRO`.
+- Verificación: 8 pruebas Maven correctas.
+
+## 2026-09-10 - Imagen fotográfica para Carnes
+
+- El tipo de producto `Carnes` de la empresa de restauración deja de utilizar el pictograma vectorial genérico y pasa a mostrar la fotografía rasterizada `carne.png` ya disponible en el directorio común de imágenes.
+- La actualización de los datos de demostración es idempotente y contempla tanto la denominación antigua `Carne` como la vigente `Carnes`.
+- No se modifican las imágenes principales que cada producto pueda tener administradas mediante Adjuntos.
+
+## 2026-09-10 - Contexto empresarial seleccionable
+
+- El Administrador puede enviar la empresa de trabajo mediante la cabecera común `X-Empresa-Seleccionada`.
+- `0` o la ausencia de cabecera representan `Todas las empresas`; un identificador positivo limita las consultas y operaciones al contexto seleccionado.
+- El backend solo acepta este cambio de contexto para el perfil Administrador. Para Jefe, Empleado y Cliente ignora la cabecera y conserva obligatoriamente la empresa del token.
+- Los controladores que ya admiten consulta global distinguen entre `Todas las empresas` y una empresa concreta mediante `empresaConsulta`.
+- Verificación: 8 pruebas Maven correctas.
+
+## 2026-09-10 - Regla común de consulta multempresa
+
+- El ámbito de consulta queda centralizado: Administrador puede consultar todas las empresas y los demás perfiles quedan forzados a la empresa de su sesión.
+- Las consultas principales de Productos, Servicios, Tipos de artículo, Recursos, Domicilios, Documentos de venta, Compras, Cajas y Avisos/Alertas devuelven al Administrador los registros de todas las empresas.
+- `Mi agenda` deja de excluir expresamente al Administrador y conserva la resolución mediante la Persona y el recurso Empleado vinculados al usuario.
+- Las operaciones de escritura continúan exigiendo una empresa concreta para impedir modificaciones ambiguas sobre el conjunto global.
+- Verificación: 8 pruebas Maven correctas.
+
+## 2026-09-10 - Fase 5: finalización y reparto
+
+- El estado de cada tarea actualiza también su reserva y el pedido relacionado.
+- El pedido pasa a `EN_CURSO` al comenzar la primera elaboración y a `FINALIZADO` cuando terminan todas sus tareas de producto y servicio.
+- Los pedidos a domicilio generan entonces una sola tarea `SERVICIO · REPARTO`; los pedidos en posición no generan entrega.
+- El reparto se asigna al primer repartidor disponible, dura inicialmente 30 minutos y ocupa su agenda, por lo que los pedidos anteriores determinan el horario de los siguientes.
+- En una tarea de reparto, `EN_CURSO` representa pedido recogido y `FINALIZADO` representa pedido entregado; al entregarlo, el pedido pasa a `ENTREGADO`.
+- La creación es idempotente y no permite dos repartos activos para el mismo pedido.
+- `Pagado` se persiste como una marca booleana independiente del estado y puede establecerse desde cualquier tarea propia del pedido, antes, durante o después de la elaboración y entrega.
+- Verificación: 8 pruebas Maven correctas, empaquetado correcto, actualización automática de `dov_pag` en PostgreSQL y backend reiniciado en el puerto 8080.
+
+## 2026-09-10 - Fase 4: asignación automática de pedidos
+
+- La confirmación de un pedido del catálogo crea automáticamente una tarea por cada línea completa de producto o servicio.
+- La habilidad requerida se obtiene del Tipo de Producto o Tipo de Servicio y se compara con las capacidades activas de los recursos Empleado.
+- La cantidad de una línea nunca se divide: su duración total es la duración unitaria multiplicada por la cantidad y se asigna a una sola agenda.
+- Entre los empleados capacitados se elige el que tenga el primer hueco disponible, respetando horarios, márgenes, excepciones, capacidad y reservas existentes.
+- La búsqueda se realiza en intervalos de cinco minutos durante los siguientes treinta días. Si no existe recurso o hueco, el pedido se rechaza de forma transaccional con un mensaje explicativo.
+- La asignación crea la reserva, la ocupación del recurso y la tarea en estado `PENDIENTE`; la entrega y el reparto permanecen reservados para la fase 5.
+- La inicialización de datos omite la sincronización de secuencias exclusiva de PostgreSQL cuando las pruebas usan H2, permitiendo verificar el contexto completo.
+- Verificación: 7 pruebas Maven correctas, incluidas cantidad indivisible y rechazo sin empleado capacitado; empaquetado correcto y backend reiniciado en el puerto 8080.
+
+## 2026-09-10 - Agenda personal del Jefe
+
+- El Jefe se considera también trabajador y recibe un recurso operativo de tipo Empleado y una agenda personal en su empresa.
+- La agenda inicial se configura de lunes a viernes, de 09:00 a 18:00, y puede modificarse desde Gestión de Recursos.
+- No se asignan habilidades productivas o de reparto automáticamente; podrá recibir tareas generales.
+- `Mi agenda` admite Empleado y Jefe y resuelve siempre la agenda desde las credenciales autenticadas.
+- La inicialización reutiliza recursos y agendas existentes para evitar duplicados.
+
+## 2026-09-10 - Fase 3: acceso del empleado a su agenda
+
+- Incorporada la API personal `GET /empleados/mi-agenda`, que resuelve la Persona, el recurso y la agenda exclusivamente desde las credenciales autenticadas.
+- El empleado no puede indicar ni consultar la agenda de otro trabajador; los perfiles diferentes de Empleado reciben una denegación de acceso.
+- Incorporado el avance controlado de tareas propias mediante `PUT /empleados/mi-agenda/tareas/{id}/estado`.
+- Las transiciones permitidas son `PENDIENTE → EN_CURSO → FINALIZADO`, registrando las horas reales y el usuario del movimiento.
+- En esta fase la agenda puede aparecer vacía hasta incorporar la asignación automática de líneas de pedido.
+- Verificación: compilación Maven correcta y consulta real con credenciales de Empleado limitada a su propia agenda.
+
+## 2026-09-10 - Fase 1 del modelo de tareas de pedido
+
+- Ampliada la tarea de agenda para relacionarla opcionalmente con una línea de pedido, un producto o un servicio.
+- Incorporados tipo de tarea, habilidad, cantidad, duración unitaria, planificación e instantes reales de inicio y finalización.
+- La combinación Empresa y Línea de pedido es única, garantizando una sola tarea para la cantidad completa de cada línea.
+- El contrato de Agenda devuelve los nuevos datos manteniendo compatibles las reservas manuales existentes.
+- Esta fase no genera ni asigna todavía tareas automáticamente.
+- Verificación: compilación completa del backend correcta mediante Maven.
+
+## 2026-09-10 - Fase 2: trabajadores de reparto
+
+- El empleado de demostración de cada empresa se registra como recurso operativo vinculado a su Persona, sin crear usuarios duplicados.
+- Cada repartidor recibe la capacidad `SERVICIO · REPARTO` y una agenda individual.
+- Si no existía una configuración previa, se crea un horario inicial de 09:00 a 23:00 todos los días, modificable posteriormente desde Gestión de Agendas.
+- La inicialización es idempotente: reactiva y reutiliza recurso, capacidad y agenda existentes.
+- La numeración de recursos operativos se calcula globalmente para respetar su clave primaria compartida entre empresas.
+- Verificación: compilación Maven correcta, backend reiniciado y comprobados por API el repartidor, la capacidad `REPARTO`, la agenda y sus siete días de horario en las tres empresas.
+
+## 2026-09-08 - Tipos de producto y servicio en plural
+
+- Normalizados en plural todos los tipos actuales de producto y servicio.
+- Actualizados conjuntamente el maestro, todas las versiones de Productos y Servicios y las capacidades de Recursos para conservar la integridad funcional.
+- La migración `20260908_tipos_articulo_plural.sql` es repetible y conserva los tipos que ya estaban en plural.
+
+## 2026-09-08 - Validación del stock actual
+
+- Cuando un producto controla stock, las altas y modificaciones rechazan un stock actual vacío o negativo.
+- La API deja de confirmar actualizaciones que no contienen un valor de stock persistible.
+- La migración `20260908_recuperar_stock_actual.sql` recupera el último stock no nulo del histórico para las versiones vigentes afectadas por el comportamiento anterior.
+
+## 2026-09-08 - CRUD y publicación de Avisos/Alertas
+
+- Creado el maestro histórico multiempresa con periodo opcional, baja y reactivación.
+- Ampliado el catálogo público para devolver únicamente mensajes activos y vigentes.
+- Registrados tres ejemplos en cada empresa mediante migración idempotente.
+- Verificado con 5 pruebas Maven sin fallos y en PostgreSQL.
+
+## 2026-09-08 - Retirada completa del servicio Recogida
+
+- Eliminados de todas las empresas el tipo `RECOGIDA`, los servicios clasificados con ese tipo y las capacidades de recursos asociadas.
+- La migración global es repetible y elimina también posibles registros de prueba equivalentes creados en otras empresas.
+- Verificada su aplicación sobre la base de datos de desarrollo: se retiraron un servicio y una capacidad restantes.
+
+## 2026-09-08 - Distintivos de Productos y Servicios
+
+- Añadidos los indicadores persistentes `Novedad`, `Mejor precio` y `Outlet` a Productos y Servicios, con valor inicial `false`.
+- Ampliado el contrato público del catálogo con `novedad`, `mejorPrecio` y `outlet`.
+- La migración `20260908_distintivos_catalogo.sql` conserva los datos existentes y puede aplicarse repetidamente.
+- Verificado con las pruebas Maven del backend.
+
+## 2026-09-08 - Tipos genéricos de catálogo
+
+- Registrados en todas las empresas los tipos `Productos` (producto) y `Servicios` (servicio).
+- Añadidas imágenes vectoriales coherentes con el estilo actual del catálogo en el directorio común configurado para cada empresa.
+- La migración es idempotente: reactiva y actualiza la imagen de los tipos si ya existen, sin duplicarlos.
+- Verificado mediante consulta directa de los registros creados y de sus ficheros asociados.
+
+## 2026-09-08 - Preferencias iniciales de columnas técnicas
+
+- Añadida la migración `20260908_columnas_movimiento_ocultas.sql` para ocultar `empId`/`cliId`, `*TipMov` y `*CauMov` en las configuraciones de tabla ya guardadas.
+- La actualización es única y conserva la posibilidad de que cada usuario vuelva a mostrar y guardar esas columnas.
+- Migración aplicada en PostgreSQL de desarrollo: una configuración actualizada y ninguna columna técnica objetivo permanece visible.
+
+## 2026-09-08 - Origen configurable de imágenes del catálogo
+
+- Añadido `IMAGEN_CATALOGO_ORIGEN` de forma independiente para `PRODUCTOS` y `SERVICIOS`.
+- Los valores admitidos son `TIPO` y `REGISTRO`; `TIPO` conserva el comportamiento previo.
+- Centralizada la selección en `ImagenCatalogoService` y validado el valor al guardar parámetros.
+- Añadida la migración idempotente `20260908_origen_imagen_catalogo.sql` para crear ambos parámetros por empresa.
+- Cubierta mediante pruebas unitarias la selección por defecto, la selección por registro y la validación de valores.
+- Verificado con `mvn test`: cinco pruebas ejecutadas sin fallos; migración aplicada a las tres empresas de desarrollo.
+
 ## 2026-09-07 - Inventario local de secretos
 
-- Añadido `backend/docs/SECRETOS.md` como inventario exclusivamente local y excluido de Git.
+- Añadido `SECRETOS.md` en la raíz del proyecto como inventario exclusivamente local y excluido de Git.
 - Registrados los datos de conexión conocidos, las variables obligatorias, las integraciones sensibles y las credenciales aisladas de pruebas.
 - Los valores reales no disponibles se marcan pendientes, sin inventarlos ni incorporarlos a archivos versionados.
 
@@ -297,3 +673,168 @@
 - Dentro de cada tipo, los productos o servicios se devuelven por identificador ascendente, garantizando una presentación estable en cualquier cliente.
 - El cambio mantiene el mismo DTO y no modifica los campos del contrato HTTP.
 - Verificación: compilación correcta y 2 pruebas Maven superadas; comprobación en `localhost` de 10 productos (`101` a `110`) antes de los 20 servicios (`1` a `20`), todos ordenados por identificador dentro de su tipo.
+## 2026-09-09 - Configuración de módulos por empresa y usuario
+
+- Incorporado el maestro de módulos de aplicación y su API CRUD.
+- Añadida configuración de disponibilidad y orden aislada por empresa.
+- El panel utiliza el orden administrativo aislado por empresa.
+- Las imágenes de módulo se gestionan exclusivamente mediante Adjuntos y su marca principal.
+- Añadida migración idempotente y carga inicial de los módulos conocidos al arrancar.
+- Verificación: el frontend consumidor compila correctamente. La ejecución automatizada de Maven queda pendiente porque el wrapper existente no puede iniciarse en el entorno (`Cannot start maven from wrapper`).
+## 2026-09-09 - Eliminación del orden personal de módulos
+
+- Retirados la entidad, el repositorio y los endpoints de orden de módulos por usuario.
+- La posición efectiva procede exclusivamente de `empresas_modulos` y se aplica a todos los usuarios de la empresa.
+- Añadida una migración de limpieza para eliminar la tabla obsoleta `usuarios_modulos_orden` si llegó a crearse.
+## 2026-09-09 - Guardado transaccional del orden de módulos
+
+- La disponibilidad y las posiciones de todos los módulos se guardan en una única transacción.
+- Se validan identificadores duplicados y posiciones ausentes antes de persistir.
+- La API fuerza la escritura y devuelve el orden realmente almacenado para que el frontend lo verifique inmediatamente.
+## 2026-09-09 - Gestión de Usuarios
+
+- Añadidas baja lógica, reactivación e histórico de usuarios con causa obligatoria.
+- Se impide la baja del usuario conectado y el inicio de sesión de usuarios inactivos.
+- La consulta ordinaria excluye bajas; se recuperan mediante filtro explícito de Activo.
+- Añadidos Tipo y Causa de movimiento al maestro y una tabla inmutable de movimientos.
+- Verificación backend pendiente de Maven por el fallo preexistente de arranque del wrapper.
+## 2026-09-09 - Perfiles funcionales y usuarios de demostración
+
+- Definidos los perfiles `Administrador`, `Jefe`, `Cliente` y `Empleado` con alcance funcional explícito.
+- El administrador es único; Administrador y Jefe acceden a todos los módulos, Cliente únicamente a Clientes y Empleado únicamente a Empleados.
+- El arranque crea de forma idempotente un Jefe, Cliente y Empleado por empresa activa y el administrador global `jackalblue` en la empresa principal.
+- Si existía el acceso provisional `jackablue`, se renombra automáticamente a `jackalblue` sin duplicar administradores.
+- Las contraseñas se almacenan exclusivamente mediante BCrypt. Las credenciales en claro no se documentan en el repositorio.
+- El endpoint del panel filtra los módulos según el perfil autenticado.
+- El inicializador sincroniza las secuencias de Perfiles y Usuarios antes de insertar datos, contemplando bases de prueba con identificadores cargados manualmente.
+## 2026-09-09 - Reparación del Maven Wrapper en Windows
+
+- Corregido `mvnw.cmd` para manejar correctamente un repositorio local `.m2` que no sea un enlace simbólico.
+- Se evita el error `No se puede indizar en una matriz nula` al ejecutar el wrapper desde PowerShell o CMD.
+- Verificación completada correctamente mediante `mvnw.cmd -q -DskipTests package`.
+## 2026-09-09 - Consulta global de empresas
+
+- El perfil Administrador obtiene todas las empresas en Registro de Empresas.
+- El perfil Jefe y los perfiles de empresa conservan el aislamiento y solo pueden obtener su propia empresa.
+- El Administrador puede consultar, modificar y gestionar la imagen de cualquier empresa; la misma operación permanece bloqueada entre empresas para el resto de perfiles.
+## 2026-09-09 - Alcance multempresa del módulo Administración
+
+- Administrador consulta por defecto todas las empresas en Usuarios, Perfiles, Parámetros, Áreas Organizativas y Personal de Área, además del Registro de Empresas.
+- Los filtros enviados antes de consultar, incluido `Empresa`, se aplican sobre el conjunto multempresa.
+- Jefe permanece limitado en el backend a la empresa de su sesión, con independencia de los filtros o identificadores recibidos.
+- Las operaciones sobre registros existentes conservan la empresa del registro; un Jefe no puede operar sobre registros de otra empresa.
+- Verificación: compilación completa del backend correcta.
+## 2026-09-09 - Filtro de empresa global
+
+- El filtro `T` de la columna Empresa identifica al usuario Administrador global en la consulta remota de Usuarios.
+- Los identificadores numéricos de las empresas permanecen sin cambios en persistencia y contratos.
+## 2026-09-09 - Depuración de usuarios de prueba
+
+- Eliminados los accesos antiguos que no figuran en el documento local de credenciales.
+- Se conservan exclusivamente `jackalblue` y los usuarios Jefe, Cliente y Empleado generados para cada empresa activa.
+- La limpieza elimina previamente recuperaciones de contraseña e históricos asociados a las cuentas descartadas y se repite de forma idempotente al arrancar.
+## 2026-09-09 - Gestión de Módulos por empresa
+
+- Gestión de Módulos pasa a ser una operación exclusiva del perfil Administrador y el backend devuelve `403` al resto de perfiles.
+- La consulta y el guardado reciben obligatoriamente una empresa válida y trabajan sobre su configuración independiente en `empresas_modulos`.
+- La disponibilidad y el orden guardados determinan obligatoriamente el panel de módulos de los usuarios de esa empresa.
+
+## 2026-09-09 - Acceso exclusivo a Módulos, Perfiles y Empresas
+
+- Todos los endpoints de mantenimiento de Módulos, Perfiles y Empresas devuelven `403` a cualquier perfil distinto de Administrador.
+- Se mantiene accesible la lectura de la imagen de la propia empresa porque la cabecera de la aplicación la necesita.
+- Se incorpora `GET /perfiles/selector`, limitado siempre a la empresa autenticada, para asignar perfiles desde el Registro de Usuarios sin exponer el CRUD de Perfiles.
+- Verificación: compilación completa del backend correcta mediante Maven.
+
+## 2026-09-09 - Operaciones completas de Empresas
+
+- La API exclusiva del Administrador incorpora alta, eliminación, baja, reactivación e histórico de Empresas.
+- Baja y reactivación exigen causa y registran el movimiento de forma transaccional en `empresas_movimientos`.
+- La consulta ordinaria excluye bajas y admite `incluirBajas=true` para búsquedas expresas por estado.
+- Se impide eliminar o dar de baja la empresa técnica vinculada al Administrador global.
+- Corregida una referencia fuera de alcance en la consulta auxiliar de Usuarios que impedía compilar el backend.
+- Verificación: compilación completa del backend correcta mediante Maven.
+
+## 2026-09-09 - Privacidad del Administrador global
+
+- El usuario global `jackalblue` solo se devuelve en consultas realizadas por el perfil Administrador.
+- La exclusión se aplica a la consulta paginada, a la consulta auxiliar de usuarios y al acceso indirecto para baja, reactivación e histórico.
+- La restricción se ejecuta en el backend y no depende de ocultar filas en el navegador.
+- Verificación: compilación completa del backend correcta mediante Maven.
+
+## 2026-09-09 - Enlace corto de pedidos por empresa
+
+- Incorporado el parámetro empresarial `CATALOGO_ALIAS`, generado de forma única a partir del nombre de la empresa.
+- Las operaciones públicas aceptan tanto el alias legible como los tokens generales y de posición anteriores.
+- La actualización valida el formato en minúsculas con guiones y rechaza alias asignados a otra empresa.
+- Verificación: compilación completa del backend correcta mediante Maven.
+## 2026-09-10 - Módulo inicial de Proveedores
+
+- Registrado `PROVEEDORES` en el catálogo inicial de módulos para que se incorpore a todas las empresas.
+- El Administrador y el Jefe pueden recibir acceso según la disponibilidad configurada para cada empresa; Cliente y Empleado conservan sus módulos exclusivos.
+# 2026-09-11 — Configuración documental, facturación automática y personas incompletas
+
+- Se incorporan los parámetros por empresa `MOSTRAR_PRESUPUESTOS`, `MOSTRAR_ALBARANES` y `TIPO_FACTURA_AUTOMATICA`.
+- Presupuestos y albaranes quedan ocultos por defecto en las empresas actuales; el acceso directo a sus API también se valida.
+- Cada pedido nuevo, incluido el procedente del catálogo o de una conversión, crea automáticamente su factura y copia sus líneas e importes.
+- Las empresas 1 y 3 generan facturas simplificadas; la empresa 2 genera facturas normales.
+- El mismo maestro de facturas admite los tipos `NORMAL` y `SIMPLIFICADA`, también en su histórico.
+- Las facturas normales no pueden emitirse con una persona marcada con datos incompletos.
+- Se añade `per_dat_com`. Los procesos externos pueden crear personas incompletas con nombre y contacto; un teléfono o correo diferente impide reutilizar una persona existente.
+- Verificación: compilación Maven correcta con Java 25 y Maven 3.9.16.
+- Ajuste posterior: el teléfono pasa a ser obligatorio en el CRUD de Personas. La completitud física exige tipo de persona, tipo y número de documento, nombre, primer apellido, domicilio y teléfono; la jurídica exige tipo de persona, tipo y número de documento, razón social corta, domicilio y teléfono. La razón social larga queda opcional.
+# 2026-09-13 - Catálogo central de directivas
+
+- Se crea `DIRECTIVAS.md` como catálogo único, numerado y estable de las directivas funcionales, de datos y seguridad del backend.
+- `README.md` deja de duplicar reglas concretas y pasa a enlazar el catálogo; `CAMBIOS.md` conserva únicamente el histórico.
+- Se recopilan las decisiones transversales confirmadas sobre empresa, perfiles, personas, Registro/Gestión, adjuntos, facturación, pedidos y agendas.
+# 2026-09-13 - Domicilios en el contexto de empresa del Administrador
+
+- Las operaciones de alta, modificación, eliminación, baja, histórico y deshacer de domicilios usan ahora el contexto empresarial común.
+- El Administrador puede crear y mantener domicilios de la empresa seleccionada sin que queden asociados por error a su empresa de autenticación.
+- Este ajuste permite completar correctamente el domicilio fiscal de cualquier empresa desde la sesión global.
+# 2026-09-13 - Validación integral de pedidos públicos y agenda
+
+- El pedido público toma como importe contractual el precio final mostrado en el catálogo, evitando diferencias de céntimos al recalcular base e IVA por cantidades.
+- La base y la cuota de IVA se derivan del total final mostrado, manteniendo el detalle fiscal y haciendo coincidir cesta, pedido y factura.
+- Eliminar un pedido o su cadena elimina también sus tareas, asignaciones y reservas de agenda; ya no quedan ocupaciones huérfanas.
+- Se completa la información empresarial y fiscal de las cuatro empresas con datos de prueba coherentes y domicilios normalizados.
+- Verificación realizada mediante diez pedidos reales por `/catalogo/publico/pizzeria-la-esquina/pedidos`: 10 pedidos emitidos y no pagados, 10 facturas simplificadas emitidas con el mismo total, 14 reservas y 14 tareas pendientes.
+- Las 14 líneas conservan una única tarea por línea, incluidas dos líneas de cuatro unidades; se asignaron 5 tareas de Pizzas al maestro pizzero y 9 de Bocadillos/Hamburguesas al recurso de Cocina, sin solapes considerando los márgenes de agenda.
+# 2026-09-14 — Chat y mensajería interna
+
+- Se añade el modelo persistente de conversaciones, participantes, lectura individual y mensajes internos.
+- Se publica la API de destinatarios, bandeja, contador, lectura/no lectura, creación, respuesta, modificación, clasificación y eliminación lógica.
+- Se aplican permisos por perfil y contexto de empresa en el servicio, independientemente de la interfaz.
+- Se corrige la resolución de destinatarios para consultar el perfil mediante `perId`; `usuPerId` permanece reservado para la Persona vinculada al usuario.
+- Se reconcilian al arrancar las cuatro empresas: se crea una cuenta de prueba para cada recurso empleado activo que carezca de ella y se eliminan las cuentas Cliente no operativas. El Administrador global es la única excepción a la correspondencia Jefe/Empleado.
+- Se amplía el contrato de conversaciones y mensajes con emisor y destinatarios explícitos para garantizar su presentación completa.
+- Se retira la operación de reclasificación posterior; Normal, Aviso o Alerta queda fijado al enviar el mensaje o la respuesta.
+- Se sustituye la eliminación individual de mensajes por la baja lógica global de conversaciones, con auditoría, consulta y reactivación administrativa y eliminación física individual o masiva hasta fecha.
+- El contrato de alta exige Asunto pero admite el contenido inicial del Mensaje vacío o nulo.
+- Se filtran las conversaciones dadas de baja tanto en la bandeja activa como en el contador de mensajes pendientes.
+- Se incorpora el maestro de relaciones Proveedor/Cliente con pareja inversa automática y los selectores de empresas y proveedores relacionados.
+- Verificación: compilación y pruebas Maven.
+# 2026-09-19 - Regla del cálculo de beneficio de Productos
+
+- Documentado que los botones calculan el precio de destino exclusivamente desde el precio sin IVA de origen y el porcentaje de beneficio de la empresa.
+- Descuentos, IVA y totales no intervienen en esa conversión.
+# 2026-09-19 - Disponibilidad de productos y componentes
+
+- Ampliado Producto con disponibilidad por cada día de la semana, activa por defecto.
+- Añadido el maestro histórico de Componentes, sus importes, los 14 indicadores de alérgenos, endpoints de Registro y operaciones de Gestión.
+- Añadida la migración `20260919_disponibilidad_productos_componentes.sql`.
+# 2026-09-19 - Componentes de hostelería de ejemplo
+
+- Registrados 20 componentes para Pizzeria La Esquina: ingredientes, materia prima, envases, material y accesorios.
+- Informados precios adicionales, IVA y alérgenos aplicables.
+- Añadida la carga idempotente `20260919_componentes_hosteleria_pizzeria.sql` y comprobado que una segunda ejecución no duplica registros.
+# 2026-09-20 - Revisión obligatoria de directivas
+
+- Añadida BE-DIR-043 para exigir que cada desarrollo revise y registre el cumplimiento de las directivas aplicables antes de finalizar.
+# 2026-09-20 - Componentes de productos
+
+- Añadida la composición de productos mediante líneas de componente y cantidad, separada por empresa y versión histórica del producto.
+- El backend valida pertenencia a la empresa, componente activo, cantidad positiva y ausencia de duplicados.
+- Añadida la migración `20260920_productos_componentes.sql`.
+- Revisión de directivas: cumple aislamiento por empresa, versionado de Gestión, separación Registro/Gestión, integridad del contrato y funcionalidad general.

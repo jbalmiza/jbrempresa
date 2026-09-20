@@ -47,6 +47,9 @@ import com.jbrempresa.backend.repository.PerfilRepository;
 // Importa EmpresaRepository.
 import com.jbrempresa.backend.repository.EmpresaRepository;
 import com.jbrempresa.backend.repository.PersonaRepository;
+import com.jbrempresa.backend.repository.UsuarioMovimientoRepository;
+import com.jbrempresa.backend.entity.UsuarioMovimiento;
+import com.jbrempresa.backend.core.context.ContextoOperacion;
 
 // Importa JwtService.
 import com.jbrempresa.backend.security.JwtService;
@@ -83,6 +86,8 @@ public class UsuarioController {
     private final JwtService jwtService;
 
     private final PasswordEncoder passwordEncoder;
+    private final UsuarioMovimientoRepository usuarioMovimientoRepository;
+    private final ContextoOperacion contexto;
 
     public UsuarioController(
             UsuarioRepository usuarioRepository,
@@ -90,13 +95,17 @@ public class UsuarioController {
             EmpresaRepository empresaRepository,
             PersonaRepository personaRepository,
             JwtService jwtService,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            UsuarioMovimientoRepository usuarioMovimientoRepository,
+            ContextoOperacion contexto) {
         this.usuarioRepository = usuarioRepository;
         this.perfilRepository = perfilRepository;
         this.empresaRepository = empresaRepository;
         this.personaRepository = personaRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.usuarioMovimientoRepository = usuarioMovimientoRepository;
+        this.contexto = contexto;
     }
 
     // Obtiene el empresa autenticado.
@@ -226,6 +235,8 @@ public class UsuarioController {
 
         // Asigna el usuario de modificacion.
         usuario.setUsuUsuMov(obtenerUsuario());
+        usuario.setUsuTipMov("A");
+        usuario.setUsuCauMov(null);
 
         // Comprueba que el perfil pertenece al empresa.
         perfilRepository
@@ -257,7 +268,7 @@ public class UsuarioController {
         Usuario usuario = datos.entidad();
 
         // Obtiene el empresa.
-        Long empId = obtenerEmpresa();
+        Long empId = contexto.administradorGlobal() && usuario.getEmpId() != null && usuario.getEmpId() > 0 ? usuario.getEmpId() : obtenerEmpresa();
 
         // Comprueba los campos obligatorios.
         validarUsuario(usuario, false);
@@ -266,6 +277,9 @@ public class UsuarioController {
         Usuario usuarioExistente =
                 usuarioRepository.findByEmpIdAndUsuId(empId, id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
+        if (!contexto.administradorGlobal() && esAdministradorGlobal(usuarioExistente)) {
+            throw new RuntimeException("Usuario no encontrado.");
+        }
 
         // Comprueba que el nombre no pertenece a otro usuario.
         comprobarUsuarioUnico(
@@ -282,6 +296,8 @@ public class UsuarioController {
 
         // Asigna el usuario de modificacion.
         usuario.setUsuUsuMov(obtenerUsuario());
+        usuario.setUsuTipMov("M");
+        usuario.setUsuCauMov(null);
 
         // Comprueba que el perfil pertenece al empresa.
         perfilRepository
@@ -325,7 +341,9 @@ public class UsuarioController {
         Long empId = obtenerEmpresa();
 
         // Devuelve los registros.
-        return usuarioRepository.findByEmpId(empId).stream().map(UsuarioSalida::desde).toList();
+        return (contexto.administradorGlobal() ? usuarioRepository.findAll() : usuarioRepository.findByEmpId(empId)).stream()
+                .filter(usuario -> contexto.administradorGlobal() || !esAdministradorGlobal(usuario))
+                .map(UsuarioSalida::desde).toList();
 
     }
 
@@ -347,11 +365,42 @@ public class UsuarioController {
         int tamanioSeguro = Math.min(Math.max(tamanio, 1), 100);
 
         return usuarioRepository.buscarPorEmpresa(
-                obtenerEmpresa(), empId, usuId, usuUsu, perId, usuNom,
+                contexto.administradorGlobal() ? null : obtenerEmpresa(), !contexto.administradorGlobal(), usuAct != null && !usuAct.isBlank(), empId, usuId, usuUsu, perId, usuNom,
                 usuEma, usuUsuMov, usuFecMov, usuAct,
                 PageRequest.of(Math.max(pagina, 0), tamanioSeguro)).map(UsuarioSalida::desde);
 
     }
+
+    public record CausaUsuario(String causa) {}
+
+    @PutMapping("/{id}/baja")
+    public UsuarioSalida baja(@PathVariable Long id, @RequestBody CausaUsuario datos) {
+        if (obtenerJwtUser().getUsuarioId().equals(id)) throw new IllegalArgumentException("No puede dar de baja al usuario conectado.");
+        return cambiarEstado(id, false, "B", datos);
+    }
+
+    @PutMapping("/{id}/reactivacion")
+    public UsuarioSalida reactivar(@PathVariable Long id, @RequestBody CausaUsuario datos) {
+        return cambiarEstado(id, true, "R", datos);
+    }
+
+    @GetMapping("/{id}/historico")
+    public List<UsuarioMovimiento> historico(@PathVariable Long id) {
+        Usuario usuario = usuarioPermitido(id);
+        return usuarioMovimientoRepository.findByEmpresaIdAndUsuarioIdOrderByFechaDesc(usuario.getEmpId(), id);
+    }
+
+    private UsuarioSalida cambiarEstado(Long id, boolean activo, String tipo, CausaUsuario datos) {
+        if (datos == null || datos.causa() == null || datos.causa().isBlank()) throw new IllegalArgumentException("Debe informar la causa del movimiento.");
+        Usuario u = usuarioPermitido(id);
+        u.setUsu_act(Boolean.toString(activo)); u.setUsuTipMov(tipo);u.setUsuCauMov(datos.causa().trim());u.setUsuUsuMov(obtenerUsuario()); u.setUsuFecMov(LocalDateTime.now()); usuarioRepository.save(u);
+        UsuarioMovimiento m=new UsuarioMovimiento();m.setEmpresaId(u.getEmpId());m.setUsuarioId(id);m.setTipo(tipo);m.setCausa(datos.causa().trim());m.setUsuario(obtenerUsuario());m.setFecha(LocalDateTime.now());m.setActivo(activo);usuarioMovimientoRepository.save(m);
+        return UsuarioSalida.desde(u);
+    }
+
+    private JwtUser obtenerJwtUser(){return (JwtUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();}
+    private Usuario usuarioPermitido(Long id){Usuario u=usuarioRepository.findById(id).orElseThrow(()->new RuntimeException("Usuario no encontrado."));if(!contexto.administradorGlobal()&&(!u.getEmpId().equals(obtenerEmpresa())||esAdministradorGlobal(u)))throw new RuntimeException("Usuario no encontrado.");return u;}
+    private boolean esAdministradorGlobal(Usuario usuario){return "jackalblue".equalsIgnoreCase(usuario.getUsuUsu());}
 
     // Obtiene el siguiente ID.
     @GetMapping("/siguiente-id")
@@ -397,6 +446,7 @@ public class UsuarioController {
         if (!accesoCorrecto) {
             return null;
         }
+        if (!List.of("true", "s", "a", "1").contains(String.valueOf(usuarioEncontrado.getUsuAct()).toLowerCase())) return null;
 
         // Obtiene el empresa.
         Empresa empresa =
@@ -453,14 +503,7 @@ public class UsuarioController {
     public void eliminar(
             @PathVariable Long id) {
 
-        // Obtiene el empresa.
-        Long empId = obtenerEmpresa();
-
-        // Busca el usuario.
-        Usuario usuario =
-                usuarioRepository
-                        .findByEmpIdAndUsuId(empId, id)
-                        .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
+        Usuario usuario = usuarioPermitido(id);
 
         // Elimina el registro.
         usuarioRepository.delete(usuario);

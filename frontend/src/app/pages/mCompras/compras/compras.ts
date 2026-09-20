@@ -48,6 +48,10 @@ import { TablaColumna } from '../../../directives/tablaColumna/tablaColumna';
 
 // Definición de la lógica del componente 
 export class Compras {
+    get lineasProveedor(){return this.compraDetalleLista.map(l=>({...l,tipo:l.serId?'Servicio':'Producto',comDetAct:l.comDetAct?'Sí':'No'}));}
+    readonly columnasProveedor=['comDetId','empId','comId','proId','serId','tipo','nombre','observaciones','comDetCan','comDetPre','comDetDes','comDetIva','comDetImp','comDetUsuMov','comDetFecMov','comDetAct'];
+    readonly titulosProveedor={comDetId:'Id Línea',empId:'Id Empresa',comId:'Id Compra',proId:'Id Producto proveedor',serId:'Id Servicio proveedor',tipo:'Tipo',nombre:'Artículo',observaciones:'Observaciones',comDetCan:'Cantidad',comDetPre:'Precio',comDetDes:'% Descuento',comDetIva:'% IVA',comDetImp:'Importe',comDetUsuMov:'Usuario',comDetFecMov:'Fecha',comDetAct:'Activo'};
+
 	
 	//Esto se ejecuta al iniciar la clase y está iniciado para cualquier acción: insertar, modificar, etc.
 	ngOnInit() {
@@ -96,7 +100,7 @@ export class Compras {
 	tabla!: Tabla;
 
 	//Variables de la clase
-	vistaActiva: 'registro' | 'tabla' = 'tabla';
+	vistaActiva: 'registro' | 'tabla' | 'proveedor' = 'tabla';
 	modoFormulario: 'insertar' | 'modificar' = 'insertar';
 	mostrarObligatorios = false;
 	
@@ -106,7 +110,7 @@ export class Compras {
 	// Títulos de las columnas de la tabla
 	titulosColumnas = {
 	    empId: 'Id Empresa',
-	    comId: 'Id Compra',
+	    comId: 'Id Compra',proveedorEmpresaId:'Id Empresa proveedora',proveedorNombre:'Proveedor',pedidoVentaId:'Id Pedido proveedor',pedidoVentaNumero:'Pedido proveedor',
 		
 	    compradorNomCom: 'Comprador',
 		vendedorNomCom: 'Vendedor',		
@@ -115,14 +119,14 @@ export class Compras {
 		comImpDes: 'Importe Descuento',
 		comImpIva: 'Importe IVA',
 		comImpTot: 'Importe Total',
-		comImpCob: 'Importe Cobrado',
+		comImpPag: 'Importe Pagado',
 		comImpPen: 'Importe Pendiente',
 		
 		comFecPre: 'Fecha Presupuesto',
 		comFecPed: 'Fecha Pedido',
 		comFecAlb: 'Fecha Albarán',
 		comFecFac: 'Fecha Factura',
-		comFecCob: 'Fecha Cobro',
+		comFecPag: 'Fecha Pago',
 		
 	    comUsuMov: 'Usuario Mod.',
 	    comFecMov: 'Fecha Mod.',
@@ -130,11 +134,11 @@ export class Compras {
 	};	
 	
 	// Campos mostrados en la tabla
-	columnas: string[] = [ 'empId', 'comId', 
+	columnas: string[] = [ 'empId', 'comId', 'proveedorEmpresaId','proveedorNombre','pedidoVentaId','pedidoVentaNumero',
 		'compradorNomCom', 'vendedorNomCom', 
 		'proId', 
-		'comImpSub', 'comImpDes', 'comImpIva', 'comImpTot', 'comImpCob', 'comImpPen', 
-		'comFecPre', 'comFecPed', 'comFecAlb', 'comFecFac', 'comFecCob', 
+		'comImpSub', 'comImpDes', 'comImpIva', 'comImpTot', 'comImpPag', 'comImpPen',
+		'comFecPre', 'comFecPed', 'comFecAlb', 'comFecFac', 'comFecPag',
 		'comUsuMov', 'comFecMov', 'comAct'
 
 	];
@@ -280,6 +284,8 @@ export class Compras {
 	
 	// Este método modifica	
 	modificar() {
+        if(this.compraSeleccionada?.pedidoVentaId){this.compra={...this.compraSeleccionada};this.compraDetalleLista=(this.compra.detalles||[]).map(l=>({...l}));this.vistaActiva='proveedor';return;}
+
 
 	  // Si estamos en la pestaña registro
 	  if (this.vistaActiva === 'registro') {
@@ -307,6 +313,7 @@ export class Compras {
 
 	    // Copia los datos seleccionados al formulario
 		// Convierte formtato backend ven_id a formato frontend idVenta
+		this.compraDetalleLista = (this.compraSeleccionada.detalles || []).map(linea => ({...linea}));
 		this.compra = {
 
 			empId: this.compraSeleccionada.empId,
@@ -320,14 +327,14 @@ export class Compras {
 			comImpDes: this.compraSeleccionada.comImpDes,
 			comImpIva: this.compraSeleccionada.comImpIva,
 			comImpTot: this.compraSeleccionada.comImpTot,
-			comImpCob: this.compraSeleccionada.comImpCob,
+			comImpPag: this.compraSeleccionada.comImpPag,
 			comImpPen: this.compraSeleccionada.comImpPen,
 			
 			comFecPre: this.compraSeleccionada.comFecPre,
 			comFecPed: this.compraSeleccionada.comFecPed,
 			comFecAlb: this.compraSeleccionada.comFecAlb,
 			comFecFac: this.compraSeleccionada.comFecFac,
-			comFecCob: this.compraSeleccionada.comFecCob,
+			comFecPag: this.compraSeleccionada.comFecPag,
 
 			comUsuMov: this.compraSeleccionada.comUsuMov,
 		  	comFecMov: this.compraSeleccionada.comFecMov,
@@ -341,6 +348,8 @@ export class Compras {
 	
 	// Este método elimina
 	async eliminar() {
+        if(this.compraSeleccionada?.pedidoVentaId){avisarAplicacion('La compra está vinculada al pedido del proveedor y no admite eliminación independiente.');return;}
+
 
 	  // Si estamos en la pestaña registro
 	  if (this.vistaActiva === 'registro') {
@@ -463,8 +472,10 @@ export class Compras {
 
 		// Comprueba los campos obligatorios
 		if (!this.validarObligatorios()) { return; }
+        if (!this.compraDetalleLista.length || this.compraDetalleLista.some(l => !l.proId || !Number.isInteger(l.comDetCan) || l.comDetCan <= 0 || l.comDetPre < 0 || l.comDetDes < 0 || l.comDetDes > 100 || l.comDetIva < 0)) { avisarAplicacion("Revise los productos, cantidades e importes de las líneas."); return; }
 
 	  	const compra = {
+            detalles: this.compraDetalleLista.map(linea => ({...linea})),
 		
 			empId: this.compra.empId,
 			// Se envía 0 porque la interfaz utiliza 'number' y no admite null.
@@ -479,14 +490,14 @@ export class Compras {
 			comImpDes: this.compra.comImpDes,
 			comImpIva: this.compra.comImpIva,
 			comImpTot: this.compra.comImpTot,
-			comImpCob: this.compra.comImpCob,
+			comImpPag: this.compra.comImpPag,
 			comImpPen: this.compra.comImpPen,
 			
 			comFecPre: this.compra.comFecPre,
 			comFecPed: this.compra.comFecPed,
 			comFecAlb: this.compra.comFecAlb,
 			comFecFac: this.compra.comFecFac,
-			comFecCob: this.compra.comFecCob,
+			comFecPag: this.compra.comFecPag,
 			
 			comUsuMov: this.compra.comUsuMov,
 		    comFecMov: this.compra.comFecMov,
@@ -526,6 +537,7 @@ export class Compras {
 		if (!this.validarObligatorios()) { return; }
 
 	    const compra = {
+            detalles: this.compraDetalleLista.map(linea => ({...linea})),
 
 	        empId: this.compra.empId,
 	        comId: this.compra.comId,
@@ -537,14 +549,14 @@ export class Compras {
 	        comImpDes: this.compra.comImpDes,
 	        comImpIva: this.compra.comImpIva,
 	        comImpTot: this.compra.comImpTot,
-	        comImpCob: this.compra.comImpCob,
+	        comImpPag: this.compra.comImpPag,
 	        comImpPen: this.compra.comImpPen,
 
 	        comFecPre: this.compra.comFecPre,
 	        comFecPed: this.compra.comFecPed,
 	        comFecAlb: this.compra.comFecAlb,
 	        comFecFac: this.compra.comFecFac,
-	        comFecCob: this.compra.comFecCob,
+	        comFecPag: this.compra.comFecPag,
 
 	        comUsuMov: this.compra.comUsuMov,
 	        comFecMov: this.compra.comFecMov,
@@ -596,14 +608,14 @@ export class Compras {
 		comImpDes: 0,
 		comImpIva: 0,
 		comImpTot: 0,
-		comImpCob: 0,
+		comImpPag: 0,
 		comImpPen: 0,
 		
 		comFecPre: '',
 		comFecPed: '',
 		comFecAlb: '',
 		comFecFac: '',
-		comFecCob: '',
+		comFecPag: '',
 	  
 		comUsuMov: localStorage.getItem('usuario') || '',
 	  	comFecMov: '',
@@ -616,6 +628,7 @@ export class Compras {
 	private limpiarFormulario() {
 
 		this.compra = this.crearCompraVacia();
+        this.compraDetalleLista = [];
 
 	}
 	
@@ -760,7 +773,7 @@ export class Compras {
 
 	  // Si no hay cobros registrados, mantenemos el importe cobrado
 	  // y calculamos el pendiente.
-	  this.compra.comImpPen = this.compra.comImpTot - this.compra.comImpCob;
+	  this.compra.comImpPen = this.compra.comImpTot - this.compra.comImpPag;
 
 	}
 	

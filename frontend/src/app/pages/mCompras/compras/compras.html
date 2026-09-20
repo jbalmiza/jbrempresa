@@ -16,7 +16,7 @@
 
 <button class="boton boton-accion accion-insertar" (click)="insertar()"> Insertar </button>
 
-<button class="boton boton-accion accion-modificar" (click)="modificar()"> Modificar </button>
+<button class="boton boton-accion accion-modificar" (click)="modificar()"> {{compraSeleccionada?.pedidoVentaId ? 'Ver' : 'Modificar'}} </button>
 
 <button class="boton boton-accion accion-eliminar" (click)="eliminar()"> Eliminar </button>
 
@@ -24,6 +24,12 @@
 
 </div>
 
+<section *ngIf="vistaActiva==='proveedor'" class="form-contenedor">
+<datosIdentificacion [campos]="[{etiqueta:'Id Empresa',valor:compra.empId},{etiqueta:'Id Compra',valor:compra.comId},{etiqueta:'Id Empresa proveedora',valor:compra.proveedorEmpresaId||0},{etiqueta:'Id Pedido proveedor',valor:compra.pedidoVentaId||0}]"></datosIdentificacion>
+<div class="form-grupo"><label class="titulo">Datos Pedido</label><div class="form-fila"><div class="form-campo-300"><label>Proveedor</label><input [value]="compra.proveedorNombre||''" disabled></div><div class="form-campo-200"><label>Pedido proveedor</label><input [value]="compra.pedidoVentaNumero||''" disabled></div><div class="form-campo-200"><label>Total</label><input [value]="compra.comImpTot" disabled></div></div></div>
+<tabla titulo="LÍNEAS DEL PEDIDO" claveConfiguracion="compras.proveedor.detalles" [columnas]="columnasProveedor" [titulosColumnas]="titulosProveedor" [datos]="lineasProveedor"></tabla>
+<datosMovimiento [mostrarTipo]="false" [mostrarCausa]="false" [usuario]="compra.comUsuMov" [fecha]="compra.comFecMov" [activo]="compra.comAct"></datosMovimiento>
+</section>
 <!-- FORMULARIO DE REGISTRO -->
 <div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
 
@@ -163,8 +169,8 @@
   		<div class="form-fila">
   			
   			<div class="form-campo-200"> 
-  				<label class="label"> Cobrado </label> 
-  				<input type="number" maxlength="10" [(ngModel)]="compra.comImpCob" name="comImpCob" disabled> 
+				<label class="label"> Pagado </label>
+				<input type="number" maxlength="10" [(ngModel)]="compra.comImpPag" name="comImpPag" disabled>
   			</div>
   			
   			<div class="form-campo-200"> 
@@ -203,8 +209,8 @@
   			</div>
   			
   			<div class="form-campo-200"> 
-  				<label class="label"> Fecha Cobro </label> 
-  				<input type="date" maxlength="10" [(ngModel)]="compra.comFecCob" name="comFecCob" disabled> 
+				<label class="label"> Fecha Pago </label>
+				<input type="date" maxlength="10" [(ngModel)]="compra.comFecPag" name="comFecPag" disabled>
   			</div>
   			
   		</div>
@@ -237,7 +243,8 @@
 		(exportarSolicitado)="exportar()"
   		[columnas]="columnas" 
   		[titulosColumnas]="titulosColumnas"
-  		[datos]="datos" 
+		[datos]="datos"
+		(filtroSolicitado)="consultar()"
 		(filaSeleccionada)="compraSeleccionada = $event"> 
   		
   	</tabla>

@@ -65,6 +65,12 @@ public class Usuario {
     @Column(name = "usu_act")
     private String usuAct;
 
+    @Column(name = "usu_tip_mov", length = 1)
+    private String usuTipMov;
+
+    @Column(name = "usu_cau_mov", length = 500)
+    private String usuCauMov;
+
     // Usuario de movimiento
     @Column(name = "usu_usu_mov")
     private String usuUsuMov;
@@ -161,6 +167,10 @@ public class Usuario {
     public void setUsu_act(String usuAct) {
         this.usuAct = usuAct;
     }
+    public String getUsuTipMov() { return usuTipMov; }
+    public void setUsuTipMov(String usuTipMov) { this.usuTipMov = usuTipMov; }
+    public String getUsuCauMov() { return usuCauMov; }
+    public void setUsuCauMov(String usuCauMov) { this.usuCauMov = usuCauMov; }
 
     // Obtiene el usuario de movimiento
     public String getUsuUsuMov() {

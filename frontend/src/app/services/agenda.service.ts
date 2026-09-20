@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';import { HttpClient,HttpParams } from '@angular/common/http';import { API_URL } from '../config/api-url.config';import { ExcepcionAgenda,HorarioAgenda,RecursoAgenda,RecursoAgendaEntrada,ReprogramacionAgenda,ReservaAgenda,ReservaAgendaEntrada,EstadoReserva } from '../interfaces/agenda.interface';
+import { Injectable } from '@angular/core';import { HttpClient,HttpParams } from '@angular/common/http';import { API_URL } from '../config/api-url.config';import { AgendaEmpleado,ExcepcionAgenda,HorarioAgenda,RecursoAgenda,RecursoAgendaEntrada,ReprogramacionAgenda,ReservaAgenda,ReservaAgendaEntrada,EstadoReserva,EstadoTarea,TareaAgendaEmpleado } from '../interfaces/agenda.interface';
 @Injectable({providedIn:'root'})export class AgendaService{private url=`${API_URL}/agenda`;constructor(private http:HttpClient){}
  recursos(){return this.http.get<RecursoAgenda[]>(`${this.url}/recursos`)}
  guardarRecurso(v:RecursoAgendaEntrada){return this.http.post<RecursoAgenda>(`${this.url}/recursos`,v)}
@@ -12,4 +12,7 @@ import { Injectable } from '@angular/core';import { HttpClient,HttpParams } from
  reprogramar(id:number,resIni:string,resFin:string,motivo:string){return this.http.post<ReservaAgenda>(`${this.url}/reservas/${id}/reprogramar`,{resIni,resFin,motivo})}
  estado(id:number,estado:EstadoReserva){return this.http.put<ReservaAgenda>(`${this.url}/reservas/${id}/estado`,{estado})}
  historial(id:number){return this.http.get<ReprogramacionAgenda[]>(`${this.url}/reservas/${id}/reprogramaciones`)}
+ miAgenda(recursoAgendaId?:number){const opciones=recursoAgendaId?{params:new HttpParams().set('recursoAgendaId',recursoAgendaId)}:{};return this.http.get<AgendaEmpleado>(`${API_URL}/empleados/mi-agenda`,opciones)}
+ estadoTareaPropia(id:number,estado:EstadoTarea){return this.http.put<TareaAgendaEmpleado>(`${API_URL}/empleados/mi-agenda/tareas/${id}/estado`,{estado})}
+ marcarPedidoPagado(id:number,pagado:boolean){return this.http.put<TareaAgendaEmpleado>(`${API_URL}/empleados/mi-agenda/tareas/${id}/pagado`,{pagado})}
 }

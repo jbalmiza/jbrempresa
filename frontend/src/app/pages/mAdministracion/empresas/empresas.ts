@@ -10,12 +10,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // Importa Routes para definir las rutas de navegación Angular
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
 import { Tabla } from '../../../components/tabla/tabla';
 import { DocumentacionAdjunta } from '../../../components/documentacionAdjunta/documentacionAdjunta';
+import { SelectorBusqueda } from '../../../components/selectorBusqueda/selectorBusqueda';
 
 import { FechasUtil } from '../../../shared/utils/fechas.util';
 
@@ -23,7 +24,8 @@ import { Empresa } from '../../../interfaces/empresa.interface';
 
 import { FormsModule } from '@angular/forms';
 
-import { EmpresaService } from '../../../services/empresa.service';
+import { EmpresaService, MovimientoEmpresa } from '../../../services/empresa.service';
+import { DomicilioService } from '../../../services/domicilio.service';
 import { PdfService } from '../../../services/pdf.service';
 
 import { ViewChild } from '@angular/core';
@@ -32,7 +34,7 @@ import { ViewChild } from '@angular/core';
 @Component({
   selector: 'Empresas',
   standalone: true,
-  imports:[CommonModule, FormsModule, Sidebar, Supbar, Tabla, DocumentacionAdjunta,DatosIdentificacion,DatosMovimiento,BarraAcciones],
+  imports:[CommonModule, FormsModule, Sidebar, Supbar, Tabla, DocumentacionAdjunta, SelectorBusqueda,DatosIdentificacion,DatosMovimiento,BarraAcciones],
   templateUrl: './empresas.html',
   styleUrl: '../../../styles/estiloGeneral.css'
 })
@@ -48,9 +50,16 @@ export class Empresas {
 	tabla!: Tabla;
 
 	//Variables de la clase
-	vistaActiva: 'registro' | 'tabla' | 'adjuntos' = 'tabla';
-	modoFormulario: 'insertar' | 'modificar' = 'insertar';
+	gestion = false;
+	vistaActiva: 'registro' | 'tabla' | 'adjuntos' | 'movimiento' | 'historico' = 'tabla';
+	modoFormulario: 'insertar' | 'modificar' | 'ver' = 'insertar';
+	tipoMovimiento: 'B' | 'R' = 'B'; causaMovimiento = '';
+	historicoDatos: MovimientoEmpresa[] = [];
+	historicoColumnas = ['id','empresaId','tipo','causa','usuario','fecha','activo'];
+	historicoTitulos = {id:'Id Histórico',empresaId:'Empresa',tipo:'Tipo Movimiento',causa:'Causa Movimiento',usuario:'Usuario Mod.',fecha:'Fecha Mod.',activo:'Activo'};
 	mostrarObligatorios = false;
+	domicilios: any[] = [];
+	get domiciliosEmpresa(): any[] { return this.domicilios.filter(d => Number(d.empId) === Number(this.empresa.empId)); }
 	
 	// Se crea un objeto usuario con datos vacíos
 	empresa: Empresa = this.crearEmpresaVacio();
@@ -59,16 +68,26 @@ export class Empresas {
 	// Títulos de las columnas de la tabla
 	titulosColumnas = {
 	    empId: 'Id Empresa',
-	    empNom: 'Nombre',
+	    empNom: 'Nombre comercial',
+		empRazSoc: 'Razón social',
+		empNif: 'NIF/CIF',
+		empActEco: 'Actividad',
+		empTel: 'Teléfono',
+		empEma: 'Correo electrónico',
+		empWeb: 'Página web',
+		domDirFiscal: 'Domicilio fiscal',
+		empIma: 'Imagen',
+		empTipMov: 'Tipo Movimiento',
+		empCauMov: 'Causa Movimiento',
 	    empUsuMov: 'Usuario Mod.',
 	    empFecMov: 'Fecha Mod.',
 		empAct: 'Activo'
 	};
 
 	// Campos mostrados en la tabla
-	columnas: string[] = [ 'empId', 
-		'empNom', 
-		'empUsuMov', 'empFecMov', 'empAct' ];	
+	columnas: string[] = ['empId','empNom','empRazSoc','empNif','empActEco','empTel','empEma','empWeb',
+		'domDirFiscal','empIma','empTipMov','empCauMov','empUsuMov','empFecMov','empAct'];
+	columnasOcultasPorDefecto = ['empIma','empTipMov','empCauMov'];
 	
 	// Datos de la tabla
 	datos: any[] = [];
@@ -80,23 +99,27 @@ export class Empresas {
 	constructor (
 		
 		private readonly router: Router, 
+		route: ActivatedRoute,
 		private empresaService: EmpresaService,
-		private pdfService: PdfService
+		private pdfService: PdfService,
+		private domicilioService: DomicilioService
 		
-	) {}
+	) { this.gestion = !!route.snapshot.data['gestion']; this.domicilioService.obtenerDomicilios().subscribe({next: datos => {this.domicilios = datos; this.datos = this.enriquecerEmpresas(this.datos);}}); }
 
 	// Este método muestra la tabla de datos
 	consultar() {
 			
-		this.vistaActiva = 'tabla';	 
+		this.vistaActiva = 'tabla';
+		this.empresaSeleccionado = null;
+		const incluirBajas = !!this.tabla?.filtros?.['empAct'];
 		
-		this.empresaService.obtenerEmpresas().subscribe({
+		this.empresaService.obtenerEmpresas(incluirBajas).subscribe({
 			
 			next: (respuesta) => {
 	
 				console.log('respuesta=', respuesta);
 
-				this.datos = respuesta;
+				this.datos = this.enriquecerEmpresas(respuesta);
 
 			},
 
@@ -110,6 +133,34 @@ export class Empresas {
 
 		});
 			
+	}
+
+	ver() {
+		if (!this.empresaSeleccionado) return;
+		this.empresa = { ...this.empresaSeleccionado };
+		this.modoFormulario = 'ver'; this.vistaActiva = 'registro';
+	}
+
+	esActiva(empresa: Empresa | null): boolean {
+		return !!empresa && !['false','b','0','n'].includes(String(empresa.empAct).trim().toLowerCase());
+	}
+
+	prepararMovimiento(tipo: 'B' | 'R') {
+		if (!this.empresaSeleccionado) return;
+		this.tipoMovimiento = tipo; this.causaMovimiento = ''; this.vistaActiva = 'movimiento';
+	}
+
+	guardarMovimiento() {
+		if (!this.empresaSeleccionado || !this.causaMovimiento.trim()) { avisarAplicacion('Debe informar la causa del movimiento.'); return; }
+		const peticion = this.tipoMovimiento === 'B'
+			? this.empresaService.baja(this.empresaSeleccionado.empId, this.causaMovimiento)
+			: this.empresaService.reactivar(this.empresaSeleccionado.empId, this.causaMovimiento);
+		peticion.subscribe({next:()=>{avisarAplicacion(this.tipoMovimiento === 'B' ? 'Empresa dada de baja.' : 'Empresa reactivada.');this.consultar();},error:error=>avisarAplicacion(error?.error?.detail || error?.error?.message || 'No se pudo realizar la operación.')});
+	}
+
+	verHistorico() {
+		if (!this.empresaSeleccionado) return;
+		this.empresaService.historico(this.empresaSeleccionado.empId).subscribe({next:datos=>{this.historicoDatos=datos;this.vistaActiva='historico';},error:()=>avisarAplicacion('No se pudo consultar el histórico.')});
 	}
 		
 	// Este método muestra el formulario de registro y limpia los campos del formulario	
@@ -168,19 +219,7 @@ export class Empresas {
 	    this.vistaActiva = 'registro';
 		this.modoFormulario = 'modificar';
 
-	    // Copia los datos seleccionados al formulario
-		// Convierte formtato backend usu_id a formato frontend idUsuario
-		this.empresa = {
-
-			empId: this.empresaSeleccionado.empId,			
-			empNom: this.empresaSeleccionado.empNom,
-			empIma: this.empresaSeleccionado.empIma,
-
-			empUsuMov: this.empresaSeleccionado.empUsuMov,
-			empFecMov: this.empresaSeleccionado.empFecMov,
-			empAct: this.empresaSeleccionado.empAct,
-
-			};
+	    this.empresa = { ...this.empresaSeleccionado };
 
 		}
 
@@ -320,6 +359,8 @@ export class Empresas {
 				
 		    empNom: this.empresa.empNom,
 			empIma: this.empresa.empIma,
+			empRazSoc: this.empresa.empRazSoc, empNif: this.empresa.empNif, empActEco: this.empresa.empActEco,
+			empTel: this.empresa.empTel, empEma: this.empresa.empEma, empWeb: this.empresa.empWeb, domId: this.empresa.domId,
 	
 		    empUsuMov: this.empresa.empUsuMov,
 		    empFecMov: this.empresa.empFecMov,	
@@ -370,6 +411,8 @@ export class Empresas {
 			empId: this.empresa.empId,
 		    empNom: this.empresa.empNom,
 			empIma: this.empresa.empIma,
+			empRazSoc: this.empresa.empRazSoc, empNif: this.empresa.empNif, empActEco: this.empresa.empActEco,
+			empTel: this.empresa.empTel, empEma: this.empresa.empEma, empWeb: this.empresa.empWeb, domId: this.empresa.domId,
 
 		    empUsuMov: this.empresa.empUsuMov,
 		    empFecMov: this.empresa.empFecMov,
@@ -420,10 +463,12 @@ export class Empresas {
 		
 	  	empNom: '',
 		empIma: '',
+		empRazSoc: '', empNif: '', empActEco: '', empTel: '', empEma: '', empWeb: '', domId: null,
 		
 		empUsuMov: localStorage.getItem('usuario') || '',
 		empFecMov: FechasUtil.formatearFechaHora(),
-		empAct: true
+		empAct: true,
+		empTipMov: 'A', empCauMov: ''
 
 		};
 	}
@@ -437,5 +482,12 @@ export class Empresas {
 
 
 	adjuntos() { if (this.empresaSeleccionado) this.vistaActiva = 'adjuntos'; }
+
+	private enriquecerEmpresas(empresas: any[]): any[] {
+		return (empresas || []).map(empresa => ({
+			...empresa,
+			domDirFiscal: this.domicilios.find(d => Number(d.empId) === Number(empresa.empId) && Number(d.domId) === Number(empresa.domId))?.domDir || ''
+		}));
+	}
 	
 }

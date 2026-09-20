@@ -109,6 +109,11 @@ export class Parametros {
     return this.parametro.parMod === 'ADMINISTRACION'
       && this.parametro.parCod?.trim().toUpperCase() === 'SMTP_PASSWORD';
   }
+  esOrigenImagenCatalogo() {
+    const modulo = this.parametro.parMod?.trim().toUpperCase();
+    return (modulo === 'PRODUCTOS' || modulo === 'SERVICIOS')
+      && this.parametro.parCod?.trim().toUpperCase() === 'IMAGEN_CATALOGO_ORIGEN';
+  }
   volver() {
     this.router.navigate([this.rutaVolver || (this.moduloContexto ? `/${this.moduloContexto.toLowerCase()}` : '/administracion')]);
   }

@@ -10,12 +10,14 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import java.util.List;
+import com.jbrempresa.backend.core.context.ContextoOperacion;
 @RestController @RequestMapping("/servicios") @CrossOrigin(origins="http://localhost:4200")
 public class ServicioController {
  private final ServicioService service;
  private final com.jbrempresa.backend.service.ImagenService imagenes;
- public ServicioController(ServicioService service,com.jbrempresa.backend.service.ImagenService imagenes){this.service=service;this.imagenes=imagenes;}
- @GetMapping public List<Servicio> consultar(){return service.consultar(usuario().getEmpresaId());}
+ private final ContextoOperacion contexto;
+ public ServicioController(ServicioService service,com.jbrempresa.backend.service.ImagenService imagenes,ContextoOperacion contexto){this.service=service;this.imagenes=imagenes;this.contexto=contexto;}
+ @GetMapping public List<Servicio> consultar(){Long empresa=contexto.empresaConsulta(null);return empresa==null?service.consultarGlobal():service.consultar(empresa);}
  @GetMapping("/siguiente-id") public Long siguienteId(){return service.siguienteId(usuario().getEmpresaId());}
  @PostMapping public Servicio guardar(@RequestBody Servicio s){validar(s);return service.guardar(usuario().getEmpresaId(),usuario().getUsername(),s);}
  @PutMapping("/{id}") public Servicio actualizar(@PathVariable Long id,@RequestBody Servicio s){validar(s);s.setSerId(id);return service.actualizar(usuario().getEmpresaId(),usuario().getUsername(),s);}

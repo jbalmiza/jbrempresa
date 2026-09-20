@@ -108,6 +108,7 @@ export class Personas {
 	    perUsuMov: 'Usuario Mod.',
 	    perFecMov: 'Fecha Mod.',
 		perAct: 'Activo',
+		perDatCom: 'Datos completos',
 	};
 	
 	// Campos mostrados en la tabla
@@ -116,7 +117,7 @@ export class Personas {
 		'perTipDoc', 'perDoc', 'perNomCom',
 		'perNom', 'perApe1', 'perApe2', 'perFecNac', 
 		'perTel', 'perEma', 'domId', 'perCoX', 'perCoY', 'perHus',
-		'perUsuMov', 'perFecMov', 'perAct'
+		'perUsuMov', 'perFecMov', 'perDatCom', 'perAct'
 
 	];
 	
@@ -158,6 +159,12 @@ export class Personas {
 
 	// Este método muestra la tabla de datos
 	consultar() {
+		if (this.vistaActiva === 'mapa') {
+			this.vistaActiva = 'tabla';
+			this.personaSeleccionada = null;
+			this.datos = [];
+			return;
+		}
 
 		this.vistaActiva = 'tabla';
 		this.personaSeleccionada = null;
@@ -495,10 +502,23 @@ export class Personas {
 
 		}
 */
-		// Indica que el formulario es válido
+		if (!this.datosPersonaCompletos) {
+			avisarAplicacion('Debe rellenar todos los campos obligatorios.');
+			return false;
+		}
 		return true;
 
 	}
+
+	get datosPersonaCompletos(): boolean {
+		const identidad = !!this.persona.perTipPer && !!this.persona.perTipDoc && !!this.persona.perDoc?.trim();
+		const denominacion = this.persona.perTipPer === 'JURIDICA'
+			? !!this.persona.perRazSocCor?.trim()
+			: !!this.persona.perNom?.trim() && !!this.persona.perApe1?.trim();
+		return identidad && denominacion && !!this.persona.domId && !!String(this.persona.perTel || '').trim();
+	}
+
+	get estadoDatosPersona(): string { return this.datosPersonaCompletos ? 'Completos' : 'Incompletos'; }
 
 	// Este método guarda el contenido del formulario en base de datos
 	guardar() {
@@ -681,6 +701,7 @@ export class Personas {
 		perUsuMov: localStorage.getItem('usuario') || '',
 	  	perFecMov: FechasUtil.formatearFechaHora(),
 		perAct: true,
+		perDatCom: false,
 		
 		};
 	}

@@ -19,6 +19,15 @@ import { API_URL } from '../config/api-url.config';
 
 // Gestiona las operaciones de compras.
 export class CompraService {
+  private entrada(compra: Compra) {
+    return {...compra,
+      comFecPre: compra.comFecPre || null, comFecPed: compra.comFecPed || null,
+      comFecAlb: compra.comFecAlb || null, comFecFac: compra.comFecFac || null,
+      comFecPag: compra.comFecPag || null,
+      detalles: (compra.detalles || []).map(l => ({proId:l.proId, comDetCan:l.comDetCan, comDetPre:l.comDetPre, comDetDes:l.comDetDes, comDetIva:l.comDetIva}))
+    };
+  }
+
 
   // URL del controlador.
   private apiUrl = `${API_URL}/compras`;
@@ -32,7 +41,7 @@ export class CompraService {
     // Envía la petición.
     return this.http.post(
       this.apiUrl,
-      compra
+      this.entrada(compra)
     );
 
   }
@@ -73,7 +82,7 @@ export class CompraService {
     // Envía la petición.
     return this.http.put<Compra>(
       `${this.apiUrl}/${compra.comId}`,
-      compra
+      this.entrada(compra)
     );
 
   }

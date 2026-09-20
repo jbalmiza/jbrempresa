@@ -1,6 +1,7 @@
 import {BarraAcciones} from '../../../directives/barraAcciones/barraAcciones';
-import {avisarAplicacion,confirmarAplicacion} from '../../../core/interaccion/dialogos.service';
+import {avisarAplicacion,confirmarAplicacion,DialogosService} from '../../../core/interaccion/dialogos.service';
 import { DatosIdentificacion } from '../../../components/datosIdentificacion/datosIdentificacion';
+import { DatosPersonaRelacion } from '../../../components/datosPersonaRelacion/datosPersonaRelacion';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -19,12 +20,10 @@ import {
   DocumentoVentaMovimiento,
 } from '../../../interfaces/documento-venta.interface';
 import { Persona } from '../../../interfaces/persona.interface';
-import { Domicilio } from '../../../interfaces/domicilio.interface';
 import { Producto } from '../../../interfaces/producto.interface';
 import { Servicio } from '../../../interfaces/servicio.interface';
 import { DocumentoVentaService } from '../../../services/documento-venta.service';
 import { PersonaService } from '../../../services/persona.service';
-import { DomicilioService } from '../../../services/domicilio.service';
 import { ProductoService } from '../../../services/producto.service';
 import { ServicioService } from '../../../services/servicio.service';
 import { MallaService } from '../../../services/malla.service';
@@ -43,6 +42,7 @@ import { MallaService } from '../../../services/malla.service';
     DocumentacionAdjunta,
     MallaRegistros,
     DatosIdentificacion,
+    DatosPersonaRelacion,
   BarraAcciones],
   templateUrl: './documentosVenta.html',
   styleUrl: '../../../styles/estiloGeneral.css',
@@ -51,6 +51,7 @@ export class DocumentosVenta {
   tipo: 'PRE' | 'PED' | 'ALB' | 'FAC';
   nombre = '';
   modoGestion = false;
+  readonly registroEmpleado: boolean;
   vista: 'tabla' | 'registro' | 'adjuntos' | 'historico' | 'malla' = 'tabla';
   modo: 'insertar' | 'modificar' | 'ver' = 'insertar';
   datos: DocumentoVenta[] = [];
@@ -58,11 +59,14 @@ export class DocumentosVenta {
   seleccionado: DocumentoVenta | null = null;
   documento!: DocumentoVenta;
   personas: Persona[] = [];
-  domicilios: Domicilio[] = [];
-  personaSeleccionada: Persona | null = null;
   productos: Producto[] = [];
   servicios: Servicio[] = [];
   conceptos: any[] = [];
+  tipoFacturaPorDefecto: 'NORMAL' | 'SIMPLIFICADA' = 'NORMAL';
+  albaranesHabilitados = false;
+  requerirClaveModificacionCadena = false;
+  propagarCadena = false;
+  claveModificacionCadena = '';
   columnas = [
     'empId',
     'dovId',
@@ -134,22 +138,44 @@ export class DocumentosVenta {
     private router: Router,
     private service: DocumentoVentaService,
     private personaService: PersonaService,
-    private domicilioService: DomicilioService,
     private productoService: ProductoService,
     private servicioService: ServicioService,
     private mallaService: MallaService,
+    private dialogos: DialogosService,
   ) {
     this.tipo = this.route.snapshot.data['tipo'];
+    this.registroEmpleado = this.route.snapshot.data['registroEmpleado'] === true;
     this.modoGestion = this.route.snapshot.data['modoGestion'] === true;
     this.nombre = { PRE: 'PRESUPUESTOS', PED: 'PEDIDOS', ALB: 'ALBARANES', FAC: 'FACTURAS' }[
       this.tipo
     ];
     this.documento = this.vacio();
+    if (this.tipo === 'FAC') {
+      this.columnas.splice(6, 0, 'dovTipFac');
+      this.titulos.dovTipFac = 'Tipo factura';
+      this.columnasHistorico.splice(4, 0, 'dovTipFac');
+      this.titulosHistorico.dovTipFac = 'Tipo factura';
+    }
+    this.service.configuracion().subscribe({next: c => {
+      this.tipoFacturaPorDefecto = c.tipoFacturaAutomatica;
+      this.albaranesHabilitados = c.mostrarAlbaranes;
+      this.requerirClaveModificacionCadena = c.requerirClaveModificacionCadena;
+      if (this.tipo === 'FAC' && !this.documento.dovId) this.documento.dovTipFac = c.tipoFacturaAutomatica;
+    }, error: e => this.error(e)});
     this.cargarAuxiliares();
-    this.consultar();
-    if (this.modoGestion && this.tipo === 'PED') this.malla();
+    if (this.registroEmpleado) this.consultar();
+    if (this.modoGestion && this.tipo === 'PED') {
+      this.consultar();
+      this.malla();
+    }
   }
   consultar() {
+    if (this.vista === 'malla') {
+      this.vista = 'tabla';
+      this.seleccionado = null;
+      this.datos = [];
+      return;
+    }
     this.vista = 'tabla';
     this.seleccionado = null;
     this.service
@@ -174,10 +200,33 @@ export class DocumentosVenta {
     this.modo = 'ver';
     this.cargarDocumentoSeleccionado();
   }
-  modificar() {
+  async modificar() {
     if (!this.seleccionado || this.seleccionado.dovEst === 'CONVERTIDO') return;
+    this.propagarCadena = false;
+    this.claveModificacionCadena = '';
+    if (this.tipo === 'PED') {
+      const documentos = this.albaranesHabilitados ? 'el albarán, si existe, y la factura' : 'la factura';
+      const confirmado = await confirmarAplicacion(`El pedido y ${documentos} se modificarán conjuntamente. ¿Desea continuar?`);
+      if (!confirmado) {
+        avisarAplicacion('No se puede modificar el pedido sin modificar los documentos asociados.');
+        return;
+      }
+      if (this.requerirClaveModificacionCadena) {
+        const clave = await this.dialogos.solicitarTexto('Introduzca la clave definida por el jefe para modificar la cadena documental.','Clave de modificación','password');
+        if (clave === null) return;
+        this.claveModificacionCadena = clave;
+      }
+      this.propagarCadena = true;
+    }
     this.modo = 'modificar';
     this.cargarDocumentoSeleccionado();
+  }
+  convertirFacturaNormal() {
+    if (!this.seleccionado || this.seleccionado.dovTipFac !== 'SIMPLIFICADA') return;
+    this.modo = 'modificar';
+    this.cargarDocumentoSeleccionado();
+    this.documento.dovTipFac = 'NORMAL';
+    this.documento.dovEst = 'BORRADOR';
   }
   private cargarDocumentoSeleccionado() {
     if (!this.seleccionado) return;
@@ -188,7 +237,6 @@ export class DocumentosVenta {
         referencia: l.dvdTipLin === 'S' ? -(l.serId || 0) : l.proId || 0,
       })),
     };
-    this.seleccionarPersona(this.documento.perId);
     this.vista = 'registro';
   }
   guardar() {
@@ -203,7 +251,7 @@ export class DocumentosVenta {
     const op =
       this.modo === 'insertar'
         ? this.service.guardar(this.tipo, this.documento)
-        : this.service.actualizar(this.tipo, this.documento);
+        : this.service.actualizar(this.tipo, this.documento, this.propagarCadena, this.claveModificacionCadena);
     op.subscribe({ next: () => this.consultar(), error: (e) => this.error(e) });
   }
   async eliminar() {
@@ -290,7 +338,7 @@ export class DocumentosVenta {
     this.totales();
   }
   volver() {
-    this.router.navigate(['/ventas']);
+    this.router.navigate([this.registroEmpleado ? '/empleados/agenda' : '/ventas']);
   }
   private totales() {
     let sub = 0,
@@ -316,7 +364,6 @@ export class DocumentosVenta {
   }
   private cargarAuxiliares() {
     this.personaService.obtenerPersonas().subscribe({next:(r) => {this.personas = r.filter((p: Persona) => p.perTipMov !== 'B');this.datos=this.enriquecerPersonas(this.datos);},error:(e)=>this.error(e)});
-    this.domicilioService.obtenerDomicilios().subscribe((r) => (this.domicilios = r.filter((d: Domicilio) => d.domTipMov !== 'B')));
     this.productoService.obtenerProductos().subscribe({next:(r) => {
       this.productos = r;
       this.construirConceptos();
@@ -365,6 +412,8 @@ export class DocumentosVenta {
       perId: 0,
       dovFec: new Date().toISOString().slice(0, 10),
       dovEst: 'BORRADOR',
+      dovPag: false,
+      dovTipFac: this.tipo === 'FAC' ? this.tipoFacturaPorDefecto : null,
       dovIdOri: null,
       dovIdRai: null,
       dovUbi: '',
@@ -386,13 +435,9 @@ export class DocumentosVenta {
   }
   seleccionarPersona(id: number) {
     this.documento.perId = id;
-    this.personaSeleccionada = this.personas.find((p) => Number(p.perId) === Number(id)) || null;
   }
   private nombrePersona(id: number): string { return this.personas.find(p => Number(p.perId) === Number(id))?.perNomCom || ''; }
   private enriquecerPersonas(documentos: DocumentoVenta[]): DocumentoVenta[] { return documentos.map(documento => ({...documento, personaNomCom: this.nombrePersona(documento.perId)})); }
-  get direccionPostal() {
-    return this.domicilios.find((d) => Number(d.domId) === Number(this.personaSeleccionada?.domId))?.domDir || '';
-  }
   importe(valor: number): string {
     return this.redondear(valor || 0).toFixed(2);
   }

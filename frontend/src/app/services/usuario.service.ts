@@ -20,6 +20,7 @@ export interface PaginaUsuarios {
   number: number;
   size: number;
 }
+export interface MovimientoUsuario { id:number; empresaId:number; usuarioId:number; tipo:string; causa:string; usuario:string; fecha:string; activo:boolean; }
 
 // Define el servicio.
 @Injectable({
@@ -119,6 +120,10 @@ export class UsuarioService {
     );
 
   }
+
+  baja(id:number,causa:string){return this.http.put<Usuario>(`${this.apiUrl}/${id}/baja`,{causa});}
+  reactivar(id:number,causa:string){return this.http.put<Usuario>(`${this.apiUrl}/${id}/reactivacion`,{causa});}
+  historico(id:number){return this.http.get<MovimientoUsuario[]>(`${this.apiUrl}/${id}/historico`);}
 
   solicitarRecuperacion(usuario: string, correo: string) {
     return this.http.post<{ mensaje: string; tokenDesarrollo?: string }>(

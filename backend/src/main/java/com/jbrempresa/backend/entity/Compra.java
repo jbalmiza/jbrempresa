@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @Entity
 
 // Tabla compras
-@Table(name = "compras")
+@Table(name = "compras", uniqueConstraints=@UniqueConstraint(columnNames={"com_proveedor_emp_id","com_pedido_venta_id"}))
 
 // Clase Compra
 public class Compra {
@@ -102,6 +102,23 @@ public class Compra {
     @Column(name = "com_fec_mov")
     private LocalDateTime comFecMov;
 
+    @Transient
+    private java.util.List<CompraDetalle> detalles = new java.util.ArrayList<>();
+    public java.util.List<CompraDetalle> getDetalles(){return detalles;}
+    public void setDetalles(java.util.List<CompraDetalle> value){detalles=value;}
+
+    @Column(name="com_proveedor_emp_id") private Long proveedorEmpresaId;
+    public Long getProveedorEmpresaId(){return proveedorEmpresaId;}
+    public void setProveedorEmpresaId(Long value){proveedorEmpresaId=value;}
+    @Column(name="com_pedido_venta_id") private Long pedidoVentaId;
+    public Long getPedidoVentaId(){return pedidoVentaId;}
+    public void setPedidoVentaId(Long value){pedidoVentaId=value;}
+    @Column(name="com_pedido_venta_num") private String pedidoVentaNumero;
+    public String getPedidoVentaNumero(){return pedidoVentaNumero;}
+    public void setPedidoVentaNumero(String value){pedidoVentaNumero=value;}
+    @Column(name="com_proveedor_nombre") private String proveedorNombre;
+    public String getProveedorNombre(){return proveedorNombre;}
+    public void setProveedorNombre(String value){proveedorNombre=value;}
     // GETTERS Y SETTERS------------------------------------------------
 
     // Obtiene el ID

@@ -47,6 +47,11 @@ export class PerfilService {
 
   }
 
+  // Obtiene los perfiles disponibles para asignar usuarios en la empresa activa.
+  obtenerPerfilesSelector() {
+    return this.http.get<Perfil[]>(`${this.apiUrl}/selector`);
+  }
+
   // Obtiene el siguiente ID.
   obtenerSiguienteId() {
 

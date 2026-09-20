@@ -13,6 +13,8 @@ import com.jbrempresa.backend.core.config.ConfiguracionWhatsappEmpresaService;
 import com.jbrempresa.backend.core.config.ConfiguracionRedsysBizumService;
 import com.jbrempresa.backend.repository.ParametroRepository;
 import com.jbrempresa.backend.security.JwtUser;
+import com.jbrempresa.backend.service.ImagenCatalogoService;
+import com.jbrempresa.backend.core.context.ContextoOperacion;
 
 @RestController
 @RequestMapping("/parametros")
@@ -22,22 +24,33 @@ public class ParametroController {
     private final ConfiguracionSmtpEmpresaService configuracionSmtp;
     private final ConfiguracionWhatsappEmpresaService configuracionWhatsapp;
     private final ConfiguracionRedsysBizumService configuracionRedsys;
+    private final ImagenCatalogoService imagenCatalogo;
+    private final ContextoOperacion contexto;
 
     public ParametroController(
             ParametroRepository parametroRepository,
             ConfiguracionSmtpEmpresaService configuracionSmtp,
             ConfiguracionWhatsappEmpresaService configuracionWhatsapp,
-            ConfiguracionRedsysBizumService configuracionRedsys) {
+            ConfiguracionRedsysBizumService configuracionRedsys,
+            ImagenCatalogoService imagenCatalogo,
+            ContextoOperacion contexto) {
         this.parametroRepository = parametroRepository;
         this.configuracionSmtp = configuracionSmtp;
         this.configuracionWhatsapp = configuracionWhatsapp;
         this.configuracionRedsys = configuracionRedsys;
+        this.imagenCatalogo = imagenCatalogo;
+        this.contexto = contexto;
     }
 
     @GetMapping
     public List<Parametro> consultar(
             @RequestParam(name = "modulo", required = false) String modulo) {
         Long empId = obtenerEmpresa();
+        if (contexto.administradorGlobal()) {
+            return ocultarSensibles(parametroRepository.findAll().stream()
+                    .filter(p -> modulo == null || modulo.isBlank() || p.getParMod().equalsIgnoreCase(modulo.trim()))
+                    .toList());
+        }
         if (modulo == null || modulo.isBlank()) {
             return ocultarSensibles(parametroRepository.findByEmpIdOrderByParId(empId));
         }
@@ -48,7 +61,7 @@ public class ParametroController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Parametro guardar(@RequestBody Parametro parametro) {
-        Long empId = obtenerEmpresa();
+        Long empId = contexto.administradorGlobal() && parametro.getEmpId()!=null && parametro.getEmpId()>0 ? parametro.getEmpId() : obtenerEmpresa();
         validar(parametro);
         if (parametroRepository.existsByEmpIdAndParModIgnoreCaseAndParCodIgnoreCase(
                 empId, parametro.getParMod().trim(), parametro.getParCod().trim())) {
@@ -66,7 +79,8 @@ public class ParametroController {
 
     @PutMapping("/{id}")
     public Parametro actualizar(@PathVariable Long id, @RequestBody Parametro parametro) {
-        Long empId = obtenerEmpresa();
+        Parametro seleccionado = parametroRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parámetro no encontrado."));
+        Long empId = contexto.administradorGlobal() ? seleccionado.getEmpId() : obtenerEmpresa();
         Parametro existente = buscarDelCliente(empId, id);
         validar(parametro);
         if (parametroRepository.existsByEmpIdAndParModIgnoreCaseAndParCodIgnoreCaseAndParIdNot(
@@ -88,7 +102,9 @@ public class ParametroController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Long id) {
-        parametroRepository.delete(buscarDelCliente(obtenerEmpresa(), id));
+        Parametro seleccionado = parametroRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parámetro no encontrado."));
+        Long empId = contexto.administradorGlobal() ? seleccionado.getEmpId() : obtenerEmpresa();
+        parametroRepository.delete(buscarDelCliente(empId, id));
     }
 
     private Parametro buscarDelCliente(Long empId, Long id) {
@@ -106,9 +122,26 @@ public class ParametroController {
         if (parametro.getParDes() == null || parametro.getParDes().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La descripción es obligatoria.");
         }
+        if ("PRODUCTOS".equalsIgnoreCase(parametro.getParMod().trim())
+                && "PORCENTAJE_BENEFICIO".equalsIgnoreCase(parametro.getParCod().trim())) {
+            try {
+                java.math.BigDecimal porcentaje = new java.math.BigDecimal(parametro.getParVal().trim());
+                if (porcentaje.signum() < 0 || porcentaje.compareTo(new java.math.BigDecimal("100")) >= 0) {
+                    throw new NumberFormatException();
+                }
+            } catch (NullPointerException | NumberFormatException ex) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "El porcentaje de beneficio debe estar entre 0 y menos de 100.");
+            }
+        }
         boolean sensible = esSensible(parametro.getParMod(), parametro.getParCod());
         if (!sensible && (parametro.getParVal() == null || parametro.getParVal().isBlank())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El valor es obligatorio.");
+        }
+        if (imagenCatalogo.esParametroOrigen(parametro.getParMod(), parametro.getParCod())
+                && !imagenCatalogo.esOrigenValido(parametro.getParVal())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El origen de imagen del catálogo debe ser TIPO o REGISTRO.");
         }
         if (parametro.getParMod().trim().length() > 50
                 || parametro.getParCod().trim().length() > 100

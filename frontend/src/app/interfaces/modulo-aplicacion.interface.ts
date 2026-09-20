@@ -1,0 +1,1 @@
+export interface ModuloAplicacion { id:number; codigo:string; titulo:string; descripcion:string; ruta:string; posicion:number; disponible?:boolean; imagenAdjuntoId?:number|null; usuario?:string; fecha?:string; activo?:boolean; }

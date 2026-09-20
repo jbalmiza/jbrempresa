@@ -1,40 +1,37 @@
-# Seguridad
+# Seguridad y autorización
 
-## Autenticacion JWT
+Revisión: 2026-09-15. Fuentes: [SecurityConfig](../src/main/java/com/jbrempresa/backend/security/SecurityConfig.java), [JwtFilter](../src/main/java/com/jbrempresa/backend/security/JwtFilter.java), [ContextoOperacion](../src/main/java/com/jbrempresa/backend/core/context/ContextoOperacion.java), [AccesoPerfilService](../src/main/java/com/jbrempresa/backend/security/AccesoPerfilService.java).
 
-El login valida credenciales con Spring Security y BCrypt. El token firmado identifica usuario, empresa y perfil. La API es stateless: no crea sesion HTTP. `JwtFilter` procesa el header `Authorization`, valida el token y crea el principal usado por el contexto de empresa.
+## JWT y perfiles
 
-Las rutas publicas son exclusivamente login, recuperacion de contrasena, catalogo publico y webhooks de WhatsApp. El resto exige autenticacion.
+Login usa BCrypt. JWT dura 30 minutos y se renueva mediante X-Refresh-Token exclusivamente al recibir `GET /usuarios/actividad` enviado tras interacción del usuario. Las consultas automáticas no renuevan la sesión. Angular guarda el token en localStorage y lo envía en Authorization. JwtFilter vuelve a cargar el usuario para formar el principal. La guarda Angular ayuda a navegar, pero no reemplaza validación backend.
 
-## Aislamiento de empresa
+El panel filtra los módulos por disponibilidad empresarial y perfil. Administrador/Jefe acceden a los módulos reconocidos; Cliente al catálogo y Empleado a su agenda. Existen restricciones adicionales, por ejemplo administración de empresas, módulos y mensajes.
 
-La defensa principal es incluir `emp_id` en todas las consultas y validar que referencias y adjuntos pertenecen a la empresa autenticada. Nunca debe aceptarse como autoridad un `emp_id` del cuerpo. Los tokens de catalogo resuelven internamente una sola empresa y posicion.
+El Empleado registra pedidos mediante el catálogo y puede consultar, modificar o eliminar sus propios pedidos en Gestión de ventas. El filtro se aplica en la API por empresa y autor del movimiento de alta; la modificación y eliminación verifican la titularidad antes de alterar el pedido o su cadena. El controlador rechaza con 403 los tipos ajenos, pedidos de otros usuarios y operaciones no autorizadas.
 
-## Contrasenas y recuperacion
+## Matriz de empresa efectiva
 
-- Las contrasenas se guardan con BCrypt, nunca reversibles.
-- La recuperacion genera un token temporal persistido con caducidad y estado de uso.
-- `PASSWORD_RESET_EXPOSE_TOKEN` debe ser `false` fuera de desarrollo; si es `true`, la respuesta puede mostrar el token para pruebas.
-- La entrega real depende de la configuracion SMTP efectiva de la empresa.
+| Contexto | Origen del ámbito | Condición |
+|---|---|---|
+| Usuario no administrador | Empresa de JwtUser | La cabecera de selección no cambia su empresa. |
+| Administrador, empresa concreta | X-Empresa-Seleccionada positiva | Los endpoints usan el contexto seleccionado según su contrato. |
+| Administrador, global | Sin selección o valor 0 | empresaConsulta puede ser null para consultas globales; empresaId usa la empresa del usuario como fallback. No todas las operaciones admiten “Todas”. |
+| Catálogo público | Token general, alias o posición | Publicación y reglas del catálogo. No identifica personalmente al visitante. |
+| Catálogo de proveedor | Empresa compradora autenticada y proveedor de la URL | Permiso PROVEEDORES y relación PROVEEDOR activa/vigente; Administrador debe elegir una empresa. |
 
-## Datos sensibles
+No confiar en empId del cuerpo ni en ocultar acciones. Las escrituras deben comprobar referencias en su contexto. Los accesos cruzados de proveedor son una excepción autorizada, no una consulta global.
 
-`CifradoDatosSensibles` usa AES-GCM con una clave externa para IBAN y secretos de configuracion. `CORE_DATA_ENCRYPTION_KEY` es la clave preferida y puede heredar `BANK_DATA_ENCRYPTION_KEY`. No deben registrarse claves, IBAN completos, JWT, tokens de proveedor ni la clave secreta Redsys.
+## Rutas públicas y secretos
 
-Las API de configuracion devuelven secretos enmascarados. Un valor enmascarado recibido en una actualizacion no debe sobrescribir el secreto ya cifrado.
+Son públicos /usuarios/login, /auth/password/**, /catalogo/publico/** y webhooks Meta/Twilio. Las demás rutas exigen JWT. El catálogo privado de Proveedores no devuelve tokens públicos, aunque el catálogo publicado conserva su URL pública para clientes.
 
-## CORS y CSRF
+JWT_SECRET y claves de cifrado llegan por entorno. CifradoDatosSensibles usa AES-GCM para datos sensibles; parámetros protegidos se devuelven enmascarados. PASSWORD_RESET_EXPOSE_TOKEN debe ser false fuera de pruebas. No versionar secretos ni registrar JWT o contenido sensible.
 
-CORS toma patrones separados por coma de `CORS_ALLOWED_ORIGIN`; por defecto permite Angular local y rangos privados de desarrollo. Admite credenciales, `Authorization`, metodos REST y expone `X-Refresh-Token`. CSRF esta desactivado porque la autenticacion normal usa bearer token y no cookie de sesion.
+## CORS, webhooks y errores
 
-## Webhooks y catalogo publico
+CORS permite orígenes de desarrollo configurables, métodos REST y X-Refresh-Token. CSRF está desactivado al usar bearer, no sesión por cookie. Meta y Twilio validan firmas en sus adaptadores; la verificación inicial del webhook no sustituye la firma de eventos. Los errores se centralizan, aunque denegaciones previas al controlador pueden carecer del cuerpo JSON habitual.
 
-Los webhooks y el catalogo no tienen JWT y requieren protecciones propias. Meta verifica el endpoint mediante su token configurado; los eventos deben deduplicarse por id externo. El token QR es opaco y regenerable, pero no equivale a autenticar una persona. Los datos de pedido se validan y se limitan a lo minimo necesario.
+## Límites reales
 
-## Riesgos pendientes
-
-- La cobertura automatizada de autorizacion y aislamiento multiempresa es limitada.
-- No hay rate limiting documentado para login, recuperacion o pedidos publicos.
-- No hay Actuator ni monitorizacion de intentos de acceso.
-- Antes de produccion debe sustituirse `ddl-auto=update` por migraciones revisables.
-- La futura notificacion Redsys debe validar firma, importe, moneda, pedido e idempotencia antes de cambiar estados.
+No existe una autorización declarativa uniforme por operación para toda la API. Las verificaciones están repartidas entre controladores/servicios: deben revisarse por recurso. No se acredita ausencia global de vulnerabilidades. Tampoco hay rate limiting general ni monitorización Actuator. Véanse [limitaciones](LIMITACIONES.md), [pruebas](PRUEBAS.md) e [integraciones](INTEGRACIONES.md).

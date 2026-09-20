@@ -1,0 +1,46 @@
+:host { display: block; }
+.chat { overflow: hidden; border: 1px solid #d9e2ec; border-radius: 10px; background: #fff; color: #17233b; }
+.chat > header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #e2e8f0; }
+.chat button, .chat input, .chat select, .chat textarea { box-sizing: border-box; font: inherit; }
+.chat button { padding: 7px 11px; border: 1px solid #c9d7e7; border-radius: 7px; background: #fff; color: #234f86; cursor: pointer; }
+.acciones-cabecera, .acciones-baja, .purga { display: flex; align-items: center; gap: 7px; }
+.chat button.eliminar { border-color: #d78991; color: #a1222e; }
+.purga { justify-content: flex-end; padding: 4px; }
+.purga label { display: flex; align-items: center; gap: 7px; }
+.purga input { min-height: 36px; padding: 5px 8px; border: 1px solid #cbd8e6; border-radius: 7px; }
+.acciones-baja { padding: 4px; }
+.conversaciones { display: grid; gap: 6px; padding: 10px; }
+.fila-conversacion { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: stretch; border-left: 5px solid #94a3b8; border-radius: 7px; background: #fff; }
+.abrir-conversacion { display: flex; min-width: 0; align-items: center; justify-content: space-between; border-left: 0 !important; text-align: left; }
+.marcar-no-leida { margin: 4px; font-size: 12px !important; }
+.conversaciones span { display: grid; min-width: 0; }
+.conversaciones small { overflow: hidden; color: #64748b; text-overflow: ellipsis; white-space: nowrap; }
+.conversaciones .no-leida { border-left-color: #315f9c; background: #eef5ff; }
+.conversaciones b { display: grid; place-items: center; min-width: 24px; height: 24px; border-radius: 50%; background: #315f9c; color: #fff; }
+.fila-conversacion[data-clasificacion=AVISO], .hilo article[data-clasificacion=AVISO] { border-color: #d69a22; }
+.fila-conversacion[data-clasificacion=ALERTA], .hilo article[data-clasificacion=ALERTA] { border-color: #c5303c; }
+.nuevo { display: grid; gap: 12px; padding: 14px; }
+.nuevo > label { display: grid; gap: 5px; }
+.nuevo input, .nuevo select, .nuevo textarea, .respuesta textarea, .respuesta select { min-height: 40px; padding: 8px 10px; border: 1px solid #cbd8e6; border-radius: 7px; }
+.nuevo textarea { min-height: 90px; resize: vertical; }
+.respuesta textarea { min-height: 54px; height: 54px; resize: vertical; }
+.nuevo fieldset { border: 1px solid #d9e2ec; border-radius: 8px; }
+.nuevo fieldset > div { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 7px; }
+.nuevo fieldset label { display: flex; align-items: center; gap: 7px; }
+.nuevo fieldset label span { display: grid; }
+.nuevo fieldset small, .hilo article small { display: block; color: #64748b; }
+.hilo { display: flex; max-height: 520px; overflow: auto; flex-direction: column; gap: 7px; padding: 9px 12px; }
+.hilo article { align-self: flex-start; max-width: 78%; padding: 7px 10px; border: 2px solid #94a3b8; border-radius: 8px; background: #f4f6f8; }
+.hilo article.propio { align-self: flex-end; background: #eaf3ff; }
+.hilo article p { margin: 3px 0; color: #111827; white-space: pre-wrap; }
+.acciones-mensaje { display: flex; flex-wrap: wrap; gap: 5px; }
+.acciones-mensaje button { padding: 4px 7px; font-size: 12px; }
+.acciones-mensaje .aviso { border-color: #d69a22; }
+.acciones-mensaje .alerta, .acciones-mensaje .eliminar { border-color: #d78991; color: #a1222e; }
+.respuesta { position: sticky; bottom: 0; display: grid; grid-template-columns: 110px 1fr auto; align-items: stretch; gap: 8px; padding-top: 7px; background: #fff; }
+.principal { border-color: #315f9c !important; background: #315f9c !important; color: #fff !important; }
+.vacio { padding: 16px; color: #64748b; text-align: center; }
+.compacto { width: min(470px, calc(100vw - 24px)); box-shadow: 0 10px 30px #17233b25; }
+.compacto .hilo { max-height: 420px; }
+.compacto .respuesta, .compacto .nuevo fieldset > div { grid-template-columns: 1fr; }
+@media (max-width: 700px) { .hilo article { max-width: 92%; } .respuesta { grid-template-columns: 1fr; } }

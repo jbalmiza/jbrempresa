@@ -1,5 +1,7 @@
 # Configuración y arranque
 
+Revisión documental: 2026-09-15. Describe el árbol de trabajo actual.
+
 ## PostgreSQL local confirmado
 
 - Host: `localhost`.
@@ -25,7 +27,7 @@ Opcionalmente puede definirse `CORE_DATA_ENCRYPTION_KEY`. Si no existe, se utili
 
 No deben incluirse valores reales de contraseñas o claves en archivos versionados, capturas o registros.
 
-El inventario local de credenciales puede mantenerse en `backend/docs/SECRETOS.md`. Este archivo está excluido expresamente mediante `.gitignore`; debe permanecer fuera de Git y no sustituye un gestor de secretos con copia de seguridad.
+El inventario local de credenciales puede mantenerse en `SECRETOS.md`, en la raíz del proyecto. Este archivo está excluido expresamente mediante `.gitignore`; debe permanecer fuera de Git y no sustituye un gestor de secretos con copia de seguridad.
 
 ## Bizum mediante Redsys
 
@@ -40,7 +42,16 @@ La preparación se configura por empresa mediante parámetros del módulo `VENTA
 - `PAGO_BIZUM_BANCO`: banco contratante, con uso informativo.
 - `PAGO_BIZUM_OBLIGATORIO`: determina en el futuro si un pedido debe pagarse antes de confirmarse.
 
-La base local contiene estos parámetros desactivados para todas las empresas de prueba. No se deben introducir credenciales de producción hasta implementar y verificar la firma, la notificación asíncrona y las URL HTTPS de retorno de Redsys.
+La configuración de desarrollo documentada parte de estos parámetros desactivados; comprobar el valor efectivo antes de usar cada empresa. No se deben introducir credenciales de producción hasta implementar y verificar la firma, la notificación asíncrona y las URL HTTPS de retorno de Redsys.
+
+## Modificación en cadena de pedidos
+
+El módulo `VENTAS` dispone de dos parámetros por empresa:
+
+- `REQUERIR_CLAVE_MODIFICACION_CADENA`: con valor `true`, exige la clave antes de modificar un pedido que tenga factura o albarán asociado.
+- `CLAVE_MODIFICACION_CADENA`: clave operativa elegida y custodiada por el Jefe. Se almacena como texto porque no es una credencial de autenticación.
+
+La modificación se cancela si no se autoriza la propagación o si la clave requerida no coincide. La operación es transaccional y no admite guardar solo una parte de la cadena documental.
 
 ## Arranque
 
@@ -51,7 +62,7 @@ cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
-El backend escucha en `http://localhost:8080`. Hibernate utiliza `ddl-auto=update` y aplica las columnas y tablas nuevas al arrancar.
+El backend escucha en `http://localhost:8080`. Hibernate utiliza `ddl-auto=update`; no sustituye la ejecución y revisión de los scripts de datos ni garantiza migraciones reproducibles.
 
 Productos y Servicios configuran `RUTA_IMAGENES` en sus propios módulos. La imagen de empresa utiliza `RUTA_IMAGENES` de `ADMINISTRACION`. Los adjuntos conservan sus rutas documentales específicas. La imagen principal se elige desde Adjuntos y el backend la copia a la ruta de imágenes correspondiente.
 
@@ -62,6 +73,7 @@ El entorno de desarrollo acepta por defecto Angular en `localhost`, `127.0.0.1` 
 ## Pruebas
 
 Las pruebas utilizan H2 temporal en modo PostgreSQL mediante `src/test/resources/application.properties`. No acceden ni modifican `saasdb`.
+El wrapper utiliza automáticamente `backend/.m2/repository` como repositorio local para evitar depender de la resolución de `user.home` del terminal.
 
 ```powershell
 .\mvnw.cmd test
@@ -71,4 +83,6 @@ Las pruebas utilizan H2 temporal en modo PostgreSQL mediante `src/test/resources
 
 Cada empresa configura `RUTA_IMAGENES` independientemente en `PRODUCTOS`, `SERVICIOS` y `ADMINISTRACION`. Bajo cada raíz se utiliza `empresa-{id}/productos`, `empresa-{id}/servicios` o `empresa-{id}/empresas`.
 
-La base local utiliza `C:\Workspace\proyectos\jbrempresa\data\imagenes` para Productos y Servicios. Las imágenes predeterminadas fuente están en `src/main/resources/default-images`.
+La configuración local registrada utiliza `C:\Workspace\proyectos\jbrempresa\data\imagenes` para Productos y Servicios. Las imágenes predeterminadas fuente están en `src/main/resources/default-images`.
+
+Procedimiento completo: [OPERACION](OPERACION.md). Contratos y alcance de pruebas: [PRUEBAS](PRUEBAS.md).

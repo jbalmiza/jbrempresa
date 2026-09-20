@@ -10,7 +10,7 @@ import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // Importa Routes para definir las rutas de navegación Angular
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Sidebar } from '../../../components/sidebar/sidebar';
 import { Supbar } from '../../../components/supbar/supbar';
@@ -25,7 +25,7 @@ import { Perfil } from '../../../interfaces/perfil.interface';
 
 import { FormsModule } from '@angular/forms';
 
-import { UsuarioService } from '../../../services/usuario.service';
+import { MovimientoUsuario, UsuarioService } from '../../../services/usuario.service';
 import { PersonaService } from '../../../services/persona.service';
 import { PerfilService } from '../../../services/perfil.service';
 import { PdfService } from '../../../services/pdf.service';
@@ -46,7 +46,9 @@ import { finalize } from 'rxjs';
 export class Usuarios {
 	ngOnInit() {
 		this.personaService.obtenerPersonas().subscribe(datos => {this.personasLista = datos.filter(p => p.perTipMov !== 'B');this.datos=this.datos.map(usuario=>({...usuario,personaNomCom:this.personasLista.find(persona=>Number(persona.perId)===Number(usuario.usuPerId))?.perNomCom||''}));});
-		this.perfilService.obtenerPerfiles().subscribe(datos => this.perfilesLista = datos);
+		const administrador = (localStorage.getItem('perfil') || '').trim().toUpperCase() === 'ADMINISTRADOR';
+		(administrador ? this.perfilService.obtenerPerfiles() : this.perfilService.obtenerPerfilesSelector())
+			.subscribe(datos => this.perfilesLista = datos);
 	}
 	
 	//Busca el componente tabla en el html y guarda en una variable tabla por la cual se podrá acceder a variables y métodos dentro de tabla
@@ -57,8 +59,11 @@ export class Usuarios {
 	tabla!: Tabla;
 
 	//Variables de la clase
-	vistaActiva: 'registro' | 'tabla' = 'tabla';
-	modoFormulario: 'insertar' | 'modificar' = 'insertar';
+	gestion = false;
+	vistaActiva: 'registro' | 'tabla' | 'movimiento' | 'historico' = 'tabla';
+	tipoMovimiento: 'B' | 'R' = 'B'; causaMovimiento = ''; historicoDatos: MovimientoUsuario[] = [];
+	historicoColumnas=['id','usuarioId','tipo','causa','usuario','fecha','activo']; historicoTitulos={id:'Id Histórico',usuarioId:'Id Usuario',tipo:'Tipo Movimiento',causa:'Causa Movimiento',usuario:'Usuario Mod.',fecha:'Fecha Mod.',activo:'Activo'};
+	modoFormulario: 'insertar' | 'modificar' | 'ver' = 'insertar';
 	mostrarObligatorios = false;
 	
 	// Se crea un objeto usuario con datos vacíos
@@ -77,13 +82,14 @@ export class Usuarios {
 	    usuUsuMov: 'Usuario Mod.',
 	    usuFecMov: 'Fecha Mod.',
 		usuAct: 'Activo'
+		,usuTipMov: 'Tipo Movimiento', usuCauMov: 'Causa Movimiento'
 	};
 	
 	// Campos mostrados en la tabla
 	columnas: string[] = [ 'empId', 'usuId', 
 		'usuUsu', 'perId', 'personaNomCom',
 		'usuNom', 'usuTel', 'usuEma',
-	  	'usuUsuMov', 'usuFecMov', 'usuAct'
+		'usuTipMov', 'usuCauMov', 'usuUsuMov', 'usuFecMov', 'usuAct'
 	  
 	];
 
@@ -99,6 +105,9 @@ export class Usuarios {
 	usuariosLista: Usuario[] = [];
 	personasLista: Persona[] = [];
 	perfilesLista: Perfil[] = [];
+	get perfilesDisponibles(): Perfil[] {
+		return this.perfilesLista.filter(perfil => Number(perfil.empId) === Number(this.usuario.empId));
+	}
 	
 	// Guarda el registro seleccionado de la tabla
 	usuarioSeleccionado: Usuario | null = null;
@@ -107,13 +116,19 @@ export class Usuarios {
 	constructor (
 		
 		private readonly router: Router, 
+		route: ActivatedRoute,
 		private usuarioService: UsuarioService,
 		private personaService: PersonaService,
 		private perfilService: PerfilService,
 		private pdfService: PdfService,
 		private readonly changeDetectorRef: ChangeDetectorRef
 		
-	) {}
+	) {this.gestion=!!route.snapshot.data['gestion'];}
+
+	esActivo(usuario: Usuario | null): boolean { return !!usuario && ['true','s','a','1'].includes(String(usuario.usuAct).toLowerCase()); }
+	prepararMovimiento(tipo:'B'|'R'){if(!this.usuarioSeleccionado)return;this.tipoMovimiento=tipo;this.causaMovimiento='';this.vistaActiva='movimiento';}
+	guardarMovimiento(){if(!this.usuarioSeleccionado||!this.causaMovimiento.trim()){avisarAplicacion('Debe informar la causa del movimiento.');return;}const pet=this.tipoMovimiento==='B'?this.usuarioService.baja(this.usuarioSeleccionado.usuId!,this.causaMovimiento):this.usuarioService.reactivar(this.usuarioSeleccionado.usuId!,this.causaMovimiento);pet.subscribe({next:()=>{avisarAplicacion(this.tipoMovimiento==='B'?'Usuario dado de baja.':'Usuario reactivado.');this.consultar();},error:e=>avisarAplicacion(e?.error?.detail||e?.error?.message||'No se pudo realizar la operación.')});}
+	verHistorico(){if(!this.usuarioSeleccionado)return;this.usuarioService.historico(this.usuarioSeleccionado.usuId!).subscribe({next:d=>{this.historicoDatos=d;this.vistaActiva='historico'},error:()=>avisarAplicacion('No se pudo consultar el histórico.')});}
 
 	seleccionarPersona(perId: number): void {
 		this.usuario.usuPerId = perId;
@@ -217,6 +232,17 @@ export class Usuarios {
 
 		});
 	}
+
+	ver() {
+		if (!this.usuarioSeleccionado) {
+			avisarAplicacion('Debe seleccionar un registro');
+			return;
+		}
+		this.usuario = { ...this.usuarioSeleccionado, usuCon: '' };
+		this.modoFormulario = 'ver';
+		this.mostrarObligatorios = false;
+		this.vistaActiva = 'registro';
+	}
 	
 	// Este método modifica	
 	modificar() {
@@ -264,6 +290,7 @@ export class Usuarios {
 			usuUsuMov: this.usuarioSeleccionado.usuUsuMov,
 			usuFecMov: this.usuarioSeleccionado.usuFecMov,
 			usuAct: this.usuarioSeleccionado.usuAct
+			,usuTipMov: this.usuarioSeleccionado.usuTipMov, usuCauMov: this.usuarioSeleccionado.usuCauMov
 
 			};
 
@@ -527,6 +554,7 @@ export class Usuarios {
 		usuUsuMov: localStorage.getItem('usuario') || '',
 		usuFecMov: FechasUtil.formatearFechaHora(),
 		usuAct: true
+		,usuTipMov: 'A', usuCauMov: ''
 		
 		};
 	}

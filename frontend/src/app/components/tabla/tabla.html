@@ -51,7 +51,7 @@
             <!-- CELDAS -->
             <td *ngFor="let columna of columnasVisibles" [style.width.px]="anchosColumnas[columna]" [style.min-width.px]="anchosColumnas[columna]">
 
-                {{ fila[columna] }}
+                {{ valorCelda(fila, columna) }}
 
             </td>
 

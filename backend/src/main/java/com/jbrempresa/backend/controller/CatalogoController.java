@@ -24,6 +24,7 @@ import com.jbrempresa.backend.repository.ProductoRepository;
 import com.jbrempresa.backend.repository.ServicioRepository;
 import com.jbrempresa.backend.service.CatalogoService;
 import com.jbrempresa.backend.service.ImagenService;
+import com.jbrempresa.backend.service.ImagenCatalogoService;
 import com.jbrempresa.backend.core.config.ConfiguracionRedsysBizumService;
 import jakarta.validation.Valid;
 
@@ -31,10 +32,11 @@ import jakarta.validation.Valid;
 @RequestMapping("/catalogo")
 @CrossOrigin(origins="http://localhost:4200")
 public class CatalogoController {
+    private final com.jbrempresa.backend.service.CatalogoProveedorService proveedores;
     private final CatalogoService catalogo; private final ContextoOperacion contexto;
-    private final ImagenService imagenes; private final ProductoRepository productos; private final ServicioRepository servicios; private final EmpresaRepository empresas;
+    private final ImagenService imagenes; private final ImagenCatalogoService imagenesCatalogo; private final ProductoRepository productos; private final ServicioRepository servicios; private final EmpresaRepository empresas;
     private final ConfiguracionRedsysBizumService configuracionRedsys;
-    public CatalogoController(CatalogoService catalogo,ContextoOperacion contexto,ImagenService imagenes,ProductoRepository productos,ServicioRepository servicios,EmpresaRepository empresas,ConfiguracionRedsysBizumService configuracionRedsys){this.catalogo=catalogo;this.contexto=contexto;this.imagenes=imagenes;this.productos=productos;this.servicios=servicios;this.empresas=empresas;this.configuracionRedsys=configuracionRedsys;}
+    public CatalogoController(com.jbrempresa.backend.service.CatalogoProveedorService proveedores,CatalogoService catalogo,ContextoOperacion contexto,ImagenService imagenes,ImagenCatalogoService imagenesCatalogo,ProductoRepository productos,ServicioRepository servicios,EmpresaRepository empresas,ConfiguracionRedsysBizumService configuracionRedsys){this.proveedores=proveedores;this.catalogo=catalogo;this.contexto=contexto;this.imagenes=imagenes;this.imagenesCatalogo=imagenesCatalogo;this.productos=productos;this.servicios=servicios;this.empresas=empresas;this.configuracionRedsys=configuracionRedsys;}
 
     @GetMapping("/gestion/configuracion") public CatalogoDtos.Configuracion configuracion(){return catalogo.configuracion(contexto.empresaId());}
     @PutMapping("/gestion/configuracion") public CatalogoDtos.Configuracion configurar(@Valid @RequestBody CatalogoDtos.ConfiguracionEntrada e){return catalogo.configurar(contexto.empresaId(),contexto.nombreUsuario(),e);}
@@ -45,10 +47,17 @@ public class CatalogoController {
     @GetMapping(value="/gestion/posiciones/{id}/qr",produces=MediaType.IMAGE_PNG_VALUE)
     public byte[] qr(@PathVariable Long id,@RequestParam String baseUrl)throws Exception{CatalogoPosicion p=catalogo.posiciones(contexto.empresaId()).stream().filter(x->x.getCapId().equals(id)).findFirst().orElseThrow();return generarQr(baseUrl.replaceAll("/+$","")+"/catalogo/"+p.getCapToken(),p);}
 
+    @GetMapping("/proveedores") public List<com.jbrempresa.backend.dto.administracion.EmpresaRelacionDtos.Opcion> proveedores(){return proveedores.proveedores();}
+    @GetMapping("/proveedores/{id}") public CatalogoDtos.CatalogoPublico proveedor(@PathVariable Long id){return proveedores.catalogo(id);}
+    @PostMapping("/proveedores/{id}/pedidos") public CatalogoDtos.PedidoConfirmacion pedirProveedor(@PathVariable Long id,@Valid @RequestBody CatalogoDtos.PedidoEntrada e){return proveedores.pedir(id,e);}
+    @GetMapping("/proveedores/{proveedor}/productos/{id}/imagen") public ResponseEntity<Resource> imagenProductoProveedor(@PathVariable Long proveedor,@PathVariable Long id){Long emp=proveedores.autorizar(proveedor);return imagen(imagenesCatalogo.producto(emp,productos.findByEmpIdAndProIdAndProActTrue(emp,id).filter(p->Boolean.TRUE.equals(p.getProVisCat())&&!"B".equals(p.getProTipMov())).orElseThrow()));}
+    @GetMapping("/proveedores/{proveedor}/servicios/{id}/imagen") public ResponseEntity<Resource> imagenServicioProveedor(@PathVariable Long proveedor,@PathVariable Long id){Long emp=proveedores.autorizar(proveedor);return imagen(imagenesCatalogo.servicio(emp,servicios.findByEmpIdAndSerIdAndSerActTrue(emp,id).filter(s->Boolean.TRUE.equals(s.getSerVisCat())&&!"B".equals(s.getSerTipMov())).orElseThrow()));}
+    @GetMapping("/proveedores/{proveedor}/empresa/imagen") public ResponseEntity<Resource> imagenEmpresaProveedor(@PathVariable Long proveedor){Long emp=proveedores.autorizar(proveedor);return imagen(imagenes.cargar(emp,"ADMINISTRACION","empresas",empresas.findByEmpId(emp).orElseThrow().getEmpIma()));}
+
     @GetMapping("/publico/{token}") public CatalogoDtos.CatalogoPublico publico(@PathVariable String token){return catalogo.catalogo(token);}
     @PostMapping("/publico/{token}/pedidos") public CatalogoDtos.PedidoConfirmacion pedir(@PathVariable String token,@Valid @RequestBody CatalogoDtos.PedidoEntrada e){return catalogo.pedir(token,e);}
-    @GetMapping("/publico/{token}/productos/{id}/imagen") public ResponseEntity<Resource> imagenProducto(@PathVariable String token,@PathVariable Long id){var c=catalogo.contexto(token);Producto p=productos.findByEmpIdAndProIdAndProActTrue(c.empId(),id).orElseThrow();var tipo=catalogo.tipoArticulo(c.empId(),"PRODUCTO",p.getProTipPro()).orElseThrow();return imagen(imagenes.cargar(c.empId(),"PRODUCTOS","tipos",tipo.getImagen()));}
-    @GetMapping("/publico/{token}/servicios/{id}/imagen") public ResponseEntity<Resource> imagenServicio(@PathVariable String token,@PathVariable Long id){var c=catalogo.contexto(token);var s=servicios.findByEmpIdAndSerIdAndSerActTrue(c.empId(),id).orElseThrow();var tipo=catalogo.tipoArticulo(c.empId(),"SERVICIO",s.getSerTipSer()).orElseThrow();return imagen(imagenes.cargar(c.empId(),"SERVICIOS","tipos",tipo.getImagen()));}
+    @GetMapping("/publico/{token}/productos/{id}/imagen") public ResponseEntity<Resource> imagenProducto(@PathVariable String token,@PathVariable Long id){var c=catalogo.contexto(token);Producto p=productos.findByEmpIdAndProIdAndProActTrue(c.empId(),id).orElseThrow();return imagen(imagenesCatalogo.producto(c.empId(),p));}
+    @GetMapping("/publico/{token}/servicios/{id}/imagen") public ResponseEntity<Resource> imagenServicio(@PathVariable String token,@PathVariable Long id){var c=catalogo.contexto(token);var s=servicios.findByEmpIdAndSerIdAndSerActTrue(c.empId(),id).orElseThrow();return imagen(imagenesCatalogo.servicio(c.empId(),s));}
     @GetMapping("/publico/{token}/empresa/imagen") public ResponseEntity<Resource> imagenEmpresa(@PathVariable String token){var c=catalogo.contexto(token);var e=empresas.findByEmpId(c.empId()).orElseThrow();return imagen(imagenes.cargar(c.empId(),"ADMINISTRACION","empresas",e.getEmpIma()));}
 
     private byte[] generarQr(String texto,CatalogoPosicion posicion)throws Exception{

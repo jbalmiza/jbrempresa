@@ -1,3 +1,4 @@
+import { CatalogosProveedores } from './pages/mProveedores/catalogosProveedores/catalogosProveedores';
 // La lógica de la pantalla (Framework Angular / Lenguaje TypeScript)
 
 // Importa Routes para definir las rutas de navegación Angular
@@ -20,9 +21,12 @@ import { PrincipalRecursos } from './pages/mRecursos/principalRecursos/principal
 import { Recursos } from './pages/mRecursos/recursos/recursos';
 import { GestionAgendas } from './pages/mRecursos/gestionAgendas/gestionAgendas';
 import { PrincipalCaja } from './pages/mCaja/principalCaja/principalCaja';
+import { AgendaEmpleadoPage } from './pages/mEmpleados/agendaEmpleado/agendaEmpleado';
 import { Cajas } from './pages/mCaja/cajas/cajas';
 import { BandejaComunicaciones } from './pages/mComunicaciones/bandejaComunicaciones/bandejaComunicaciones';
 import { ContactosSinIdentificar } from './pages/mComunicaciones/contactosSinIdentificar/contactosSinIdentificar';
+import { AvisosAlertas } from './pages/mComunicaciones/avisosAlertas/avisosAlertas';
+import { MensajesInternosPage } from './pages/mAdministracion/mensajesInternos/mensajesInternos';
 
 import { Empresas } from './pages/mAdministracion/empresas/empresas';
 import { Usuarios } from './pages/mAdministracion/usuarios/usuarios';
@@ -34,10 +38,10 @@ import { Domicilios } from './pages/mTerritorio/domicilios/domicilios';
 import { Personas } from './pages/mPersonas/personas/personas';
 import { ComplementosPersona } from './pages/mPersonas/complementosPersona/complementosPersona';
 import { Productos } from './pages/mProductos/productos/productos';
+import { Componentes } from './pages/mProductos/componentes/componentes';
 import { Servicios } from './pages/mServicios/servicios/servicios';
 import { Compras } from './pages/mCompras/compras/compras';
 import { DocumentosVenta } from './pages/mVentas/documentosVenta/documentosVenta';
-import { VentaTactil } from './pages/mVentas/ventaTactil/ventaTactil';
 
 import { GestionDomicilios } from './pages/mTerritorio/gestionDomicilios/gestionDomicilios';
 import { GestionProductos } from './pages/mProductos/gestionProductos/gestionProductos';
@@ -45,6 +49,9 @@ import { CatalogoTerritorialPage } from './pages/mTerritorio/catalogoTerritorial
 import { CatalogoGestion } from './pages/mProductos/catalogoGestion/catalogoGestion';
 import { TiposArticulo } from './pages/tiposArticulo/tiposArticulo';
 import { CatalogoPublico } from './pages/catalogoPublico/catalogoPublico';
+import { ModuloVacio } from './pages/moduloVacio/moduloVacio';
+import { ModulosAplicacion } from './pages/mAdministracion/modulosAplicacion/modulosAplicacion';
+import { RelacionesEmpresa } from './pages/mAdministracion/relacionesEmpresa/relacionesEmpresa';
 
 // Definición de la lógica del componente / Define las rutas de la aplicación
 export const routes: Routes = [
@@ -161,6 +168,21 @@ export const routes: Routes = [
 	canActivate: [authGuard],
 	title: 'Perfiles'
   },
+  { path: 'administracion/gestionEmpresas', component: Empresas, canActivate: [authGuard], data: { gestion: true }, title: 'Gestión de Empresas' },
+  { path: 'administracion/gestionUsuarios', component: Usuarios, canActivate: [authGuard], data: { gestion: true }, title: 'Gestión de Usuarios' },
+  { path: 'administracion/relacionesEmpresa', component: RelacionesEmpresa, canActivate: [authGuard], title: 'Registro de Relaciones de Empresa' },
+  { path: 'administracion/gestionRelacionesEmpresa', component: RelacionesEmpresa, canActivate: [authGuard], data: { gestion: true }, title: 'Gestión de Relaciones de Empresa' },
+
+  { path: 'empleados', component: ModuloVacio, canActivate: [authGuard], data: { modulo: 'empleados', titulo: 'Empleados' }, title: 'Empleados' },
+  { path: 'empleados/agenda', component: AgendaEmpleadoPage, canActivate: [authGuard], title: 'Gestión de agenda' },
+  { path: 'empleados/catalogo', component: CatalogoPublico, canActivate: [authGuard], data: { catalogoSesion: true, volverA: '/empleados' }, title: 'Pedidos' },
+  { path: 'empleados/pedidos', component: DocumentosVenta, canActivate: [authGuard], data: { tipo: 'PED', registroEmpleado: true }, title: 'Gestión de ventas' },
+  { path: 'empleados/avisosAlertas', component: AvisosAlertas, canActivate: [authGuard], data: { gestion: false }, title: 'Avisos y Alertas' },
+  { path: 'clientes', component: CatalogoPublico, canActivate: [authGuard], data: { catalogoSesion: true }, title: 'Catálogo' },
+  { path: 'proveedores', component: ModuloVacio, canActivate: [authGuard], data: { modulo: 'proveedores', titulo: 'Proveedores' }, title: 'Proveedores' },
+  { path: 'proveedores/catalogo', component: CatalogosProveedores, canActivate: [authGuard], title: 'Mi catálogo' },
+  { path: 'administracion/modulos', component: ModulosAplicacion, canActivate: [authGuard], data: { gestion: false }, title: 'Registro de Módulos' },
+  { path: 'administracion/gestionModulos', component: ModulosAplicacion, canActivate: [authGuard], data: { gestion: true }, title: 'Gestión de Módulos' },
 
   { path: 'servicios', component: PrincipalServicios, canActivate: [authGuard], title: 'Servicios' },
 
@@ -175,6 +197,10 @@ export const routes: Routes = [
   { path: 'comunicaciones/conversaciones', component: BandejaComunicaciones, canActivate: [authGuard], data: { filtro: 'conversaciones' }, title: 'Conversaciones' },
   { path: 'comunicaciones/pendientes', component: BandejaComunicaciones, canActivate: [authGuard], data: { filtro: 'pendientes' }, title: 'Pendientes de Revisión' },
   { path: 'comunicaciones/contactosSinIdentificar', component: ContactosSinIdentificar, canActivate: [authGuard], title: 'Contactos de Canal' },
+  { path: 'comunicaciones/avisosAlertas', component: AvisosAlertas, canActivate: [authGuard], data: { gestion: false }, title: 'Registro de Avisos y Alertas' },
+  { path: 'comunicaciones/gestionAvisosAlertas', component: AvisosAlertas, canActivate: [authGuard], data: { gestion: true }, title: 'Gestión de Avisos y Alertas' },
+  { path: 'administracion/mensajes', component: MensajesInternosPage, canActivate: [authGuard], data: { modo: 'REGISTRO' }, title: 'Registro de Mensajes' },
+  { path: 'administracion/gestionMensajes', component: MensajesInternosPage, canActivate: [authGuard], data: { modo: 'GESTION' }, title: 'Gestión de Mensajes' },
 
   {
     path: 'administracion/parametros',
@@ -287,6 +313,9 @@ export const routes: Routes = [
 	title: 'Productos'
   },
 
+  { path: 'productos/componentes', component: Componentes, canActivate: [authGuard], title: 'Componentes' },
+  { path: 'productos/gestionComponentes', component: Componentes, canActivate: [authGuard], data: { modoGestion: true }, title: 'Gestión de Componentes' },
+
   { path: 'servicios/servicios', component: Servicios, canActivate: [authGuard], title: 'Servicios' },
   { path: 'servicios/tiposServicio', component: TiposArticulo, canActivate: [authGuard], data: { clase: 'SERVICIO' }, title: 'Tipos de Servicio' },
   { path: 'servicios/gestionServicios', component: Servicios, canActivate: [authGuard], data: { modoGestion: true }, title: 'Gestión de Servicios' },
@@ -306,7 +335,6 @@ export const routes: Routes = [
 	data: { tipo: 'FAC' },
 	title: 'Facturas'
   },
-  { path: 'ventas/tactil', component: VentaTactil, canActivate: [authGuard], title: 'Venta Táctil' },
   { path: 'productos/catalogo', component: CatalogoGestion, canActivate: [authGuard], data: { moduloOrigen: 'productos' }, title: 'Gestión de Catálogo' },
   { path: 'productos/tiposProducto', component: TiposArticulo, canActivate: [authGuard], data: { clase: 'PRODUCTO' }, title: 'Tipos de Producto' },
 

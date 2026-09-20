@@ -4,9 +4,9 @@
     <h2>{{menu.titulo}}</h2>
     <ul>
       <ng-container *ngFor="let grupo of menu.grupos">
-        <li class="menu-title" [class.abierto]="menuAbierto===grupo.id" (click)="toggleMenu(grupo.id)">{{grupo.texto}}</li>
-        <ul *ngIf="menuAbierto===grupo.id" class="submenu">
-          <li *ngFor="let opcion of grupo.opciones" [class.inactivo]="!opcion.ruta" [class.activo]="esActiva(opcion.ruta)" (click)="opcion.ruta&&abrirPagina(opcion.ruta)">{{opcion.texto}}</li>
+        <li class="menu-title" [class.abierto]="todosDesplegados||menuAbierto===grupo.id" [class.fijo]="todosDesplegados" (click)="toggleMenu(grupo.id)">{{grupo.texto}}</li>
+        <ul *ngIf="todosDesplegados||menuAbierto===grupo.id" class="submenu">
+          <li *ngFor="let opcion of opcionesVisibles(grupo.opciones)" [class.inactivo]="!opcion.ruta" [class.activo]="esActiva(opcion.ruta)" (click)="opcion.ruta&&abrirPagina(opcion.ruta)">{{opcion.texto}}</li>
         </ul>
       </ng-container>
     </ul>

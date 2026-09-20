@@ -1,92 +1,85 @@
-# API REST
+# Contrato de la API
 
-## Convenciones
+Revisión: 2026-09-15. Fuente: controladores y DTO actuales.
 
-- URL local: `http://localhost:8080`.
-- JSON salvo cargas multipart, webhooks form-urlencoded e imagenes binarias.
-- Rutas protegidas: `Authorization: Bearer <jwt>`.
-- Identificadores y resultados quedan limitados a la empresa autenticada.
-- `POST` crea, `PUT` reemplaza datos editables, `PATCH` ejecuta cambios parciales y `DELETE` elimina o da de baja segun el recurso.
-- Los CRUD con auditoria suelen exponer `siguiente-id`, `baja`, `historico` y `deshacer`.
+## Referencia completa
 
-## Acceso publico
+El [inventario REST generado](API_INVENTARIO.md) incluye cada método declarado, ruta, tipo de salida y firma de entrada, con enlace a su controlador. Regenerar cuando cambien las fuentes. El [modelo](MODELO_DATOS.md) explica la persistencia; las anotaciones de cada DTO indican validación.
 
-| Base | Operaciones | Finalidad |
+Base local: http://localhost:8080. JSON por defecto; multipart para adjuntos, binario para imágenes/QR y formulario para Twilio. Fechas de petición: ISO según DTO y anotaciones. No inferir el método HTTP de una acción de pantalla: baja puede usar POST, PUT o PATCH según recurso.
+
+## Autenticación, contexto y errores
+
+Enviar Authorization: Bearer <jwt> en rutas protegidas. El Administrador puede añadir X-Empresa-Seleccionada; los demás permanecen en la empresa de su identidad. Los endpoints globales y catálogo de proveedores tienen excepciones explícitas: [matriz](SEGURIDAD.md).
+
+Login, recuperación de contraseña, catálogo público y webhooks son públicos. El resto requiere sesión, más las verificaciones específicas de la operación.
+
+| Código | Interpretación habitual |
+|---|---|
+| 400 | Entrada o regla funcional inválida; también IllegalArgumentException de varios servicios. |
+| 401 | JWT inválido o caducado. |
+| 403 | Falta de acceso, perfil o relación; también puede ser rechazo sin sesión. |
+| 404 | Recurso/enlace no encontrado en el ámbito. |
+| 409 | Conflicto de estado o disponibilidad donde se usa ResponseStatusException. |
+
+No todos los rechazos tienen el mismo código ni cuerpo. Spring Security puede responder antes del manejador; los consumidores deben tolerar cuerpo vacío y usar el servicio común de errores. Las respuestas concretas se definen en controlador/servicio y GlobalExceptionHandler.
+
+## Familias funcionales
+
+| Familia | Bases | Referencia funcional |
 |---|---|---|
-| `/usuarios/login` | `POST` | Autenticar y emitir JWT. |
-| `/auth/password` | `POST /solicitar`, `POST /confirmar` | Recuperar contrasena mediante token temporal. |
-| `/catalogo/publico/{token}` | `GET` | Obtener empresa, posicion, grupos y articulos visibles. |
-| `/catalogo/publico/{token}/pedidos` | `POST` | Validar cesta y crear pedido. |
-| `/catalogo/publico/{token}/{productos|servicios}/{id}/imagen` | `GET` | Servir imagen principal del articulo. |
-| `/catalogo/publico/{token}/empresa/imagen` | `GET` | Servir imagen principal de empresa. |
-| `/webhooks/meta/whatsapp` | `GET`, `POST` | Verificacion y eventos de Meta WhatsApp. |
-| `/webhooks/twilio/whatsapp` | `POST` | Mensajes entrantes de Twilio. |
+| Acceso | /usuarios, /auth/password | Gestión de usuarios, seguridad. |
+| Administración | /empresas, /perfiles, /parametros, /areas-organizativas, /personal-area, /configuraciones-tabla | Modelo y configuración. |
+| Módulos | /modulos-aplicacion | [Módulos](MODULOS_APLICACION.md). |
+| Relaciones | /empresas-relaciones | [Contrato de relaciones](RELACIONES_EMPRESA.md). |
+| Personas y territorio | /personas, /personas-complementos, /territorio, /domicilio | Modelo, referencias y versionado. |
+| Productos y servicios | /productos, /servicios, /tipos-articulo | Catálogo y tipos. |
+| Ventas | /documentos-venta | PRE/PED/ALB/FAC, detalles, movimientos y cadena. |
+| Compras | /compras | Contrato con segmento empId; divergencia frontend LIM-01. |
+| Recursos y agenda | /recursos, /agenda, /empleados/mi-agenda | Recursos, horarios, reservas y tareas. `GET/POST /agenda/recursos` incluye `ragIntVis` (5, 10, 15, 30 o 60 minutos) por agenda; valor inicial 30. |
+| Caja | /caja | Cajas, apertura/cierre, movimientos y anulaciones. |
+| Comunicación externa | /comunicaciones, /webhooks/meta/whatsapp, /webhooks/twilio/whatsapp | [Integraciones](INTEGRACIONES.md). |
+| Comunicación interna | /mensajeria-interna | [Mensajes](MENSAJERIA_INTERNA.md). |
+| Avisos | /avisos-alertas | [Avisos](AVISOS_ALERTAS.md). |
+| Catálogo | /catalogo/gestion, /catalogo/publico, /catalogo/proveedores | [Catálogo](CATALOGO.md). |
+| Soporte visual | /mallas, /adjuntos | Malla, contenido y adjunto principal. |
 
-Todas las demas rutas requieren JWT.
+Esta tabla agrupa familias; para rutas completas, nombres exactos y todas las operaciones consultar el inventario enlazado.
 
-## Administracion
+## Contratos de uso frecuente
 
-| Base | Operaciones principales |
-|---|---|
-| `/empresas` | consulta, actualizacion e imagen de empresa. |
-| `/usuarios` | alta, actualizacion, consulta paginada, siguiente id, baja y login. |
-| `/perfiles` | alta, actualizacion, consulta, siguiente id y eliminacion. |
-| `/parametros` | consulta, alta, actualizacion y eliminacion por modulo/empresa. |
-| `/areas-organizativas` | CRUD de areas con validacion de dependencias. |
-| `/personal-area` | CRUD de asignaciones de personal. |
-| `/configuraciones-tabla` | lectura y guardado de preferencias de tabla del usuario. |
+### Login
 
-## Maestros y operaciones
+POST /usuarios/login con JSON `{"usuUsu":"<usuario>","usuCon":"<contraseña>"}`. LoginResponse proporciona token, usuario, perfil y empresa cuando hay acceso. El controlador puede devolver cuerpo nulo ante credenciales incorrectas; no interpretar HTTP exitoso sin token como autenticación válida. `GET /usuarios/actividad` requiere JWT y es la única petición que puede devolver `X-Refresh-Token`; las consultas automáticas no prolongan la sesión.
 
-| Base | Operaciones principales |
-|---|---|
-| `/personas` | CRUD, selector, siguiente id, baja, historico y deshacer. |
-| `/personas-complementos` | representantes, domicilios de notificacion y domiciliaciones bancarias. |
-| `/territorio` | CRUD de paises, provincias, municipios, codigos postales y vias. |
-| `/domicilio` | CRUD, siguiente id, baja, historico y deshacer. |
-| `/productos` | CRUD, siguiente id, baja, historico, deshacer y contenido de imagen. |
-| `/servicios` | CRUD, siguiente id, baja, historico, deshacer y contenido de imagen. |
-| `/compras` | CRUD documental, baja, historico y deshacer. |
+### Relación entre empresas
 
-## Ventas
+POST /empresas-relaciones, empresa compradora en contexto:
 
-`/documentos-venta` concentra presupuestos, pedidos, albaranes y facturas. Permite consultar por tipo, crear/actualizar, gestionar detalle, registrar movimientos, dar de baja, consultar historico, deshacer y generar el siguiente documento de la cadena. Los DTO de `dto.ventas` son el contrato y evitan exponer directamente toda la entidad.
+```json
+{"empresaRelacionadaId":4,"tipo":"PROVEEDOR","fechaInicio":"2026-09-15","fechaFin":null,"observaciones":""}
+```
 
-La posicion de malla solo se edita en pedido, pero queda copiada en albaran y factura. El backend no trata la posicion como una mesa. Los importes del documento se calculan a partir de sus lineas segun el flujo que lo crea.
+El 4 es un ejemplo de datos de desarrollo, no un identificador fijo. [Contrato y salida](RELACIONES_EMPRESA.md).
 
-## Malla y catalogo gestionado
+### Pedido desde Proveedores
 
-| Ruta | Operaciones |
-|---|---|
-| `/mallas` | alta, actualizacion, consulta, siguiente id, pintar celda, borrar posicion y eliminar celda. |
-| `/catalogo/gestion/configuracion` | `GET`, `PUT` de publicacion y domicilio. |
-| `/catalogo/gestion/pago` | `GET` del estado enmascarado de Redsys/Bizum. No inicia pagos. |
-| `/catalogo/gestion/posiciones` | listar y crear posicion publica. |
-| `/catalogo/gestion/posiciones/{id}/regenerar` | renovar el token publico. |
-| `/catalogo/gestion/posiciones/{id}/qr` | descargar PNG QR con ubicacion, fila y columna. |
+GET /catalogo/proveedores lista opciones id/nombre. GET /catalogo/proveedores/{id} devuelve CatalogoPublico. POST /catalogo/proveedores/{id}/pedidos recibe:
 
-## Comunicaciones
+```json
+{"nombre":"Empresa compradora","telefono":"600000000","correo":"","modalidad":"DOMICILIO","direccionEnvio":"Dirección de entrega","observaciones":"","lineas":[{"tipo":"PRODUCTO","productoId":1,"cantidad":1,"observaciones":""}]}
+```
 
-`/comunicaciones` ofrece bandeja de entrada, candidatos de persona, confirmacion de persona y clasificacion, creacion/vinculacion de conversaciones, consulta por persona, cambio de estado/asignacion, mensajes y contactos de canal. Los identificadores externos impiden procesar dos veces el mismo mensaje.
+La cantidad debe ser positiva y la lista no vacía. El proveedor, precios, stock y permisos se resuelven en servidor. PedidoConfirmacion devuelve numero, total, modalidad y ubicacion. No enviar esta muestra sin querer crear un pedido: su escritura afecta stock y puede generar factura/tareas.
 
-`/comunicaciones/{comunicacionId}/propuestas-respuesta` lista, crea, aprueba y rechaza propuestas. La aprobacion registra la decision; el envio efectivo sigue el flujo del canal.
+### Compras: contrato real
 
-## Agenda
+POST/GET /compras/{empId}, PUT/DELETE /compras/{empId}/{id} y GET /compras/siguiente-id. El controller actual no ofrece baja/histórico/deshacer. El servicio Angular requiere alineación antes de considerar validado ese recorrido.
 
-`/agenda` agrupa recursos agendables, horarios semanales, excepciones, consulta de disponibilidad, reservas, recursos de reserva, tareas y reprogramaciones. `RecursoEntrada.ragTip` admite `EMPLEADO` y `DOMICILIO`; para `EMPLEADO`, `ragRefId` corresponde a `recursos_operativos.reo_id`, el nombre procede del recurso y la capacidad es uno. Las rutas concretas se definen en `AgendaController`; toda referencia se valida contra la empresa activa.
+### Pedidos del empleado
 
-## Recursos operativos
+Para el perfil Empleado, `GET /documentos-venta/PED` devuelve únicamente los pedidos de su empresa cuyo movimiento `ALTA` registró su usuario. La titularidad no cambia si otra persona modifica el pedido. Puede ejecutar `PUT /documentos-venta/PED/{id}`, `DELETE /documentos-venta/PED/{id}` y `DELETE /documentos-venta/PED/{id}/completo` solo sobre pedidos propios. La modificación respeta la propagación y clave configurada; la eliminación completa afecta a la cadena asociada. `GET /documentos-venta/{tipo}` para otros tipos, la creación directa, las bajas, conversiones e históricos documentales devuelven 403.
 
-`/recursos` ofrece consulta, alta, modificación versionada y baja lógica. `PATCH /{id}/operativo` cambia disponibilidad; `GET` y `PUT /{id}/capacidades` gestionan capacidades; `GET /tipos-capacidad` obtiene tipos activos de Productos y Servicios.
+## Alcance de la documentación
 
-Los recursos utilizan versiones `A/M/B`. `PUT /{id}` crea una versión `M`, `POST /{id}/baja` crea la versión `B`, `GET /{id}/historico` devuelve todas las versiones y `POST /{id}/deshacer` elimina la última y reactiva la anterior. `PATCH /{id}/operativo` también crea una versión `M` para conservar trazabilidad.
-
-`DELETE /recursos/{id}` pertenece al CRUD de Registro y solo elimina recursos sin histórico ni agenda. Los recursos ya operativos se retiran mediante Baja desde Gestión para conservar sus relaciones.
-
-## Adjuntos
-
-`/adjuntos` usa los parametros de consulta `modulo`, `entidad` y `registroId`. Permite listar, subir multipart, marcar `/{id}/principal`, descargar `/{id}/contenido` y eliminar. Marcar principal sincroniza el campo de imagen de la entidad compatible.
-
-## Salud tecnica
-
-`GET /api/hello` es una ruta autenticada de comprobacion basica. No sustituye un endpoint Actuator de salud; Actuator no esta instalado.
+Una firma Java no garantiza compatibilidad de todos los consumidores ni autorización exhaustiva. [Limitaciones](LIMITACIONES.md) registra diferencias conocidas. El inventario se comprueba automáticamente y los flujos se verifican mediante [pruebas](PRUEBAS.md).

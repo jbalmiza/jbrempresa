@@ -15,6 +15,7 @@ public interface ProductoRepository extends JpaRepository<Producto, ProductoId> 
 
     // Obtiene únicamente los productos de un cliente
     List<Producto> findByEmpIdAndProActTrueOrderByProId(Long empId);
+    List<Producto> findByProActTrueOrderByEmpIdAscProIdAsc();
     List<Producto> findByEmpIdAndProActTrueAndProVisCatTrueOrderByProCatAscProSubCatAscProNomAsc(Long empId);
 
     // Busca un producto concreto perteneciente a un cliente

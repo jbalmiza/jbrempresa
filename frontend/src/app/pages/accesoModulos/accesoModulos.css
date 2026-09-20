@@ -16,28 +16,18 @@
 .fecha { display: flex; flex-direction: column; align-items: flex-end; min-width: 220px; color: #64748b; text-transform: capitalize; }
 .fecha strong { margin-top: 2px; color: #26364f; font-size: 14px; }
 
-.resumen { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; margin: 8px 0 10px; }
-.resumen article { display: flex; align-items: center; gap: 9px; min-height: 38px; padding: 5px 10px; border: 1px solid #e0e7ef; border-radius: 8px; background: #fff; box-shadow: 0 2px 9px rgba(15,23,42,.03); }
-.indicador { width: 7px; height: 35px; border-radius: 8px; }
-.indicador.azul { background: #5b8fd5; }
-.indicador.ambar { background: #d7a84e; }
-.indicador.verde { background: #55a879; }
-.resumen article div { display: flex; flex: 1; align-items: baseline; gap: 8px; min-width: 0; }
-.resumen article strong { font-size: 15px; white-space: nowrap; }
-.resumen article span:not(.indicador) { overflow: hidden; color: #64748b; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.resumen button { padding: 4px 8px; border: 1px solid #ccd8e6; border-radius: 6px; background: #fff; color: #315b91; cursor: pointer; }
-.resumen button:hover { background: #f1f6fc; }
-
 .seccion-cabecera { display: flex; align-items: end; justify-content: space-between; margin-bottom: 9px; }
 .seccion-cabecera h2 { margin: 0; color: #17233a; font-size: 19px; }
 .seccion-cabecera p { margin: 3px 0 0; color: #64748b; font-size: 13px; }
+.modulos-personas { margin-top: 18px; }
 
-.modules-container { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; }
-.module-card { display: flex; align-items: center; gap: 15px; min-height: 118px; padding: 15px 17px; border: 1px solid #dce4ed; border-radius: 9px; background: #fff; text-align: left; cursor: pointer; box-shadow: 0 3px 11px rgba(15,23,42,.03); transition: transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
+.modules-container { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; }
+.module-card { display: flex; align-items: center; gap: 13px; min-height: 108px; padding: 11px 15px; border: 1px solid #dce4ed; border-radius: 10px; background: #fff; text-align: left; cursor: pointer; box-shadow: 0 3px 11px rgba(15,23,42,.03); transition: transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
 .module-card:hover { transform: translateY(-2px); border-color: #a9bfdc; box-shadow: 0 8px 20px rgba(32,64,105,.09); }
 .module-card:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(69,119,181,.2); }
-.icono-contenedor { display: grid; place-items: center; flex: 0 0 72px; width: 72px; height: 72px; border-radius: 10px; background: linear-gradient(145deg,#f7faff,#edf4fb); }
-.module-image { width: 68px; height: 68px; object-fit: contain; }
+.icono-contenedor { display: grid; place-items: center; flex: 0 0 78px; width: 78px; height: 78px; background: transparent; }
+.module-image { width: 76px; height: 76px; object-fit: contain; filter: drop-shadow(0 4px 4px rgba(28,54,86,.12)); transition: transform .18s ease; }
+.module-card:hover .module-image { transform: scale(1.045); }
 .module-content { display: flex; flex-direction: column; min-width: 0; }
 .module-content strong { color: #17243b; font-size: 17px; }
 .module-content small { display: -webkit-box; min-height: 30px; margin-top: 3px; overflow: hidden; color: #69778a; font-size: 12px; line-height: 1.25; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
@@ -46,7 +36,7 @@
 .module-card:hover .acceso b { margin-left: 6px; }
 
 @media (min-width: 1500px) {
-  .modules-container { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; }
+  .modules-container { grid-template-columns: repeat(4,minmax(0,1fr)); }
   .module-card { min-width: 0; }
   .module-content strong { max-width: 100%; overflow-wrap: anywhere; }
 }
@@ -59,7 +49,6 @@
   .inicio { padding: 8px 16px 24px; }
   .bienvenida { align-items: flex-start; padding: 14px; }
   .fecha { display: none; }
-  .resumen { grid-template-columns: 1fr; }
   .modules-container { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 
@@ -67,4 +56,6 @@
   .imagen-empresa { flex-basis: 54px; width: 54px; height: 54px; }
   .modules-container { grid-template-columns: 1fr; }
   .module-card { min-height: 96px; }
+  .icono-contenedor { flex-basis: 68px; width: 68px; height: 68px; }
+  .module-image { width: 66px; height: 66px; }
 }

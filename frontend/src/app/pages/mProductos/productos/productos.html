@@ -14,6 +14,8 @@
 
 <button class="boton boton-accion accion-consultar" (click)="consultar()"> Consultar </button>
 
+<button *ngIf="vistaActiva === 'tabla' && productoSeleccionado" class="boton boton-accion accion-ver" (click)="ver()"> Ver </button>
+
 <button class="boton boton-accion accion-insertar" (click)="insertar()"> Insertar </button>
 
 <button *ngIf="vistaActiva === 'tabla' && productoSeleccionado && productoSeleccionado.proTipMov !== 'B'" class="boton boton-accion accion-modificar" (click)="modificar()"> Modificar </button>
@@ -31,7 +33,9 @@
 </div>
 
 <!-- FORMULARIO DE REGISTRO -->
-<div *ngIf="vistaActiva === 'registro'" class="form-contenedor">
+<div *ngIf="vistaActiva === 'registro'" class="form-contenedor" [class.solo-lectura]="modoFormulario === 'ver'">
+
+	<p *ngIf="modoFormulario === 'ver'" class="modo-ver-aviso">Vista de consulta. Los campos no se pueden modificar.</p>
 
   	<datosIdentificacion [campos]="[{etiqueta:'Id Empresa',valor:producto.empId},{etiqueta:'Id Producto',valor:producto.proId}]"></datosIdentificacion>
 
@@ -90,11 +94,7 @@
   				<input type="text" maxlength="50" [(ngModel)]="producto.proMod" name="proMod">
   			</div>
   			
-  			<div class="form-campo-200"> 
-  				<label class="label"> Proveedor <span class="obligatorio">*</span> </label> 
-  				<input type="text" maxlength="200" [(ngModel)]="producto.proPro" name="proPro">
-  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proPro"> Valor Obligatorio </div>
-  			</div>
+			<div class="form-campo-200"><label class="label">Proveedor</label><select [(ngModel)]="producto.proPro" name="proPro"><option value="">Sin proveedor</option><option *ngFor="let proveedor of proveedoresRelacionados" [value]="proveedor.nombre">{{proveedor.nombre}}</option></select></div>
   			
   		</div>
 
@@ -102,54 +102,74 @@
 	
 	<div class="form-grupo"> 
   	
-  	<label class="titulo"> Datos Económicos </label>
+	<label class="titulo"> Datos Importes Compra </label>
+	<div class="nota-informativa nota-informativa-compacta" role="note"><span class="nota-informativa-icono" aria-hidden="true">i</span><div><strong>Precios sin IVA:</strong><p>el Total Compra aplica el descuento y suma el IVA de compra.</p><p *ngIf="producto.proPreComEst"> El precio de compra se ha estimado desde la venta.</p></div></div>
 
 		<div class="form-fila">
 		
   			<div class="form-campo-200"> 
-  				<label class="label"> Precio Compra <span class="obligatorio">*</span> </label> 
-  				<input type="number" maxlength="30" [(ngModel)]="producto.proPreCom" name="proPreCom">
-  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proPreCom"> Valor Obligatorio </div>
+	  				<label class="label"> Precio Compra sin IVA <span class="obligatorio">*</span> </label> 
+	  				<input type="number" min="0" step="0.01" [(ngModel)]="producto.proPreCom" name="proPreCom" (ngModelChange)="precioCompraCambiado()">
+	  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proPreCom"> Valor Obligatorio </div>
   			</div>
+			<div class="form-campo-200">
+				<label class="label">Descuento Compra (%)</label>
+				<input type="number" min="0" max="100" step="0.01" [(ngModel)]="producto.proDesCom" name="proDesCom" (ngModelChange)="precioCompraCambiado()">
+			</div>
+			<div class="form-campo-200">
+				<label class="label">IVA Compra (%) <span class="obligatorio">*</span></label>
+				<input type="number" min="0" max="100" step="0.01" [(ngModel)]="producto.proIvaCom" name="proIvaCom" (ngModelChange)="precioCompraCambiado()">
+			</div>
+			<div class="form-campo-200">
+				<label class="label">Total Compra</label>
+				<input type="number" [ngModel]="producto.proTotCom" name="proTotCom" disabled>
+			</div>
+		</div>
+		<button type="button" class="boton" (click)="aplicarBeneficioAVenta()">Aplicar beneficio a venta</button>
+	</div>
 
+	<div class="form-grupo">
+		<label class="titulo">Datos Importes Venta</label>
+		<div class="nota-informativa nota-informativa-compacta" role="note"><span class="nota-informativa-icono" aria-hidden="true">i</span><div><strong>Beneficio:</strong><p>{{ margenObjetivo }} %. Los botones usan únicamente el precio de compra o de venta sin IVA. Descuentos, IVA y totales no intervienen en este cálculo.</p></div></div>
+		<div class="form-fila">
+	  			<div class="form-campo-200"> 
+	  				<label class="label"> Precio Venta sin IVA <span class="obligatorio">*</span> </label> 
+	  				<input type="number" min="0" step="0.01" [(ngModel)]="producto.proPreVen" name="proPreVen" (ngModelChange)="precioVentaCambiado()">
+	  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proPreVen"> Valor Obligatorio </div>
+  			</div>
+  			
+	  			<div class="form-campo-200"> 
+	  				<label class="label"> Descuento Venta (%) </label> 
+	  				<input type="number" maxlength="200" [(ngModel)]="producto.proPreDes" name="proPreDes" 
+	  				(ngModelChange)="descuentoCambiado()">
+  			</div>
+  			
+	  			<div class="form-campo-200"> 
+	  				<label class="label"> IVA Venta (%) <span class="obligatorio">*</span> </label> 
+	  				<input type="number" maxlength="200" [(ngModel)]="producto.proPreIva" name="proPreIva" 
+	  				(ngModelChange)="ivaVentaCambiado()">
+  			</div>
+  			
   			<div class="form-campo-200"> 
-  				<label class="label"> Precio Venta <span class="obligatorio">*</span> </label> 
-  				<input type="number" maxlength="50" [(ngModel)]="producto.proPreVen" name="proPreVen" 
-  				(input)="actualizarPrecioFinal()">
-  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proPreVen"> Valor Obligatorio </div>
-  			</div>
-  			
-  			<div class="form-campo"> 
-  				<label class="label"> Descuento </label> 
-  				<input type="number" maxlength="200" [(ngModel)]="producto.proPreDes" name="proPreDes" 
-  				(input)="actualizarPrecioFinal()">
-  			</div>
-  			
-  			<div class="form-campo"> 
-  				<label class="label"> I.V.A. <span class="obligatorio">*</span> </label> 
-  				<input type="number" maxlength="200" [(ngModel)]="producto.proPreIva" name="proPreIva" 
-  				(input)="actualizarPrecioFinal()">
-  				<div class="mensaje-obligatorio" *ngIf="mostrarObligatorios && !producto.proPreIva"> Valor Obligatorio </div>
-  			</div>
-  			
-  			<div class="form-campo-200"> 
-  				<label class="label"> Precio Final </label> 
+	  				<label class="label"> Total Venta </label> 
   				<input type="number" maxlength="200" [(ngModel)]="producto.proPreFin" name="proPreFin" disabled>
   			</div>
   			
   		</div>
+		<button type="button" class="boton" (click)="aplicarBeneficioACompra()">Aplicar beneficio a compra</button>
 
 	</div>
 
 	<div class="form-grupo"> 
   	
   	<label class="titulo"> Datos Inventario </label>
+		<div class="nota-informativa nota-informativa-compacta" role="note"><span class="nota-informativa-icono" aria-hidden="true">i</span><div><strong>Control de stock:</strong><p>si lo marca, informe el Stock Actual; al llegar a 0 aparecerá agotado y no podrá añadirse al pedido.</p></div></div>
 
 		<div class="form-fila">
 		
   			<div class="form-campo-200"> 
   				<label class="label"> Stock Actual </label> 
-  				<input type="number" maxlength="10" [(ngModel)]="producto.proStoAct" name="proStoAct">
+<input type="number" min="0" step="1" [ngModel]="producto.proStoAct" (ngModelChange)="producto.proStoAct = normalizarStock($event)" name="proStoAct">
   			</div>
 
   			<div class="form-campo-200"> 
@@ -171,9 +191,30 @@
 
 	</div>
 	
+	<div class="form-grupo">
+		<label class="titulo">Datos Disponibilidad</label>
+		<div class="form-fila">
+			<div class="form-campo"><label class="label">Lunes</label><input type="checkbox" [(ngModel)]="producto.proDisLun" name="proDisLun"></div>
+			<div class="form-campo"><label class="label">Martes</label><input type="checkbox" [(ngModel)]="producto.proDisMar" name="proDisMar"></div>
+			<div class="form-campo"><label class="label">Miércoles</label><input type="checkbox" [(ngModel)]="producto.proDisMie" name="proDisMie"></div>
+			<div class="form-campo"><label class="label">Jueves</label><input type="checkbox" [(ngModel)]="producto.proDisJue" name="proDisJue"></div>
+			<div class="form-campo"><label class="label">Viernes</label><input type="checkbox" [(ngModel)]="producto.proDisVie" name="proDisVie"></div>
+			<div class="form-campo"><label class="label">Sábado</label><input type="checkbox" [(ngModel)]="producto.proDisSab" name="proDisSab"></div>
+			<div class="form-campo"><label class="label">Domingo</label><input type="checkbox" [(ngModel)]="producto.proDisDom" name="proDisDom"></div>
+		</div>
+	</div>
+
+	<div class="form-grupo">
+		<label class="titulo">Datos Componentes</label>
+		<tablaEdicion titulo="Componentes del producto" [columnas]="columnasComponentes" [titulosColumnas]="titulosComponentes" [datos]="producto.componentes || []" (insertarLinea)="insertarComponente()">
+			<ng-template tablaColumna="cmpId" let-linea><selectorBusqueda [datos]="opcionesComponentes" [idSeleccionado]="linea.cmpId || 0" [enFlujo]="true" campoDescripcion="etiqueta" campoId="cmpId" (valorSeleccionado)="linea.cmpId=$event"></selectorBusqueda></ng-template>
+			<ng-template tablaColumna="prcCan" let-linea><input class="input-tabla" type="number" min="0.0001" step="0.0001" [(ngModel)]="linea.prcCan"></ng-template>
+			<ng-template tablaColumna="accion" let-i="indice"><button *ngIf="modoFormulario !== 'ver'" type="button" class="boton boton-accion accion-eliminar" (click)="eliminarComponente(i)">Eliminar</button></ng-template>
+		</tablaEdicion>
+	</div>
+
 	<div class="form-grupo"> 
-  	
-  	<label class="titulo"> Datos Adicionales </label>
+	  	<label class="titulo"> Datos Adicionales </label>
 
 		<div class="form-fila">
 		
@@ -183,6 +224,9 @@
 			</div>
 			<div class="form-campo-200"><label class="label">Duración (minutos)</label><input type="number" min="0" step="5" [(ngModel)]="producto.proDurMin" name="proDurMin"></div>
 			<div class="form-campo-200"><label class="label">Visible en catálogo</label><input type="checkbox" [(ngModel)]="producto.proVisCat" name="proVisCat"></div>
+			<div class="form-campo-200"><label class="label">Novedad</label><input type="checkbox" [(ngModel)]="producto.proNov" name="proNov"></div>
+			<div class="form-campo-200"><label class="label">Mejor precio</label><input type="checkbox" [(ngModel)]="producto.proMejPre" name="proMejPre"></div>
+			<div class="form-campo-200"><label class="label">Outlet</label><input type="checkbox" [(ngModel)]="producto.proOut" name="proOut"></div>
   			
   		</div>
 
@@ -231,7 +275,7 @@
 <button *ngIf="modoFormulario === 'modificar'" class="boton boton-accion accion-actualizar" (click)="actualizar()"> Actualizar </button>
 		
 		<!-- Botón Cancelar tiene misma lógica que consultar -->
-<button class="boton boton-accion accion-cancelar" (click)="consultar()"> Cancelar </button>
+<button class="boton boton-accion accion-cancelar" (click)="consultar()"> {{modoFormulario === 'ver' ? 'Volver' : 'Cancelar'}} </button>
 		
 	</div>
 
@@ -244,7 +288,7 @@
 			[registroId]="productoSeleccionado?.proId || 0" [codigoRuta]="'RUTA_DOCUMENTOS_PRODUCTOS'" [permitirImagenPrincipal]="true">
 		</documentacionAdjunta>
 	</div>
-<div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="volverAConsulta()">Volver a consulta</button></div>
+<div barraAcciones class="toolbar"><button class="boton boton-accion accion-volver" (click)="volverAConsulta()">Volver</button></div>
 </div>
 
 <div *ngIf="vistaActiva === 'historico'" class="tabla-contenedor">
@@ -267,7 +311,8 @@
 		(exportarSolicitado)="exportar()"
   		[columnas]="columnas" 
   		[titulosColumnas]="titulosColumnas"
-  		[datos]="datos" 
+		[datos]="datos"
+		(filtroSolicitado)="consultar()"
 		(filaSeleccionada)="productoSeleccionado = $event"> 
   		
   	</tabla>

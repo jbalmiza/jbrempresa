@@ -1,5 +1,7 @@
 # Integraciones
 
+Revisión documental: 2026-09-15. Describe el árbol de trabajo actual.
+
 ## Correo SMTP
 
 La recuperacion de contrasena usa `ConfiguracionSmtpEmpresaService` y Java Mail. La configuracion efectiva se obtiene de parametros de la empresa. Deben definirse host, puerto, usuario, secreto, remitente y seguridad segun el proveedor. Los secretos se almacenan cifrados y se presentan enmascarados.
@@ -53,3 +55,7 @@ Si hay tres empresas aparecen 24 filas porque son ocho valores independientes po
 - En que momento del pedido se ofrece Bizum y si es opcional u obligatorio.
 - Politica de cancelacion y devoluciones.
 - Si se simplifica la presentacion administrativa de los ocho parametros sin alterar los datos requeridos por Redsys.
+
+## Verificación y guías
+
+Esta revisión constata adaptadores y configuración en las fuentes; no certifica credenciales, cuentas ni entregas reales de proveedores externos. Consulte las guías de [Meta](../../docs/comunicaciones-whatsapp-meta.md), [Twilio](../../docs/GUIA_CONFIGURACION_TWILIO_WHATSAPP.md) y [parámetros](../../docs/MANUAL_PARAMETROS_CLIENTE.md). El código de envío existe; la disponibilidad efectiva depende de la configuración y del proveedor.

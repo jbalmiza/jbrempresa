@@ -277,6 +277,31 @@
     letter-spacing: .01em;
 }
 
+/* Cabecera común: título y barra principal de acciones comparten fila. */
+.pagina:has(> .titulo + .toolbar) {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    column-gap: 24px;
+    align-items: center;
+    align-content: start;
+}
+.pagina:has(> .titulo + .toolbar) > * {
+    grid-column: 1 / -1;
+}
+.pagina:has(> .titulo + .toolbar) > .titulo:has(+ .toolbar) {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0 0 16px 10px;
+    white-space: nowrap;
+}
+.pagina:has(> .titulo + .toolbar) > .titulo + .toolbar {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    margin: 0 5px 16px 0;
+    justify-content: flex-end;
+}
+
 .toolbar {
     gap: 8px;
     margin: 0 5px 16px;
@@ -301,13 +326,15 @@
 .boton-accion::before { content:"";width:15px;height:15px;flex:0 0 15px;background:currentColor;mask:var(--icono) center/contain no-repeat;-webkit-mask:var(--icono) center/contain no-repeat; }
 .accion-consultar,.accion-agenda { color:#123f73;background:#dbeafe;border-color:#60a5fa; }
 .accion-ver { color:#334155;background:#e2e8f0;border-color:#94a3b8; }
-.accion-mapa { color:#5b21b6;background:#ede9fe;border-color:#8b5cf6; }
-.accion-malla { color:#6b21a8;background:#e9d5ff;border-color:#a855f7; }
+.accion-mapa,.accion-malla { color:#5b21b6;background:#ede9fe;border-color:#a78bfa; }
+.accion-arbol { color:#5b21b6;background:#ede9fe;border-color:#a78bfa;--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M11 3h2v4h5v5h3v2h-8v3h3v4H8v-4h3v-3H3v-2h3V7h5zm-3 6v3h8V9zm2 10h4v-1h-4z'/%3E%3C/svg%3E"); }
 .accion-insertar,.accion-guardar,.accion-reactivar { color:#14532d;background:#dcfce7;border-color:#4ade80; }
 .accion-modificar,.accion-actualizar { color:#713f12;background:#fef3c7;border-color:#f59e0b; }
 .accion-eliminar,.accion-eliminar-completo,.accion-baja { color:#7f1d1d;background:#fee2e2;border-color:#f87171; }
 .accion-adjuntos,.accion-convertir { color:#4c1d95;background:#ede9fe;border-color:#a78bfa; }
 .accion-historico { color:#164e63;background:#cffafe;border-color:#22d3ee; }
+.accion-configuracion,.accion-qr,.accion-preview { color:#334155;background:#f8fafc;border-color:#cbd5e1; }
+.accion-configuracion{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M19 13.5v-3l2-1.5-2-3.5-2.5 1A8 8 0 0 0 14 5l-.5-3h-4L9 5a8 8 0 0 0-2.5 1.5l-2.5-1L2 9l2 1.5v3L2 15l2 3.5 2.5-1A8 8 0 0 0 9 19l.5 3h4l.5-3a8 8 0 0 0 2.5-1.5l2.5 1 2-3.5zM11.5 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8'/%3E%3C/svg%3E")}.accion-qr{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M3 3h8v8H3zm2 2v4h4V5zm8-2h8v8h-8zm2 2v4h4V5zM3 13h8v8H3zm2 2v4h4v-4zm8-2h3v3h-3zm5 0h3v5h-3zm-5 5h5v3h-5z'/%3E%3C/svg%3E")}.accion-preview{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 5c-5.5 0-9.5 5.4-9.5 7s4 7 9.5 7 9.5-5.4 9.5-7S17.5 5 12 5m0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8m0-6a2 2 0 1 0 0 4 2 2 0 0 0 0-4'/%3E%3C/svg%3E")}
 .accion-volver,.accion-cancelar,.accion-deshacer { color:#334155;background:#e2e8f0;border-color:#94a3b8; }
 .boton-accion:hover:not(:disabled){filter:saturate(1.18) brightness(.94);box-shadow:0 2px 7px rgba(15,23,42,.18);}
 .accion-consultar{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M9.5 3a6.5 6.5 0 1 0 3.98 11.64L19.85 21 21 19.85l-6.36-6.37A6.5 6.5 0 0 0 9.5 3m0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9'/%3E%3C/svg%3E")}.accion-ver{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 5c-5.5 0-9.5 5.4-9.5 7s4 7 9.5 7 9.5-5.4 9.5-7S17.5 5 12 5m0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8m0-6a2 2 0 1 0 0 4 2 2 0 0 0 0-4'/%3E%3C/svg%3E")}.accion-insertar{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z'/%3E%3C/svg%3E")}.accion-modificar,.accion-actualizar{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='m4 16 10-10 4 4L8 20H4zm11-11 2-2 4 4-2 2z'/%3E%3C/svg%3E")}.accion-eliminar,.accion-eliminar-completo,.accion-baja{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M6 7h12l-1 14H7zm3-4h6l1 2h4v2H4V5h4z'/%3E%3C/svg%3E")}.accion-adjuntos{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2' d='m8 12 6-6a4 4 0 0 1 6 6l-9 9a6 6 0 0 1-8-8l9-9'/%3E%3C/svg%3E")}.accion-convertir{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='m14 5 7 7-7 7v-4H3V9h11z'/%3E%3C/svg%3E")}.accion-historico{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 4a8 8 0 1 1-7.4 5H2l3.5-4L9 9H6.7A6 6 0 1 0 12 6zm-1 3h2v5l4 2-1 2-5-3z'/%3E%3C/svg%3E")}.accion-mapa{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2zm7 .3v12l4 1.4v-12zm-5 1v12l4-1.3V5zm11 .4v12l3-1V5.3z'/%3E%3C/svg%3E")}.accion-malla{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z'/%3E%3C/svg%3E")}.accion-agenda{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M6 2h2v2h8V2h2v2h3v18H3V4h3zm13 8H5v10h14z'/%3E%3C/svg%3E")}.accion-volver,.accion-cancelar,.accion-deshacer{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='m10 5-7 7 7 7v-4h11v-6H10z'/%3E%3C/svg%3E")}.accion-reactivar,.accion-guardar{--icono:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='m9 16-4-4 2-2 2 2 8-8 2 2z'/%3E%3C/svg%3E")}
@@ -430,6 +457,20 @@
         padding: 14px 0 24px;
     }
 
+    .pagina:has(> .titulo + .toolbar) {
+        display: block;
+    }
+
+    .pagina:has(> .titulo + .toolbar) > .titulo:has(+ .toolbar) {
+        margin: 0 10px 8px;
+        white-space: normal;
+    }
+
+    .pagina:has(> .titulo + .toolbar) > .titulo + .toolbar {
+        margin: 0 5px 16px;
+        justify-content: flex-start;
+    }
+
     .form-campo,
     .form-campo-200,
     .form-campo-500 {
@@ -452,3 +493,66 @@
 .accion-exportar {
     --icono: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M11 21h2V11l3 3 2-2-6-6-6 6 2 2 3-3zM4 3h16v2H4z'/%3E%3C/svg%3E");
 }
+.nota-informativa {
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: min(100%, 720px);
+  padding: 14px 16px;
+  border: 1px solid #60a5fa;
+  border-left: 5px solid #2563eb;
+  border-radius: 9px;
+  background: #dbeafe;
+  color: #173b70;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, .12);
+}
+.nota-informativa-icono {
+  display: grid;
+  place-items: center;
+  flex: 0 0 25px;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 800;
+  font-style: normal;
+}
+.nota-informativa strong { display: block; margin-bottom: 4px; color: #123464; }
+.nota-informativa p { margin: 0; line-height: 1.45; }
+.nota-informativa-compacta {
+  flex: 1 1 520px;
+  width: auto;
+  max-width: 760px;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 11px;
+  border-left-width: 4px;
+  font-size: 13px;
+  box-shadow: none;
+}
+.nota-informativa-compacta .nota-informativa-icono { flex-basis: 20px; width: 20px; height: 20px; font-size: 12px; }
+.nota-informativa-compacta > div { display: flex; flex-wrap: wrap; gap: 0 4px; align-items: baseline; }
+.nota-informativa-compacta strong { display: inline; margin: 0; }
+.nota-informativa-compacta p { display: inline; line-height: 1.3; }
+.form-grupo > .nota-informativa {
+  width: 100%;
+  max-width: none;
+  margin: 4px 0 16px;
+}
+
+/* Los checkbox no deben heredar las dimensiones de los campos de texto. */
+.form-campo input[type="checkbox"],
+.form-campo-200 input[type="checkbox"],
+.form-campo-500 input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  margin: 5px 0 0;
+  padding: 0;
+  border-radius: 4px;
+  accent-color: var(--color-principal);
+  cursor: pointer;
+}
+.accion-vista{border-color:#b9a7e8!important;background:#eee9fb!important;color:#563b91!important}

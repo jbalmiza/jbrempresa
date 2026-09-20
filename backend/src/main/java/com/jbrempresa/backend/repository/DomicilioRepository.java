@@ -16,6 +16,7 @@ public interface DomicilioRepository extends JpaRepository<Domicilio, DomicilioI
 
     // Obtiene únicamente los domicilios de un cliente
     List<Domicilio> findByEmpIdAndDomActTrueOrderByDomId(Long empId);
+    List<Domicilio> findByDomActTrueOrderByEmpIdAscDomIdAsc();
 
     // Busca un domicilio concreto perteneciente a un cliente
     Optional<Domicilio> findByEmpIdAndDomIdAndDomActTrue(Long empId, Long domId);

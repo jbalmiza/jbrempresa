@@ -24,6 +24,8 @@ export interface DocumentoVenta {
   personaNomCom?: string;
   dovFec: string;
   dovEst: string;
+  dovPag: boolean;
+  dovTipFac?: 'NORMAL' | 'SIMPLIFICADA' | null;
   dovIdOri: number | null;
   dovIdRai: number | null;
   dovUbi: string;
@@ -52,6 +54,7 @@ export interface DocumentoVentaMovimiento {
   perId: number;
   dovFec: string;
   dovEst: string;
+  dovTipFac?: 'NORMAL' | 'SIMPLIFICADA' | null;
   dovUbi: string;
   dovFilMal: number | null;
   dovColMal: number | null;
